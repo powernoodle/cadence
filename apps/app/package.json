@@ -3,7 +3,7 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "build": "remix build && ln -sfn apps/app/functions ../../functions",
+    "build": "remix build && ln -sfn $PWD/functions ../../functions",
     "dev:remix": "remix watch",
     "dev:wrangler": "cross-env NODE_ENV=development npm run wrangler",
     "dev": "npm-run-all build --parallel \"dev:*\"",

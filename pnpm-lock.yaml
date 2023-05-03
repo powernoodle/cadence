@@ -11,7 +11,7 @@ importers:
         specifier: latest
         version: 16.0.5
 
-  apps/app:
+  apps/web:
     dependencies:
       '@remix-run/cloudflare':
         specifier: ^1.16.0

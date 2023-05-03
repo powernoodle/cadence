@@ -1,63 +1,59 @@
 lockfileVersion: '6.0'
 
-importers:
+dependencies:
+  '@remix-run/cloudflare':
+    specifier: ^1.16.0
+    version: 1.16.0(@cloudflare/workers-types@3.19.0)
+  '@remix-run/cloudflare-pages':
+    specifier: ^1.16.0
+    version: 1.16.0(@cloudflare/workers-types@3.19.0)
+  '@remix-run/css-bundle':
+    specifier: ^1.16.0
+    version: 1.16.0
+  '@remix-run/react':
+    specifier: ^1.16.0
+    version: 1.16.0(react-dom@18.2.0)(react@18.2.0)
+  cross-env:
+    specifier: ^7.0.3
+    version: 7.0.3
+  isbot:
+    specifier: ^3.6.8
+    version: 3.6.8
+  react:
+    specifier: ^18.2.0
+    version: 18.2.0
+  react-dom:
+    specifier: ^18.2.0
+    version: 18.2.0(react@18.2.0)
 
-  .: {}
-
-  apps/app:
-    dependencies:
-      '@remix-run/cloudflare':
-        specifier: ^1.16.0
-        version: 1.16.0(@cloudflare/workers-types@3.19.0)
-      '@remix-run/cloudflare-pages':
-        specifier: ^1.16.0
-        version: 1.16.0(@cloudflare/workers-types@3.19.0)
-      '@remix-run/css-bundle':
-        specifier: ^1.16.0
-        version: 1.16.0
-      '@remix-run/react':
-        specifier: ^1.16.0
-        version: 1.16.0(react-dom@18.2.0)(react@18.2.0)
-      cross-env:
-        specifier: ^7.0.3
-        version: 7.0.3
-      isbot:
-        specifier: ^3.6.8
-        version: 3.6.8
-      react:
-        specifier: ^18.2.0
-        version: 18.2.0
-      react-dom:
-        specifier: ^18.2.0
-        version: 18.2.0(react@18.2.0)
-    devDependencies:
-      '@cloudflare/workers-types':
-        specifier: ^3.19.0
-        version: 3.19.0
-      '@remix-run/dev':
-        specifier: ^1.16.0
-        version: 1.16.0
-      '@remix-run/eslint-config':
-        specifier: ^1.16.0
-        version: 1.16.0(eslint@8.38.0)(react@18.2.0)(typescript@5.0.4)
-      '@types/react':
-        specifier: ^18.0.35
-        version: 18.0.35
-      '@types/react-dom':
-        specifier: ^18.0.11
-        version: 18.0.11
-      eslint:
-        specifier: ^8.38.0
-        version: 8.38.0
-      npm-run-all:
-        specifier: ^4.1.5
-        version: 4.1.5
-      typescript:
-        specifier: ^5.0.4
-        version: 5.0.4
-      wrangler:
-        specifier: ^2.15.1
-        version: 2.15.1
+devDependencies:
+  '@cloudflare/workers-types':
+    specifier: ^3.19.0
+    version: 3.19.0
+  '@remix-run/dev':
+    specifier: ^1.16.0
+    version: 1.16.0
+  '@remix-run/eslint-config':
+    specifier: ^1.16.0
+    version: 1.16.0(eslint@8.38.0)(react@18.2.0)(typescript@5.0.4)
+  '@types/react':
+    specifier: ^18.0.35
+    version: 18.0.35
+  '@types/react-dom':
+    specifier: ^18.0.11
+    version: 18.0.11
+  eslint:
+    specifier: ^8.38.0
+    version: 8.38.0
+  npm-run-all:
+    specifier: ^4.1.5
+    version: 4.1.5
+  typescript:
+    specifier: ^5.0.4
+    version: 5.0.4
+  wrangler:
+    specifier: ^2.15.1
+    version: 2.15.1
 
 packages:
 

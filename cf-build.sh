@@ -1,12 +1,16 @@
 #!/bin/bash
 
-NPM_OPTS=
+export NPM_OPTS=
 
+echo === Installing pnpm ===
 npm -g i pnpm
+
+echo === Installing pnpm packages ===
 pnpm i --store=node_modules/.pnpm-store
 
 case $1 in
   web)
+    echo === Building ===
     pnpm nx run web:build
     ln -sfn apps/web/functions functions
     ;;

@@ -8,7 +8,9 @@
   },
   "license": "UNLICENSED",
   "devDependencies": {
+    "@miniflare/tre": "3.0.0-next.13",
     "nx": "16.0.1",
-    "nx-cloud": "latest"
+    "nx-cloud": "latest",
+    "wrangler": "^2.19.0"
   }
 }

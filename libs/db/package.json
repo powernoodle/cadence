@@ -1,0 +1,14 @@
+{
+  "name": "db",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "supabase start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "supabase": "^1.54.0"
+  }
+}

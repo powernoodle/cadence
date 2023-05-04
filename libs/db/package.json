@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "start": "supabase start"
+    "start": "supabase start",
+    "gen-types": "mkdir -p build && supabase gen types typescript --local > build/db.types.ts"
   },
   "keywords": [],
   "author": "",

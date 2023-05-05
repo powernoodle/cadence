@@ -2,9 +2,11 @@
   "name": "db",
   "version": "1.0.0",
   "description": "",
+  "main": "dist/types.ts",
   "scripts": {
-    "start": "supabase start",
-    "gen-types": "mkdir -p build && supabase gen types typescript --local > build/db.types.ts"
+    "start": "./source-env.sh && supabase start",
+    "stop": "./source-env.sh && supabase stop",
+    "gen-types": "mkdir -p dist && supabase gen types typescript --local > dist/types.ts"
   },
   "keywords": [],
   "author": "",

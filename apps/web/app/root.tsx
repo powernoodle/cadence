@@ -11,17 +11,41 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
-import { PostgrestError, createClient } from "@supabase/supabase-js";
+import {
+  createServerClient,
+  createBrowserClient,
+} from "@supabase/auth-helpers-remix";
+import type { Database } from "db";
+import { User } from "@supabase/auth-helpers-remix";
 
-export const loader = ({ context }: LoaderArgs) => {
+export const loader = async ({ context, request }: LoaderArgs) => {
   const env = {
-    SUPABASE_URL: context.SUPABASE_URL!,
-    SUPABASE_ANON_KEY: context.SUPABASE_ANON_KEY!,
+    SUPABASE_URL: context.SUPABASE_URL! as string,
+    SUPABASE_ANON_KEY: context.SUPABASE_ANON_KEY! as string,
   };
 
-  return json({ env });
+  const response = new Response();
+
+  const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+    request,
+    response,
+  });
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  return json(
+    {
+      env,
+      session,
+    },
+    {
+      headers: response.headers,
+    }
+  );
 };
 
 export const links: LinksFunction = () => [
@@ -29,11 +53,45 @@ export const links: LinksFunction = () => [
 ];
 
 export default function App() {
-  const { env } = useLoaderData();
+  const { env, session } = useLoaderData<typeof loader>();
+
+  const { revalidate } = useRevalidator();
 
   const [supabase] = useState(() =>
-    createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
+    createBrowserClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
   );
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    if (!supabase) return;
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, [supabase]);
+
+  const serverAccessToken = session?.access_token;
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (
+        event !== "INITIAL_SESSION" &&
+        session?.access_token !== serverAccessToken
+      ) {
+        // server and client are out of sync.
+        revalidate();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [serverAccessToken, supabase]);
 
   return (
     <html lang="en">
@@ -44,7 +102,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet context={{ supabase }} />
+        <Outlet context={{ supabase, user }} />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

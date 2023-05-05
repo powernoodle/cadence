@@ -41,6 +41,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.21.0
         version: 2.21.0
+      db:
+        specifier: workspace:*
+        version: link:../../libs/db
       isbot:
         specifier: ^3.6.8
         version: 3.6.8

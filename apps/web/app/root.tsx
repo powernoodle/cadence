@@ -20,7 +20,7 @@ import {
 import type { Database } from "db";
 import { User } from "@supabase/auth-helpers-remix";
 
-export const loader = async ({ context, request }: LoaderArgs) => {
+export const loader = ({ context /* , request */ }: LoaderArgs) => {
   const env = {
     SUPABASE_URL: context.SUPABASE_URL! as string,
     SUPABASE_ANON_KEY: context.SUPABASE_ANON_KEY! as string,
@@ -28,19 +28,19 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
   const response = new Response();
 
-  const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
-    request,
-    response,
-  });
+  // const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+  //   request,
+  //   response,
+  // });
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  // const {
+  //   data: { session },
+  // } = await supabase.auth.getSession();
 
   return json(
     {
       env,
-      session,
+      // session,
     },
     {
       headers: response.headers,
@@ -52,8 +52,8 @@ export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
-export default function App() {
-  const { env, session } = useLoaderData<typeof loader>();
+function App() {
+  const { env /* , session */ } = useLoaderData<typeof loader>();
 
   const { revalidate } = useRevalidator();
 
@@ -73,25 +73,25 @@ export default function App() {
     getUser();
   }, [supabase]);
 
-  const serverAccessToken = session?.access_token;
-
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (
-        event !== "INITIAL_SESSION" &&
-        session?.access_token !== serverAccessToken
-      ) {
-        // server and client are out of sync.
-        revalidate();
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [serverAccessToken, supabase]);
+  // const serverAccessToken = session?.access_token;
+  //
+  // useEffect(() => {
+  //   const {
+  //     data: { subscription },
+  //   } = supabase.auth.onAuthStateChange((event, session) => {
+  //     if (
+  //       event !== "INITIAL_SESSION" &&
+  //       session?.access_token !== serverAccessToken
+  //     ) {
+  //       // server and client are out of sync.
+  //       revalidate();
+  //     }
+  //   });
+  //
+  //   return () => {
+  //     subscription.unsubscribe();
+  //   };
+  // }, [serverAccessToken, supabase]);
 
   return (
     <html lang="en">

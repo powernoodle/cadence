@@ -1,4 +1,5 @@
 /functions/\[\[path\]\].js
 /functions/\[\[path\]\].js.map
 /public/build
-.dev.vars*
+.dev.vars
+.env

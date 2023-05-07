@@ -1,0 +1,4 @@
+# For local, copy output from pnpm nx run db:start
+# For remote, Project Settings on see https://app.supabase.com/projects
+SUPABASE_URL=
+SUPABASE_ANON_KEY=

@@ -10,19 +10,22 @@
     "dev": "npm-run-all build --parallel \"dev:*\"",
     "start": "NODE_ENV=production pnpm run wrangler",
     "typecheck": "tsc",
-    "wrangler": "wrangler pages dev --experimental-local ./public"
+    "wrangler": "wrangler pages dev --compatibility-date=2023-04-19 --experimental-local ./public",
+    "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name cf-remix"
   },
   "dependencies": {
+    "@cloudflare/pages-plugin-sentry": "^1.1.1",
     "@remix-run/cloudflare": "^1.16.0",
     "@remix-run/cloudflare-pages": "^1.16.0",
     "@remix-run/css-bundle": "^1.16.0",
     "@remix-run/react": "^1.16.0",
+    "@sentry/remix": "^7.51.0",
     "@supabase/auth-helpers-remix": "^0.1.9",
     "@supabase/supabase-js": "^2.21.0",
+    "db": "workspace:*",
     "isbot": "^3.6.8",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "db": "workspace:*"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.19.0",

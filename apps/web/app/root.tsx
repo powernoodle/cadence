@@ -52,7 +52,7 @@ export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
 ];
 
-function App() {
+export default function App() {
   const { env /* , session */ } = useLoaderData<typeof loader>();
 
   const { revalidate } = useRevalidator();

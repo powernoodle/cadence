@@ -1,4 +1,13 @@
-# Kris' Remix + Cloudflare + Supabase starter stack
+# Cadence
+
+## Bootstrapping
+
+```sh
+node install -g pnpm
+brew install aws/tap/aws-sam-cli
+```
+
+Copy all `.template` files, removing the `.template` suffix and filling in the values.
 
 ## Development
 

@@ -7,7 +7,7 @@ import { json } from "@remix-run/cloudflare";
 import { useEffect, useState } from "react";
 
 import type { Database } from "db";
-import { SupabaseOutletContext } from "~/root";
+import { SupabaseOutletContext } from "../root";
 
 type Post = Database["public"]["Tables"]["posts"]["Row"];
 

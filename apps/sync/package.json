@@ -1,0 +1,24 @@
+{
+  "name": "sync",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "sam build",
+    "dev": "sam local start-api",
+    "deploy": "sam deploy --region ca-central-1 --no-confirm-changeset"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.21.0",
+    "date-fns": "^2.30.0",
+    "googleapis": "^118.0.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.92",
+    "@types/node": "^20.1.0",
+    "esbuild": "^0.17.18"
+  }
+}

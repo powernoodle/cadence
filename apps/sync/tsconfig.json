@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["**/*.ts"],
+  "compilerOptions": {
+    "outDir": "build",
+    "baseUrl": "src",
+    "rootDir": "src",
+    "target": "es2020",
+    "preserveConstEnums": true,
+    "noEmit": true,
+    "sourceMap": false,
+    "module": "commonjs",
+    "skipLibCheck": true
+  }
+}

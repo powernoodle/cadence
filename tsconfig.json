@@ -1,6 +1,4 @@
 {
-  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2019"],
     "isolatedModules": true,
@@ -13,5 +11,6 @@
     "allowJs": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "."
-  }
+  },
+  "exclude": ["node_modules", "**/node_modules", "**/build", "**/dist"]
 }

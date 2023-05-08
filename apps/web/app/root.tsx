@@ -19,6 +19,12 @@ import {
 } from "@supabase/auth-helpers-remix";
 import type { Database } from "db";
 import { User } from "@supabase/auth-helpers-remix";
+import { SupabaseClient } from "@supabase/supabase-js";
+
+export type SupabaseOutletContext = {
+  supabase: SupabaseClient<Database>;
+  user: User;
+};
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const env = {

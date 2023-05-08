@@ -6,8 +6,8 @@ import { createServerClient, User } from "@supabase/auth-helpers-remix";
 import { json } from "@remix-run/cloudflare";
 import { useEffect, useState } from "react";
 
-import type { SupabaseClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "db";
+import { SupabaseOutletContext } from "~/root";
 
 type Post = Database["public"]["Tables"]["posts"]["Row"];
 
@@ -34,11 +34,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 export default function Index() {
   const { serverPosts } = useLoaderData<typeof loader>();
   const [posts, setPosts] = useState(serverPosts);
-  const { supabase, user } = useOutletContext<{
-    supabase: SupabaseClient<Database>;
-    user: User;
-  }>();
-  console.log(user);
+  const { supabase } = useOutletContext<SupabaseOutletContext>();
 
   useEffect(() => {
     setPosts(serverPosts);

@@ -5,8 +5,9 @@
   "main": "build/index.js",
   "scripts": {
     "build": "sam build",
-    "dev": "sam local start-api",
-    "deploy": "sam deploy --region ca-central-1 --no-confirm-changeset"
+    "dev": "pnpm run build && sam local start-lambda",
+    "dev:invoke": "sam local invoke CadenceSyncFunction --event events/event.json",
+    "deploy": "pnpm run build && sam deploy --region ca-central-1 --no-confirm-changeset"
   },
   "keywords": [],
   "author": "",

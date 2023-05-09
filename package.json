@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "nx": "nx"
+    "bootstrap": "git config --local core.hooksPath .githooks && brew install aws/tap/aws-sam-cli",
+    "nx": "nx",
+    "check": "pnpm install --frozen-lockfile"
   },
   "license": "UNLICENSED",
   "devDependencies": {

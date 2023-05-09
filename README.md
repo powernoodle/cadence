@@ -2,12 +2,9 @@
 
 ## Bootstrapping
 
-```sh
-node install -g pnpm
-brew install aws/tap/aws-sam-cli
-```
-
-Copy all `.template` files, removing the `.template` suffix and filling in the values.
+1. `npm install -g pnpm`
+1. `pnpm bootstrap`
+1. Copy all `.template` files, removing the `.template` suffix and filling in the values.
 
 ## Development
 

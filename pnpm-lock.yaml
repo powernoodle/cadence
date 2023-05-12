@@ -45,6 +45,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@cadence/db':
+        specifier: workspace:*
+        version: link:../../libs/db
       '@remix-run/cloudflare':
         specifier: ^1.16.0
         version: 1.16.0(@cloudflare/workers-types@3.19.0)
@@ -63,9 +66,6 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.21.0
         version: 2.21.0
-      db:
-        specifier: workspace:*
-        version: link:../../libs/db
       isbot:
         specifier: ^3.6.8
         version: 3.6.8
@@ -100,6 +100,36 @@ importers:
       typescript:
         specifier: ^5.0.4
         version: 5.0.4
+
+  libs/cal:
+    dependencies:
+      '@microsoft/microsoft-graph-client':
+        specifier: ^3.0.5
+        version: 3.0.5
+      '@microsoft/microsoft-graph-types':
+        specifier: ^2.30.0
+        version: 2.30.0
+      date-fns:
+        specifier: ^2.30.0
+        version: 2.30.0
+      googleapis:
+        specifier: ^118.0.0
+        version: 118.0.0
+      nanoid:
+        specifier: ^4.0.2
+        version: 4.0.2
+      querystring:
+        specifier: ^0.2.1
+        version: 0.2.1
+
+  libs/cal-store:
+    dependencies:
+      '@cadence/cal':
+        specifier: workspace:^
+        version: link:../cal
+      '@supabase/supabase-js':
+        specifier: ^2.21.0
+        version: 2.21.0
 
   libs/db:
     devDependencies:
@@ -2009,6 +2039,32 @@ packages:
 
   /@jspm/core@2.0.1:
     resolution: {integrity: sha512-Lg3PnLp0QXpxwLIAuuJboLeRaIhrgJjeuh797QADg3xz8wGLugQOS5DpsE8A6i6Adgzf+bacllkKZG3J0tGfDw==}
+
+  /@microsoft/microsoft-graph-client@3.0.5:
+    resolution: {integrity: sha512-xQADFNLUhE78RzYadFZtOmy/5wBZenSZhVK193m40MTDC5hl1aYMQO1QOJApnKga8WcvMCDCU10taRhuXTOz5w==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      '@azure/identity': '*'
+      '@azure/msal-browser': '*'
+      buffer: '*'
+      stream-browserify: '*'
+    peerDependenciesMeta:
+      '@azure/identity':
+        optional: true
+      '@azure/msal-browser':
+        optional: true
+      buffer:
+        optional: true
+      stream-browserify:
+        optional: true
+    dependencies:
+      '@babel/runtime': 7.21.5
+      tslib: 2.5.0
+    dev: false
+
+  /@microsoft/microsoft-graph-types@2.30.0:
+    resolution: {integrity: sha512-uNlZAzk42nmDIc3PylGtzws/RTk8dQA1XRx9Pc9YgH/w67biSMpSRblp08vOKb+M9KNnUB6nLqY33nBNFeAgfQ==}
+    dev: false
 
   /@miniflare/cache@2.13.0:
     resolution: {integrity: sha512-y3SdN3SVyPECWmLAEGkkrv0RB+LugEPs/FeXn8QtN9aE1vyj69clOAgmsDzoh1DpFfFsLKRiv05aWs4m79P8Xw==}
@@ -6587,6 +6643,12 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
+  /nanoid@4.0.2:
+    resolution: {integrity: sha512-7ZtY5KTCNheRGfEFxnedV5zFiORN1+Y1N6zvPTnHQd8ENUvfaDBeuJDZb2bN/oXwXxu3qkTXDzy57W5vAmDTBw==}
+    engines: {node: ^14 || ^16 || >=18}
+    hasBin: true
+    dev: false
+
   /napi-build-utils@1.0.2:
     resolution: {integrity: sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==}
     dev: false
@@ -7367,6 +7429,12 @@ packages:
     engines: {node: '>=0.6'}
     dependencies:
       side-channel: 1.0.4
+
+  /querystring@0.2.1:
+    resolution: {integrity: sha512-wkvS7mL/JMugcup3/rMitHmd9ecIGd2lhFhK9N3UUQ450h66d1r3Y9nvXzQAW1Lq+wyx61k/1pfKS5KuKiyEbg==}
+    engines: {node: '>=0.4.x'}
+    deprecated: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
+    dev: false
 
   /queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}

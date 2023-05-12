@@ -1,12 +1,15 @@
 {
-  "name": "db",
+  "name": "@cadence/db",
   "version": "1.0.0",
   "description": "",
   "main": "dist/types.ts",
   "scripts": {
     "start": "../../source-env.sh && supabase start",
     "stop": "../../source-env.sh && supabase stop",
-    "gen-types": "mkdir -p dist && supabase gen types typescript --local > dist/types.ts"
+    "build": "mkdir -p dist && supabase gen types typescript --local > dist/types.ts",
+    "supabase": "supabase",
+    "diff-remote": "supabase db diff --linked | supabase migration new init",
+    "dump-seed": "supabase db dump --data-only -f supabase/seed.sql"
   },
   "keywords": [],
   "author": "",

@@ -20,7 +20,7 @@
     "@remix-run/react": "^1.16.0",
     "@supabase/auth-helpers-remix": "^0.1.9",
     "@supabase/supabase-js": "^2.21.0",
-    "db": "workspace:*",
+    "@cadence/db": "workspace:*",
     "isbot": "^3.6.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

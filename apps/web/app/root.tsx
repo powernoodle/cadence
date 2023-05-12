@@ -17,7 +17,7 @@ import {
   createServerClient,
   createBrowserClient,
 } from "@supabase/auth-helpers-remix";
-import type { Database } from "db";
+import type { Database } from "@cadence/db";
 import { User } from "@supabase/auth-helpers-remix";
 import { SupabaseClient } from "@supabase/supabase-js";
 

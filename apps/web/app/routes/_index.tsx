@@ -6,7 +6,7 @@ import { createServerClient, User } from "@supabase/auth-helpers-remix";
 import { json } from "@remix-run/cloudflare";
 import { useEffect, useState } from "react";
 
-import type { Database } from "db";
+import type { Database } from "@cadence/db";
 import { SupabaseOutletContext } from "../root";
 
 type Post = Database["public"]["Tables"]["posts"]["Row"];

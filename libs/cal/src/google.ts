@@ -96,6 +96,50 @@ export class GoogleClient extends CalendarClient {
     };
   }
 
+  public async *getCalendars(): AsyncIterableIterator<calendar_v3.Schema$CalendarListEntry> {
+    let syncToken: string | undefined;
+    let nextPageToken: string | undefined;
+
+    do {
+      try {
+        // https://developers.google.com/calendar/v3/reference/events/list
+        const data = (
+          await this.client!.calendarList.list({
+            ...(nextPageToken
+              ? {
+                  pageToken: nextPageToken,
+                }
+              : syncToken
+              ? {
+                  syncToken,
+                }
+              : {
+                  minAccessRole: "reader",
+                  showHidden: true,
+                  showDeleted: true,
+                }),
+          })
+        ).data as calendar_v3.Schema$CalendarList;
+        syncToken = data.nextSyncToken || syncToken;
+        const calendars = data.items || [];
+        for (const calendar of calendars) {
+          try {
+            yield calendar;
+          } catch (error) {
+            console.error(
+              `Failed to update event: ${JSON.stringify(calendar)}`
+            );
+            console.error(error);
+          }
+        }
+        nextPageToken = data.nextPageToken || undefined;
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    } while (nextPageToken);
+  }
+
   public async *getEvents(
     calendarId: string,
     min: Date,
@@ -130,11 +174,12 @@ export class GoogleClient extends CalendarClient {
           ...state,
           syncToken,
         };
-        const events = data.items;
-        for (const googleEvent of events || []) {
+        const events = data.items || [];
+        for (const googleEvent of events) {
           try {
             if (!googleEvent.id) return;
 
+            console.log(googleEvent);
             const event = this.transformEvent(googleEvent);
             if (event) yield { event, state: state };
           } catch (error) {

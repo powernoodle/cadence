@@ -5,8 +5,15 @@ export default function Login() {
   const { supabase, user } = useOutletContext<SupabaseOutletContext>();
 
   const signInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
+    const { data } = await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: {
+        scopes: "https://www.googleapis.com/auth/calendar.events.readonly",
+        queryParams: {
+          access_type: "offline",
+          prompt: "consent select_account",
+        },
+      },
     });
   };
 

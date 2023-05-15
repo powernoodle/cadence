@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { GoogleClient } from "./google";
 
-test.only("fetches calendars", async () => {
+test("fetches calendars", async () => {
   const client = new GoogleClient(
     process.env.GOOGLE_CLIENT_ID!,
     process.env.GOOGLE_OAUTH_SECRET!,

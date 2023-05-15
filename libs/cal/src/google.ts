@@ -42,7 +42,7 @@ export class GoogleClient extends CalendarClient {
     public credentials: GoogleCredentials,
     protected updateCredentials: UpdateCredentials
   ) {
-    super(credentials, updateCredentials);
+    super();
     this.authClient = new google.auth.OAuth2(this.clientId, this.clientSecret);
     this.authClient.setCredentials(this.credentials);
     this.client = google.calendar({ version: "v3", auth: this.authClient });
@@ -181,7 +181,7 @@ export class GoogleClient extends CalendarClient {
 
             console.log(googleEvent);
             const event = this.transformEvent(googleEvent);
-            if (event) yield { event, state: state };
+            if (event) yield { event, state };
           } catch (error) {
             console.error(
               `Failed to update event: ${JSON.stringify(googleEvent)}`

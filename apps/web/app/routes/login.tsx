@@ -8,7 +8,10 @@ export default function Login() {
     const { data } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        scopes: "https://www.googleapis.com/auth/calendar.events.readonly",
+        scopes: [
+          "https://www.googleapis.com/auth/calendar.readonly",
+          "https://www.googleapis.com/auth/calendar.events.readonly",
+        ].join(" "),
         queryParams: {
           access_type: "offline",
           prompt: "consent select_account",
@@ -17,6 +20,21 @@ export default function Login() {
     });
   };
 
+  async function signInWithAzure() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: "azure",
+      options: {
+        scopes: [
+          "openid",
+          "email",
+          "user.read",
+          "calendars.read",
+          "offline_access",
+        ].join(" "),
+      },
+    });
+  }
+
   const logout = async () => {
     await supabase.auth.signOut();
   };
@@ -24,6 +42,7 @@ export default function Login() {
   return (
     <>
       {!user && <button onClick={signInWithGoogle}>Google Login</button>}
+      {!user && <button onClick={signInWithAzure}>Outlook Login</button>}
       {user && <button onClick={logout}>Logout</button>}
     </>
   );

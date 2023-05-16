@@ -9,7 +9,9 @@ export type Attendance = {
 export class Event {
   length: number = 30; // minutes
   title: string | null = null;
-  location: string | null = null;
+  isOnline: boolean = false;
+  isOnsite: boolean = false;
+  isOffsite: boolean = false;
   description: string | null = null;
   organizer: string | null = null;
   attendance: Attendance[] = [];

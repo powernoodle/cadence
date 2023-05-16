@@ -139,6 +139,9 @@ export class OutlookClient extends CalendarClient {
       return null;
     }
 
+    console.dir(event);
+    const isOnline = !!event.isOnlineMeeting;
+    const isOnsite = event.location?.locationType === "conferenceRoom";
     return {
       title: event.subject || null,
       start,
@@ -159,7 +162,9 @@ export class OutlookClient extends CalendarClient {
           ];
         }, [] as Attendance[]) || [],
       description: event.bodyPreview || null,
-      location: event.location?.displayName || null,
+      isOnline,
+      isOnsite,
+      isOffsite: !isOnline && !isOnsite && !!event.location?.displayName,
       organizer: event.organizer?.emailAddress?.address || null,
       uid: event.seriesMasterId || event.iCalUId || event.id,
       recurrenceId: event.seriesMasterId ? event.iCalUId || null : null,
@@ -200,7 +205,7 @@ export class OutlookClient extends CalendarClient {
       } catch (error) {
         console.error(`Failed to process event ${outlookEvent.id}`);
         console.error(error);
-        console.log(outlookEvent);
+        console.dir(outlookEvent);
       }
 
       if (pageIterator.isComplete()) break;

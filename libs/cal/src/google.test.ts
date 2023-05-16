@@ -10,11 +10,11 @@ test("fetches calendars", async () => {
       refresh_token: process.env.GOOGLE_REFRESH_TOKEN!,
     },
     async (creds: any) => {
-      console.log("New creds", creds);
+      console.dir("New creds", creds);
     }
   );
   for await (const calendar of client.getCalendars()) {
-    console.log(calendar);
+    console.dir(calendar);
     expect(calendar).toBeDefined();
   }
 });
@@ -28,7 +28,7 @@ test("fetches events", async () => {
       refresh_token: process.env.GOOGLE_REFRESH_TOKEN!,
     },
     async (creds: any) => {
-      console.log("New creds", creds);
+      console.dir("New creds", creds);
     }
   );
   for await (const event of client.getEvents(
@@ -37,7 +37,8 @@ test("fetches events", async () => {
     new Date("2023-05-16"),
     {}
   )) {
-    console.log(event);
+    console.dir(event);
+    console.log(JSON.stringify(event.event.attendance));
     expect(event).toBeDefined();
   }
 });

@@ -65,12 +65,20 @@ export class GoogleClient extends CalendarClient {
   }
 
   private transformEvent(event: GoogleEvent): Event | null {
-    if (!event.iCalUID || !event.start?.dateTime || !event.end?.dateTime) {
+    if (
+      !event.iCalUID ||
+      !event.start?.dateTime ||
+      !event.end?.dateTime ||
+      event.eventType !== "default"
+    ) {
       return null;
     }
 
     const start = new Date(event.start.dateTime);
     const end = new Date(event.end.dateTime);
+
+    const isOnline = !!event.conferenceData || !!event.location?.match(/^http/);
+    const isOnsite = !!event.attendees?.some((a) => a.resource);
     return {
       start,
       end,
@@ -89,7 +97,9 @@ export class GoogleClient extends CalendarClient {
         }, [] as Attendance[]) || [],
       title: event.summary || null,
       description: event.description || null,
-      location: event.location || null,
+      isOnline,
+      isOnsite,
+      isOffsite: !isOnline && !isOnsite,
       organizer: event.organizer?.email || null,
       uid: event.iCalUID,
       recurrenceId: event.originalStartTime?.toString() || null,
@@ -179,7 +189,7 @@ export class GoogleClient extends CalendarClient {
           try {
             if (!googleEvent.id) return;
 
-            console.log(googleEvent);
+            console.dir(googleEvent);
             const event = this.transformEvent(googleEvent);
             if (event) yield { event, state };
           } catch (error) {

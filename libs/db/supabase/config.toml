@@ -79,11 +79,11 @@ secret = "env(MICROSOFT_OAUTH_SECRET)"
 # url = ""
 
 [analytics]
-enabled = false
+enabled = true
 port = 54327
 vector_port = 54328
 # Setup BigQuery project to enable log viewer on local development stack.
 # See: https://logflare.app/guides/bigquery-setup
-gcp_project_id = ""
-gcp_project_number = ""
+gcp_project_id = "plenty-385814"
+gcp_project_number = "809271282931"
 gcp_jwt_path = "supabase/gcloud.json"

@@ -8,6 +8,7 @@
     "stop": "../../source-env.sh && supabase stop",
     "build": "mkdir -p dist && supabase gen types typescript --local > dist/types.ts",
     "supabase": "supabase",
+    "reset": "supabase db reset",
     "diff-remote": "supabase db diff --linked | supabase migration new init",
     "dump-seed": "supabase db dump --data-only -f supabase/seed.sql"
   },

@@ -1,2 +1,3 @@
 dist/
 .env
+supabase/gcloud.json

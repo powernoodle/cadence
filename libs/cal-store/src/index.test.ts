@@ -4,7 +4,7 @@ import { CalendarStore } from "./";
 const ACCOUNT_ID = 1;
 
 test("fetches events", async () => {
-  const store = await CalendarStore.Create(
+  const store = new CalendarStore(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_KEY!,
     process.env.GOOGLE_CLIENT_ID!,
@@ -13,5 +13,6 @@ test("fetches events", async () => {
     process.env.OUTLOOK_OAUTH_SECRET!,
     ACCOUNT_ID
   );
-  store.getEvents();
+  await store.loadCredentials();
+  await store.getEvents();
 });

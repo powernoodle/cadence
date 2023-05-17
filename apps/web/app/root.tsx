@@ -42,6 +42,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  console.dir(session);
 
   return json(
     {

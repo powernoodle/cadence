@@ -1,2 +1,3 @@
+export { CalendarClient } from "./client";
 export { GoogleClient } from "./google";
-// import { OutlookClient } from "./outlook";
+export { OutlookClient } from "./outlook";

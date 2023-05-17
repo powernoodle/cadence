@@ -46,19 +46,17 @@ class Auth implements AuthenticationProvider {
       !this.credentials.expires_at ||
       isAfter(this.credentials.expires_at, new Date())
     ) {
-      this.credentials = await this.refreshTokens(this.credentials);
+      await this.refreshTokens();
     }
     return this.credentials.access_token;
   }
 
-  private async refreshTokens(credentials: any) {
+  private async refreshTokens() {
     const payload = {
       client_id: this.clientId,
       client_secret: this.clientSecret,
-      refresh_token: credentials.refresh_token,
-      // redirect_uri: REDIRECT_URI,
+      refresh_token: this.credentials.refresh_token,
       grant_type: "refresh_token",
-      // scope: credentials.scope,
     };
     const body = new URLSearchParams(payload);
     const tokenResponse = await fetch(
@@ -73,24 +71,15 @@ class Auth implements AuthenticationProvider {
     );
 
     const data = await tokenResponse.json();
-
     if (!tokenResponse.ok) {
       console.error(data);
       throw Error("Failed to refresh token");
     }
-    const newCreds = {
-      ...credentials,
-      ...data,
-    };
-    await this.updateCredentials(newCreds);
-    return newCreds;
+    this.credentials = data;
+
+    await this.updateCredentials(this.credentials);
   }
 }
-
-type OutlookCredentials = {
-  access_token: string;
-  refresh_token: string;
-};
 
 export class OutlookClient extends CalendarClient {
   private client: Client;
@@ -98,7 +87,7 @@ export class OutlookClient extends CalendarClient {
   public constructor(
     clientId: string,
     clientSecret: string,
-    credentials: OutlookCredentials,
+    credentials: any,
     updateCredentials: UpdateCredentials
   ) {
     super();

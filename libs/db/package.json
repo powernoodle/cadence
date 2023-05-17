@@ -6,7 +6,8 @@
   "scripts": {
     "start": "../../source-env.sh && supabase start",
     "stop": "../../source-env.sh && supabase stop",
-    "gen-types": "mkdir -p dist && supabase gen types typescript --local > dist/types.ts",
+    "build": "mkdir -p dist && tsc --build",
+    "gen-types": "mkdir -p src && supabase gen types typescript --local > src/types.ts",
     "supabase": "supabase",
     "reset": "supabase db reset",
     "diff-remote": "supabase db diff --linked | supabase migration new init",

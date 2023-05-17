@@ -1,6 +1,11 @@
 import { Event } from "./event";
 
-export type UpdateCredentials = (credentials: any) => Promise<void>;
+export type Credentials = {
+  access_token: string;
+  refresh_token: string;
+};
+
+export type UpdateCredentials = (credentials: Credentials) => Promise<void>;
 
 export abstract class CalendarClient {
   public abstract getEvents(

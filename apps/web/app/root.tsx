@@ -14,8 +14,8 @@ import { useEffect, useState } from "react";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
 import {
-  createServerClient,
   createBrowserClient,
+  createServerClient,
 } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 import { User } from "@supabase/auth-helpers-remix";
@@ -42,7 +42,9 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
-  console.dir(session);
+
+  console.log(session?.provider_token);
+  console.log(session?.provider_refresh_token);
 
   return json(
     {
@@ -65,7 +67,9 @@ export default function App() {
   const { revalidate } = useRevalidator();
 
   const [supabase] = useState(() =>
-    createBrowserClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
+    createBrowserClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+      auth: { flowType: "pkce" },
+    })
   );
   const [user, setUser] = useState<User | null>(null);
 
@@ -90,8 +94,9 @@ export default function App() {
         event !== "INITIAL_SESSION" &&
         session?.access_token !== serverAccessToken
       ) {
+        console.log("revalidate?");
         // server and client are out of sync.
-        revalidate();
+        // revalidate();
       }
     });
 

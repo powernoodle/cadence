@@ -15,6 +15,7 @@ export default function Login() {
         queryParams: {
           access_type: "offline",
           prompt: "consent select_account",
+          redirect_uri: `${location.origin}/login/callback`,
         },
       },
     });

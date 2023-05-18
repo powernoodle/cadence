@@ -6,6 +6,7 @@
   "scripts": {
     "start": "../../source-env.sh && supabase start",
     "stop": "../../source-env.sh && supabase stop",
+    "restart": "pnpm run stop && pnpm run start",
     "build": "mkdir -p dist && tsc --build",
     "gen-types": "mkdir -p src && supabase gen types typescript --local > src/types.ts",
     "supabase": "supabase",
@@ -17,6 +18,6 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
-    "supabase": "^1.54.0"
+    "supabase": "^1.61.0"
   }
 }

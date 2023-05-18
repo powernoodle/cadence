@@ -12,13 +12,13 @@ import {
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { useLoaderData, useRevalidator } from "@remix-run/react";
-import { json } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
+import { redirect, json } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
 import {
+  User,
   createBrowserClient,
   createServerClient,
 } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
-import { User } from "@supabase/auth-helpers-remix";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 export type SupabaseOutletContext = {
@@ -42,11 +42,20 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const url = new URL(request.url);
+  if (!session && url.pathname !== "/login") {
+    return redirect("/login");
+  }
 
   return json(
     {
       env,
       session,
+      user,
     },
     {
       headers: response.headers,
@@ -59,7 +68,9 @@ export const links: LinksFunction = () => [
 ];
 
 export default function App() {
-  const { env, session } = useLoaderData<typeof loader>();
+  const { env, session, user } = useLoaderData<typeof loader>();
+
+  const { revalidate } = useRevalidator();
 
   const [supabase] = useState(() =>
     createBrowserClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
@@ -67,18 +78,24 @@ export default function App() {
       auth: { flowType: "pkce" },
     })
   );
-  const [user, setUser] = useState<User | null>(null);
+
+  const serverAccessToken = session?.access_token;
 
   useEffect(() => {
-    if (!supabase) return;
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      switch (event) {
+        case "SIGNED_OUT":
+          revalidate();
+          break;
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
     };
-    getUser();
-  }, [supabase]);
+  }, [serverAccessToken, supabase]);
 
   return (
     <html lang="en">
@@ -89,7 +106,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet context={{ supabase, user, session }} />
+        <Outlet context={{ supabase, session, user }} />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

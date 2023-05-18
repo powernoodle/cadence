@@ -30,6 +30,7 @@ export default function Login() {
     await supabase.auth.signInWithOAuth({
       provider: "azure",
       options: {
+        redirectTo: `${location.origin}/login/callback`,
         scopes: [
           "openid",
           "email",

@@ -43,9 +43,6 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     data: { session },
   } = await supabase.auth.getSession();
 
-  console.log(session?.provider_token);
-  console.log(session?.provider_refresh_token);
-
   return json(
     {
       env,
@@ -64,10 +61,9 @@ export const links: LinksFunction = () => [
 export default function App() {
   const { env, session } = useLoaderData<typeof loader>();
 
-  const { revalidate } = useRevalidator();
-
   const [supabase] = useState(() =>
     createBrowserClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
+      // @ts-ignore
       auth: { flowType: "pkce" },
     })
   );
@@ -84,27 +80,6 @@ export default function App() {
     getUser();
   }, [supabase]);
 
-  const serverAccessToken = session?.access_token;
-
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (
-        event !== "INITIAL_SESSION" &&
-        session?.access_token !== serverAccessToken
-      ) {
-        console.log("revalidate?");
-        // server and client are out of sync.
-        // revalidate();
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [serverAccessToken, supabase]);
-
   return (
     <html lang="en">
       <head>
@@ -114,7 +89,7 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet context={{ supabase, user }} />
+        <Outlet context={{ supabase, user, session }} />
         <ScrollRestoration />
         <Scripts />
         <LiveReload />

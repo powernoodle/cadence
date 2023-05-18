@@ -4,26 +4,42 @@ import { redirect } from "@remix-run/cloudflare";
 import { createServerClient } from "@supabase/auth-helpers-remix";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
-  const env = {
-    SUPABASE_URL: context.SUPABASE_URL! as string,
-    SUPABASE_ANON_KEY: context.SUPABASE_ANON_KEY! as string,
-  };
-
   const response = new Response();
 
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   if (typeof code !== "string") return redirect("/login");
 
-  // exchange the auth code for user session
-  const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
-    request,
-    response,
-  });
-  const { data } = await supabase.auth.exchangeCodeForSession(code);
+  const supabaseAdmin = createServerClient(
+    context.SUPABASE_URL as string,
+    context.SUPABASE_SERVICE_KEY as string,
+    {
+      request,
+      response,
+    }
+  );
+  const { data } = await supabaseAdmin.auth.exchangeCodeForSession(code);
 
-  console.log(data?.session?.provider_token);
-  console.log(data?.session?.provider_refresh_token);
+  const credentials = {
+    auth_token: data?.session?.provider_token,
+    refresh_token: data?.session?.provider_refresh_token,
+  };
+  if (!credentials.auth_token || !credentials.refresh_token) {
+    throw new Error("Missing credentials");
+  }
+  const provider =
+    data?.session?.user?.app_metadata?.provider === "google"
+      ? "google"
+      : "azure";
+  const email = data?.session?.user?.email;
+  if (!email) {
+    throw new Error("Missing email");
+  }
+  await supabaseAdmin
+    .from("account")
+    .update({ credentials })
+    .eq("provider", provider)
+    .eq("email", email);
 
   return redirect("/", {
     status: 303,

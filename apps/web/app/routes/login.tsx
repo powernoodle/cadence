@@ -5,9 +5,10 @@ export default function Login() {
   const { supabase, user } = useOutletContext<SupabaseOutletContext>();
 
   const signInWithGoogle = async () => {
-    const { data } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
+        redirectTo: `${location.origin}/login/callback`,
         scopes: [
           "https://www.googleapis.com/auth/calendar.readonly",
           "https://www.googleapis.com/auth/calendar.events.readonly",
@@ -21,7 +22,7 @@ export default function Login() {
   };
 
   async function signInWithAzure() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
+    await supabase.auth.signInWithOAuth({
       provider: "azure",
       options: {
         scopes: [

@@ -10,8 +10,7 @@
     "strict": true,
     "strictNullChecks": true,
     "allowJs": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": "."
+    "forceConsistentCasingInFileNames": true
   },
   "exclude": ["node_modules", "**/node_modules", "**/build", "**/dist"]
 }

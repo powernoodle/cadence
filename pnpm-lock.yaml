@@ -9,14 +9,14 @@ importers:
         version: 3.0.0-next.13
       miniflare:
         specifier: ^2.13.0
-        version: 2.14.0
+        version: 2.13.0
     devDependencies:
       '@jest/globals':
         specifier: ^29.5.0
         version: 29.5.0
       jest:
         specifier: ^29.5.0
-        version: 29.5.0(@types/node@20.1.6)(ts-node@10.9.1)
+        version: 29.5.0(@types/node@20.2.1)(ts-node@10.9.1)
       nx:
         specifier: 16.0.1
         version: 16.0.1
@@ -28,7 +28,10 @@ importers:
         version: 29.1.0(@babel/core@7.21.8)(esbuild@0.16.3)(jest@29.5.0)(typescript@5.0.4)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.1(@types/node@20.1.6)(typescript@5.0.4)
+        version: 10.9.1(@types/node@20.2.1)(typescript@5.0.4)
+      typescript:
+        specifier: ^5.0.4
+        version: 5.0.4
       wrangler:
         specifier: ^2.19.0
         version: 2.19.0
@@ -68,13 +71,13 @@ importers:
         version: 1.16.0(@cloudflare/workers-types@3.19.0)
       '@remix-run/css-bundle':
         specifier: ^1.16.0
-        version: 1.16.0(@types/node@20.1.6)(ts-node@10.9.1)
+        version: 1.16.0(@types/node@20.2.1)(ts-node@10.9.1)
       '@remix-run/react':
         specifier: ^1.16.0
         version: 1.16.0(react-dom@18.2.0)(react@18.2.0)
       '@supabase/auth-helpers-remix':
-        specifier: ^0.1.9
-        version: 0.1.9(@supabase/supabase-js@2.21.0)
+        specifier: ^0.2.0-next.3
+        version: 0.2.0-next.3(@supabase/supabase-js@2.21.0)
       '@supabase/supabase-js':
         specifier: ^2.21.0
         version: 2.21.0
@@ -93,7 +96,7 @@ importers:
         version: 3.19.0
       '@remix-run/dev':
         specifier: ^1.16.0
-        version: 1.16.0(@types/node@20.1.6)(ts-node@10.9.1)
+        version: 1.16.0(@types/node@20.2.1)(ts-node@10.9.1)
       '@remix-run/eslint-config':
         specifier: ^1.16.0
         version: 1.16.0(eslint@8.38.0)(jest@29.5.0)(react@18.2.0)(typescript@5.0.4)
@@ -140,15 +143,22 @@ importers:
       '@cadence/cal':
         specifier: workspace:^
         version: link:../cal
+      '@cadence/db':
+        specifier: workspace:*
+        version: link:../db
       '@supabase/supabase-js':
         specifier: ^2.21.0
         version: 2.21.0
+    devDependencies:
+      dotenv:
+        specifier: ^16.0.3
+        version: 16.0.3
 
   libs/db:
     devDependencies:
       supabase:
-        specifier: ^1.54.0
-        version: 1.54.0
+        specifier: ^1.61.0
+        version: 1.61.0
 
 packages:
 
@@ -2341,18 +2351,6 @@ packages:
       '@miniflare/shared': 2.13.0
       http-cache-semantics: 4.1.1
       undici: 5.20.0
-    dev: true
-
-  /@miniflare/cache@2.14.0:
-    resolution: {integrity: sha512-0mz0OCzTegiX75uMURLJpDo3DaOCSx9M0gv7NMFWDbK/XrvjoENiBZiKu98UBM5fts0qtK19a+MfB4aT0uBCFg==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-      http-cache-semantics: 4.1.1
-      undici: 5.20.0
-    dev: false
-    optional: true
 
   /@miniflare/cli-parser@2.13.0:
     resolution: {integrity: sha512-Nx1PIfuMZ3mK9Dg/JojWZAjHR16h1pcdCFSqYln/ME7y5ifx+P1E5UkShWUQ1cBlibNaltjbJ2n/7stSAsIGPQ==}
@@ -2360,16 +2358,6 @@ packages:
     dependencies:
       '@miniflare/shared': 2.13.0
       kleur: 4.1.5
-    dev: true
-
-  /@miniflare/cli-parser@2.14.0:
-    resolution: {integrity: sha512-6Wb0jTMqwI7GRGAhz9WOF8AONUsXXPmwu+Qhg+tnRWtQpJ3DYd5dku1N04L9L1R7np/mD8RrycLyCdg3hLZ3aA==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/shared': 2.14.0
-      kleur: 4.1.5
-    dev: false
-    optional: true
 
   /@miniflare/core@2.13.0:
     resolution: {integrity: sha512-YJ/C0J3k+7xn4gvlMpvePnM3xC8nOnkweW96cc0IA8kJ1JSmScOO2tZ7rrU1RyDgp6StkAtQBw4yC0wYeFycBw==}
@@ -2385,24 +2373,6 @@ packages:
       set-cookie-parser: 2.6.0
       undici: 5.20.0
       urlpattern-polyfill: 4.0.3
-    dev: true
-
-  /@miniflare/core@2.14.0:
-    resolution: {integrity: sha512-BjmV/ZDwsKvXnJntYHt3AQgzVKp/5ZzWPpYWoOnUSNxq6nnRCQyvFvjvBZKnhubcmJCLSqegvz0yHejMA90CTA==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@iarna/toml': 2.2.5
-      '@miniflare/queues': 2.14.0
-      '@miniflare/shared': 2.14.0
-      '@miniflare/watcher': 2.14.0
-      busboy: 1.6.0
-      dotenv: 10.0.0
-      kleur: 4.1.5
-      set-cookie-parser: 2.6.0
-      undici: 5.20.0
-      urlpattern-polyfill: 4.0.3
-    dev: false
-    optional: true
 
   /@miniflare/d1@2.13.0:
     resolution: {integrity: sha512-OslqjO8iTcvzyrC0spByftMboRmHJEyHyTHnlKkjWDGdQQztEOjso2Xj+3I4SZIeUYvbzDRhKLS2QXI9a8LS5A==}
@@ -2410,16 +2380,6 @@ packages:
     dependencies:
       '@miniflare/core': 2.13.0
       '@miniflare/shared': 2.13.0
-    dev: true
-
-  /@miniflare/d1@2.14.0:
-    resolution: {integrity: sha512-9YoeLAkZuWGAu9BMsoctHoMue0xHzJYZigAJWGvWrqSFT1gBaT+RlUefQCHXggi8P7sOJ1+BKlsWAhkB5wfMWQ==}
-    engines: {node: '>=16.7'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/durable-objects@2.13.0:
     resolution: {integrity: sha512-CRGVBPO9vY4Fc3aV+pdPRVVeYIt64vQqvw+BJbyW+TQtqVP2CGQeziJGnCfcONNNKyooZxGyUkHewUypyH+Qhg==}
@@ -2429,18 +2389,6 @@ packages:
       '@miniflare/shared': 2.13.0
       '@miniflare/storage-memory': 2.13.0
       undici: 5.20.0
-    dev: true
-
-  /@miniflare/durable-objects@2.14.0:
-    resolution: {integrity: sha512-P8eh1P62BPGpj+MCb1i1lj7Tlt/G3BMmnxHp9duyb0Wro/ILVGPQskZl+iq7DHq1w3C+n0+6/E1B44ff+qn0Mw==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-      '@miniflare/storage-memory': 2.14.0
-      undici: 5.20.0
-    dev: false
-    optional: true
 
   /@miniflare/html-rewriter@2.13.0:
     resolution: {integrity: sha512-XhN7Icyzvtvu+o/A0hrnSiSmla78seCaNwQ9M1TDHxt352I/ahPX4wtPXs6GbKqY0/i+V6yoG2KGFRQ/j59cQQ==}
@@ -2450,18 +2398,6 @@ packages:
       '@miniflare/shared': 2.13.0
       html-rewriter-wasm: 0.4.1
       undici: 5.20.0
-    dev: true
-
-  /@miniflare/html-rewriter@2.14.0:
-    resolution: {integrity: sha512-7CJZk3xZkxK8tGNofnhgWcChZ8YLx6MhAdN2nn6ONSXrK/TevzEKdL8bnVv1OJ6J8Y23OxvfinOhufr33tMS8g==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-      html-rewriter-wasm: 0.4.1
-      undici: 5.20.0
-    dev: false
-    optional: true
 
   /@miniflare/http-server@2.13.0:
     resolution: {integrity: sha512-aMS/nUMTKP15hKnyZboeuWCiqmNrrCu+XRBY/TxDDl07iXcLpiHGf3oVv+yXxXkWlJHJVCbK7i/nXSNPllRMSw==}
@@ -2478,55 +2414,18 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    dev: true
-
-  /@miniflare/http-server@2.14.0:
-    resolution: {integrity: sha512-APaBlvGRAW+W18ph5ruPXX26/iKdByPz1tZH1OjPAKBDAiKFZSGek4QzUmQALBWLx5VMTMrt7QIe7KE4nM4sdw==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-      '@miniflare/web-sockets': 2.14.0
-      kleur: 4.1.5
-      selfsigned: 2.1.1
-      undici: 5.20.0
-      ws: 8.13.0
-      youch: 2.2.2
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-    optional: true
 
   /@miniflare/kv@2.13.0:
     resolution: {integrity: sha512-J0AS5x3g/YVOmHMxMAZs07nRXRvSo9jyuC0eikTBf+4AABvBIyvVYmdTjYNjCmr8O5smcfWBX5S27HelD3aAAQ==}
     engines: {node: '>=16.13'}
     dependencies:
       '@miniflare/shared': 2.13.0
-    dev: true
-
-  /@miniflare/kv@2.14.0:
-    resolution: {integrity: sha512-FHAnVjmhV/VHxgjNf2whraz+k7kfMKlfM+5gO8WT6HrOsWxSdx8OueWVScnOuuDkSeUg5Ctrf5SuztTV8Uy1cg==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/shared': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/queues@2.13.0:
     resolution: {integrity: sha512-Gf/a6M1mJL03iOvNqh3JNahcBfvEMPHnO28n0gkCoyYWGvddIr9lwCdFIa0qwNJsC1fIDRxhPg8PZ5cQLBMwRA==}
     engines: {node: '>=16.7'}
     dependencies:
       '@miniflare/shared': 2.13.0
-    dev: true
-
-  /@miniflare/queues@2.14.0:
-    resolution: {integrity: sha512-flS4MqlgBKyv6QBqKD0IofjmMDW9wP1prUNQy2wWPih9lA6bFKmml3VdFeDsPnWtE2J67K0vCTf5kj1Q0qdW1w==}
-    engines: {node: '>=16.7'}
-    dependencies:
-      '@miniflare/shared': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/r2@2.13.0:
     resolution: {integrity: sha512-/5k6GHOYMNV/oBtilV9HDXBkJUrx8oXVigG5vxbnzEGRXyVRmR+Glzu7mFT8JiE94XiEbXHk9Qvu1S5Dej3wBw==}
@@ -2534,32 +2433,12 @@ packages:
     dependencies:
       '@miniflare/shared': 2.13.0
       undici: 5.20.0
-    dev: true
-
-  /@miniflare/r2@2.14.0:
-    resolution: {integrity: sha512-+WJJP4J0QzY69HPrG6g5OyW23lJ02WHpHZirCxwPSz8CajooqZCJVx+qvUcNmU8MyKASbUZMWnH79LysuBh+jA==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-      undici: 5.20.0
-    dev: false
-    optional: true
 
   /@miniflare/runner-vm@2.13.0:
     resolution: {integrity: sha512-VmKtF2cA8HmTuLXor1THWY0v+DmaobPct63iLcgWIaUdP3MIvL+9X8HDXFAviCR7bCTe6MKxckHkaOj0IE0aJQ==}
     engines: {node: '>=16.13'}
     dependencies:
       '@miniflare/shared': 2.13.0
-    dev: true
-
-  /@miniflare/runner-vm@2.14.0:
-    resolution: {integrity: sha512-01CmNzv74u0RZgT/vjV/ggDzECXTG88ZJAKhXyhAx0s2DOLIXzsGHn6pUJIsfPCrtj8nfqtTCp1Vf0UMVWSpmw==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/shared': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/scheduler@2.13.0:
     resolution: {integrity: sha512-AOaQanoR4NjVEzVGWHnrL15A7aMx+d9AKLJhSDF7KaP+4NrT2Wo2BQuXCpn5oStx3itOdlQpMfqQ139e/I8WhQ==}
@@ -2568,17 +2447,6 @@ packages:
       '@miniflare/core': 2.13.0
       '@miniflare/shared': 2.13.0
       cron-schedule: 3.0.6
-    dev: true
-
-  /@miniflare/scheduler@2.14.0:
-    resolution: {integrity: sha512-/D28OeY/HxcOyY0rkPc2qU/wzxCcUv3/F7NRpgDix37sMkYjAAS51ehVIAkPwAdFEMdantcyVuHNQ2kO1xbT+Q==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-      cron-schedule: 3.0.6
-    dev: false
-    optional: true
 
   /@miniflare/shared@2.13.0:
     resolution: {integrity: sha512-m8YFQzKmbjberrV9hPzNcQjNCXxjTjXUpuNrIGjAJO7g+BDztUHaZbdd26H9maBDlkeiWxA3hf0mDyCT/6MCMA==}
@@ -2588,18 +2456,6 @@ packages:
       kleur: 4.1.5
       npx-import: 1.1.4
       picomatch: 2.3.1
-    dev: true
-
-  /@miniflare/shared@2.14.0:
-    resolution: {integrity: sha512-O0jAEdMkp8BzrdFCfMWZu76h4Cq+tt3/oDtcTFgzum3fRW5vUhIi/5f6bfndu6rkGbSlzxwor8CJWpzityXGug==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@types/better-sqlite3': 7.6.4
-      kleur: 4.1.5
-      npx-import: 1.1.4
-      picomatch: 2.3.1
-    dev: false
-    optional: true
 
   /@miniflare/sites@2.13.0:
     resolution: {integrity: sha512-/tuzIu00o6CF2tkSv01q02MgEShXBSKx85h9jwWvc+6u7prGacAOer0FA1YNRFbE+t9QIfutAkoPGMA9zYf8+Q==}
@@ -2608,17 +2464,6 @@ packages:
       '@miniflare/kv': 2.13.0
       '@miniflare/shared': 2.13.0
       '@miniflare/storage-file': 2.13.0
-    dev: true
-
-  /@miniflare/sites@2.14.0:
-    resolution: {integrity: sha512-qI8MFZpD1NV+g+HQ/qheDVwscKzwG58J+kAVTU/1fgub2lMLsxhE3Mmbi5AIpyIiJ7Q5Sezqga234CEkHkS7dA==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/kv': 2.14.0
-      '@miniflare/shared': 2.14.0
-      '@miniflare/storage-file': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/storage-file@2.13.0:
     resolution: {integrity: sha512-LuAeAAY5046rq5U1eFLVkz+ppiFEWytWacpkQw92DvVKFFquZcXSj6WPxZF4rSs23WDk+rdcwuLekbb52aDR7A==}
@@ -2626,31 +2471,12 @@ packages:
     dependencies:
       '@miniflare/shared': 2.13.0
       '@miniflare/storage-memory': 2.13.0
-    dev: true
-
-  /@miniflare/storage-file@2.14.0:
-    resolution: {integrity: sha512-Ps0wHhTO+ie33a58efI0p/ppFXSjlbYmykQXfYtMeVLD60CKl+4Lxor0+gD6uYDFbhMWL5/GMDvyr4AM87FA+Q==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/shared': 2.14.0
-      '@miniflare/storage-memory': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/storage-memory@2.13.0:
     resolution: {integrity: sha512-FnkYcBNXa/ym1ksNilNZycg9WYYKo6cWKplVBeSthRon3e8QY6t3n7/XRseBUo7O6mhDybVTy4wNCP1R2nBiEw==}
     engines: {node: '>=16.13'}
     dependencies:
       '@miniflare/shared': 2.13.0
-    dev: true
-
-  /@miniflare/storage-memory@2.14.0:
-    resolution: {integrity: sha512-5aFjEiTSNrHJ+iAiGMCA/TVPnNMrnokG5r0vKrwj4knbf8pisgfP04x18zCgOlG7kaIWNmqdO/vtVT5BIioiSQ==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/shared': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/tre@3.0.0-next.13:
     resolution: {integrity: sha512-FogtwZUmUqico28dTdrFd2BF2wyMMheUw3MI9MDSSYNqRUGiNw8cJopHRMjo7OoO3dq6F5D01HwqMMZvSA1ZFA==}
@@ -2685,15 +2511,6 @@ packages:
     engines: {node: '>=16.13'}
     dependencies:
       '@miniflare/shared': 2.13.0
-    dev: true
-
-  /@miniflare/watcher@2.14.0:
-    resolution: {integrity: sha512-O8Abg2eHpGmcZb8WyUaA6Av1Mqt5bSrorzz4CrWwsvJHBdekZPIX0GihC9vn327d/1pKRs81YTiSAfBoSZpVIw==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/shared': 2.14.0
-    dev: false
-    optional: true
 
   /@miniflare/web-sockets@2.13.0:
     resolution: {integrity: sha512-+U2/HCf+BetRIgjAnNQjkuN6UeAjQmXifhQC+7CCaX834XJhrKXoR6z2xr2xkg1qj0qQs4D2jWG0KzrO5OUpug==}
@@ -2706,21 +2523,6 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    dev: true
-
-  /@miniflare/web-sockets@2.14.0:
-    resolution: {integrity: sha512-lB1CB4rBq0mbCuh55WgIEH4L3c4/i4MNDBfrQL+6r+wGcr/BJUqF8BHpsfAt5yHWUJVtK5mlMeesS/xpg4Ao1w==}
-    engines: {node: '>=16.13'}
-    dependencies:
-      '@miniflare/core': 2.14.0
-      '@miniflare/shared': 2.14.0
-      undici: 5.20.0
-      ws: 8.13.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-    optional: true
 
   /@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1:
     resolution: {integrity: sha512-54/JRvkLIzzDWshCWfuhadfrfZVPiElY8Fcgmg1HroEly/EDSszzhBAsarCux+D/kOslTRquNzuyGSmUSTTHGg==}
@@ -2908,10 +2710,10 @@ packages:
       '@remix-run/server-runtime': 1.16.0
     dev: false
 
-  /@remix-run/css-bundle@1.16.0(@types/node@20.1.6)(ts-node@10.9.1):
+  /@remix-run/css-bundle@1.16.0(@types/node@20.2.1)(ts-node@10.9.1):
     resolution: {integrity: sha512-N8CgYGJNpdtyd4enuY0UIje+rHvDEPCxXnkAJ6ggTvoSM4c919e5LXUWM5o67NAbdBAYQfqQO/EknL3D/dSw7w==}
     dependencies:
-      '@remix-run/dev': 1.16.0(@types/node@20.1.6)(ts-node@10.9.1)
+      '@remix-run/dev': 1.16.0(@types/node@20.2.1)(ts-node@10.9.1)
     transitivePeerDependencies:
       - '@remix-run/serve'
       - '@types/node'
@@ -2928,7 +2730,7 @@ packages:
       - utf-8-validate
     dev: false
 
-  /@remix-run/dev@1.16.0(@types/node@20.1.6)(ts-node@10.9.1):
+  /@remix-run/dev@1.16.0(@types/node@20.2.1)(ts-node@10.9.1):
     resolution: {integrity: sha512-mA5Wv8sOgN3pSZvjn22aEu+O+uz2/qkgRvB5RnXWncPtvOq8dMmGH7J9kvKO/iOF8btK5FaudymK+AjM6Yifag==}
     engines: {node: '>=14'}
     hasBin: true
@@ -2949,7 +2751,7 @@ packages:
       '@babel/types': 7.21.5
       '@npmcli/package-json': 2.0.0
       '@remix-run/server-runtime': 1.16.0
-      '@vanilla-extract/integration': 6.2.1(@types/node@20.1.6)
+      '@vanilla-extract/integration': 6.2.1(@types/node@20.2.1)
       arg: 5.0.2
       cacache: 15.3.0
       chalk: 4.1.2
@@ -3098,19 +2900,19 @@ packages:
       '@sinonjs/commons': 3.0.0
     dev: true
 
-  /@supabase/auth-helpers-remix@0.1.9(@supabase/supabase-js@2.21.0):
-    resolution: {integrity: sha512-g1FP3I+RMbjYhhyGWabOkUyj7iQk9IjGWk/KCqf2uFLrvVapgJGs9Loh8Y/QF8nNXqLjiSCdzHcbP2RrUyTcGg==}
+  /@supabase/auth-helpers-remix@0.2.0-next.3(@supabase/supabase-js@2.21.0):
+    resolution: {integrity: sha512-+p7ocoJPHy1aNDqN7Ozs2WTotODkeThcsRsVDuIdzpP3IRFcN/sUaPR2vlxbQkgp+wnP+FEaqVzC4dvhaW7pkw==}
     peerDependencies:
-      '@supabase/supabase-js': ^2.0.4
+      '@supabase/supabase-js': ^2.19.0
     dependencies:
-      '@supabase/auth-helpers-shared': 0.3.4(@supabase/supabase-js@2.21.0)
+      '@supabase/auth-helpers-shared': 0.4.0-next.3(@supabase/supabase-js@2.21.0)
       '@supabase/supabase-js': 2.21.0
     dev: false
 
-  /@supabase/auth-helpers-shared@0.3.4(@supabase/supabase-js@2.21.0):
-    resolution: {integrity: sha512-8I3D0SPHHexkFTSfPg0nZgJSVazWoB3tZDpT6IjRv6w89vDMUzO99Lit4H9anVLF4teW8c/nJJxawDNbDlgbgg==}
+  /@supabase/auth-helpers-shared@0.4.0-next.3(@supabase/supabase-js@2.21.0):
+    resolution: {integrity: sha512-ELvEbYPJdTlwvqXsHkRN8ADcRe1IQxHt+UNqxbV2SKIpJCieQ4BMsgUVI/w+e3gMQHRbydk0PaJpOa9aStzMyg==}
     peerDependencies:
-      '@supabase/supabase-js': ^2.0.4
+      '@supabase/supabase-js': ^2.19.0
     dependencies:
       '@supabase/supabase-js': 2.21.0
       jose: 4.14.4
@@ -3253,14 +3055,14 @@ packages:
   /@types/better-sqlite3@7.6.4:
     resolution: {integrity: sha512-dzrRZCYPXIXfSR1/surNbJ/grU3scTaygS0OMzjlGf71i9sc2fGyHPXXiXmEvNIoE0cGwsanEFMVJxPXmco9Eg==}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
 
   /@types/cacheable-request@6.0.3:
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
     dependencies:
       '@types/http-cache-semantics': 4.0.1
       '@types/keyv': 3.1.4
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
       '@types/responselike': 1.0.0
 
   /@types/debug@4.1.7:
@@ -3285,7 +3087,7 @@ packages:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
 
   /@types/graceful-fs@4.1.6:
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
@@ -3328,7 +3130,7 @@ packages:
   /@types/keyv@3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
 
   /@types/mdast@3.0.11:
     resolution: {integrity: sha512-Y/uImid8aAwrEA24/1tcRZwpxX3pIFTSilcNDKSPn+Y2iDywSEachzRuvgAYYLR3wpGXAsMbv5lvKLDZLeYPAw==}
@@ -3347,8 +3149,8 @@ packages:
   /@types/node@20.1.0:
     resolution: {integrity: sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==}
 
-  /@types/node@20.1.6:
-    resolution: {integrity: sha512-9e//ooaqu7Om75fPaDW8ypEVaF6S2cbkm1enGx0PCqeQsBZ6qL4Id7jZl3GcL7Z/85bE5mi3QtwBgtMlcXV3Kg==}
+  /@types/node@20.2.1:
+    resolution: {integrity: sha512-DqJociPbZP1lbZ5SQPk4oag6W7AyaGMO6gSfRwq3PWl4PXTwJpRQJhDq4W0kzrg3w6tJ1SwlvGZ5uKFHY13LIg==}
 
   /@types/phoenix@1.5.6:
     resolution: {integrity: sha512-e7jZ6I9uyRGsg7MNwQcarmBvRlbGb9DibbocE9crVnxqsy6C23RMxLWbJ2CQ3vgCW7taoL1L+F02EcjA6ld7XA==}
@@ -3379,7 +3181,7 @@ packages:
   /@types/responselike@1.0.0:
     resolution: {integrity: sha512-85Y2BjiufFzaMIlvJDvTTB8Fxl2xfLo4HgmHzVBz08w4wDePCTjYw66PdrolO0kzli3yam/YCgRufyo1DdQVTA==}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
 
   /@types/scheduler@0.16.3:
     resolution: {integrity: sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==}
@@ -3567,7 +3369,7 @@ packages:
       media-query-parser: 2.0.2
       outdent: 0.8.0
 
-  /@vanilla-extract/integration@6.2.1(@types/node@20.1.6):
+  /@vanilla-extract/integration@6.2.1(@types/node@20.2.1):
     resolution: {integrity: sha512-+xYJz07G7TFAMZGrOqArOsURG+xcYvqctujEkANjw2McCBvGEK505RxQqOuNiA9Mi9hgGdNp2JedSa94f3eoLg==}
     dependencies:
       '@babel/core': 7.21.8
@@ -3581,8 +3383,8 @@ packages:
       lodash: 4.17.21
       mlly: 1.2.0
       outdent: 0.8.0
-      vite: 4.3.4(@types/node@20.1.6)
-      vite-node: 0.28.5(@types/node@20.1.6)
+      vite: 4.3.4(@types/node@20.2.1)
+      vite-node: 0.28.5(@types/node@20.2.1)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -4115,7 +3917,7 @@ packages:
   /builtins@5.0.1:
     resolution: {integrity: sha512-qwVpFEHNfhYJIzNRBvd2C1kyo6jz3ZSMPyyuR47OPdiKWlbYnZNyDWuyR175qDnAJLiCo5fBBqPb3RiXgWlkOQ==}
     dependencies:
-      semver: 7.5.0
+      semver: 7.5.1
 
   /bundle-name@3.0.0:
     resolution: {integrity: sha512-PKA4BeSvBpQKQ8iPOGCSiell+N8P+Tf1DlwqmYhpe2gAhKPHn8EYOxVT+ShuGmhg8lN8XiSlS80yiExKXrURlw==}
@@ -4158,7 +3960,7 @@ packages:
       promise-inflight: 1.0.1
       rimraf: 3.0.2
       ssri: 8.0.1
-      tar: 6.1.14
+      tar: 6.1.15
       unique-filename: 1.1.1
     transitivePeerDependencies:
       - bluebird
@@ -5148,7 +4950,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.59.2(@typescript-eslint/parser@5.59.2)(eslint@8.38.0)(typescript@5.0.4)
       '@typescript-eslint/utils': 5.59.2(eslint@8.38.0)(typescript@5.0.4)
       eslint: 8.38.0
-      jest: 29.5.0(@types/node@20.1.6)(ts-node@10.9.1)
+      jest: 29.5.0(@types/node@20.2.1)(ts-node@10.9.1)
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -6690,7 +6492,7 @@ packages:
       - supports-color
     dev: true
 
-  /jest-cli@29.5.0(@types/node@20.1.6)(ts-node@10.9.1):
+  /jest-cli@29.5.0(@types/node@20.2.1)(ts-node@10.9.1):
     resolution: {integrity: sha512-L1KcP1l4HtfwdxXNFCL5bmUbLQiKrakMUriBEcc1Vfz6gx31ORKdreuWvmQVBit+1ss9NNR3yxjwfwzZNdQXJw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     hasBin: true
@@ -6707,7 +6509,7 @@ packages:
       exit: 0.1.2
       graceful-fs: 4.2.11
       import-local: 3.1.0
-      jest-config: 29.5.0(@types/node@20.1.6)(ts-node@10.9.1)
+      jest-config: 29.5.0(@types/node@20.2.1)(ts-node@10.9.1)
       jest-util: 29.5.0
       jest-validate: 29.5.0
       prompts: 2.4.2
@@ -6753,12 +6555,12 @@ packages:
       pretty-format: 29.5.0
       slash: 3.0.0
       strip-json-comments: 3.1.1
-      ts-node: 10.9.1(@types/node@20.1.6)(typescript@5.0.4)
+      ts-node: 10.9.1(@types/node@20.2.1)(typescript@5.0.4)
     transitivePeerDependencies:
       - supports-color
     dev: true
 
-  /jest-config@29.5.0(@types/node@20.1.6)(ts-node@10.9.1):
+  /jest-config@29.5.0(@types/node@20.2.1)(ts-node@10.9.1):
     resolution: {integrity: sha512-kvDUKBnNJPNBmFFOhDbm59iu1Fii1Q6SxyhXfvylq3UTHbg6o7j/g8k2dZyXWLvfdKB1vAPxNZnMgtKJcmu3kA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     peerDependencies:
@@ -6773,7 +6575,7 @@ packages:
       '@babel/core': 7.21.8
       '@jest/test-sequencer': 29.5.0
       '@jest/types': 29.5.0
-      '@types/node': 20.1.6
+      '@types/node': 20.2.1
       babel-jest: 29.5.0(@babel/core@7.21.8)
       chalk: 4.1.2
       ci-info: 3.8.0
@@ -6793,7 +6595,7 @@ packages:
       pretty-format: 29.5.0
       slash: 3.0.0
       strip-json-comments: 3.1.1
-      ts-node: 10.9.1(@types/node@20.1.6)(typescript@5.0.4)
+      ts-node: 10.9.1(@types/node@20.2.1)(typescript@5.0.4)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -7084,7 +6886,7 @@ packages:
       supports-color: 8.1.1
     dev: true
 
-  /jest@29.5.0(@types/node@20.1.6)(ts-node@10.9.1):
+  /jest@29.5.0(@types/node@20.2.1)(ts-node@10.9.1):
     resolution: {integrity: sha512-juMg3he2uru1QoXX078zTa7pO85QyB9xajZc6bU+d9yEGwrKX6+vGmJQ3UdVZsvTEUARIdObzH68QItim6OSSQ==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     hasBin: true
@@ -7097,7 +6899,7 @@ packages:
       '@jest/core': 29.5.0(ts-node@10.9.1)
       '@jest/types': 29.5.0
       import-local: 3.1.0
-      jest-cli: 29.5.0(@types/node@20.1.6)(ts-node@10.9.1)
+      jest-cli: 29.5.0(@types/node@20.2.1)(ts-node@10.9.1)
     transitivePeerDependencies:
       - '@types/node'
       - supports-color
@@ -7827,6 +7629,7 @@ packages:
     resolution: {integrity: sha512-ayNhVa4a6bZiOuHtrPmOt4BCYcmW1fBQ/+qGL85smq1m2OBBm3aUs6f4ISf38xH8tk+qewgmAywetyVtn6KHPw==}
     engines: {node: '>=16.13'}
     hasBin: true
+    requiresBuild: true
     peerDependencies:
       '@miniflare/storage-redis': 2.13.0
       cron-schedule: ^3.0.4
@@ -7863,51 +7666,6 @@ packages:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
-    dev: true
-
-  /miniflare@2.14.0:
-    resolution: {integrity: sha512-xBOUccq1dm5riOfaqoMWCC1uCqT71EW0x4akQQuGYgm+Q44N1ETEmzXSbFVroJgOHe8Hwpqxo2D7OOFwqFevew==}
-    engines: {node: '>=16.13'}
-    hasBin: true
-    requiresBuild: true
-    peerDependencies:
-      '@miniflare/storage-redis': 2.14.0
-      cron-schedule: ^3.0.4
-      ioredis: ^4.27.9
-    peerDependenciesMeta:
-      '@miniflare/storage-redis':
-        optional: true
-      cron-schedule:
-        optional: true
-      ioredis:
-        optional: true
-    dependencies:
-      '@miniflare/cache': 2.14.0
-      '@miniflare/cli-parser': 2.14.0
-      '@miniflare/core': 2.14.0
-      '@miniflare/d1': 2.14.0
-      '@miniflare/durable-objects': 2.14.0
-      '@miniflare/html-rewriter': 2.14.0
-      '@miniflare/http-server': 2.14.0
-      '@miniflare/kv': 2.14.0
-      '@miniflare/queues': 2.14.0
-      '@miniflare/r2': 2.14.0
-      '@miniflare/runner-vm': 2.14.0
-      '@miniflare/scheduler': 2.14.0
-      '@miniflare/shared': 2.14.0
-      '@miniflare/sites': 2.14.0
-      '@miniflare/storage-file': 2.14.0
-      '@miniflare/storage-memory': 2.14.0
-      '@miniflare/web-sockets': 2.14.0
-      kleur: 4.1.5
-      semiver: 1.1.0
-      source-map-support: 0.5.21
-      undici: 5.20.0
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
-    dev: false
-    optional: true
 
   /minimatch@3.0.5:
     resolution: {integrity: sha512-tUpxzX0VAzJHjLu0xUfFv1gwVp9ba3IOuRAVH2EGuRW8a5emA2FlACLqiT/lDVtS1W+TGNwqz3sWaNyLgDJWuw==}
@@ -8161,7 +7919,7 @@ packages:
     dependencies:
       execa: 6.1.0
       parse-package-name: 1.0.0
-      semver: 7.5.0
+      semver: 7.5.1
       validate-npm-package-name: 4.0.0
 
   /nx-cloud@16.0.5:
@@ -8628,7 +8386,7 @@ packages:
     dependencies:
       lilconfig: 2.1.0
       postcss: 8.4.23
-      ts-node: 10.9.1(@types/node@20.1.6)(typescript@5.0.4)
+      ts-node: 10.9.1(@types/node@20.2.1)(typescript@5.0.4)
       yaml: 2.2.2
 
   /postcss-modules-extract-imports@3.0.0(postcss@8.4.23):
@@ -9281,6 +9039,13 @@ packages:
     dependencies:
       lru-cache: 6.0.0
 
+  /semver@7.5.1:
+    resolution: {integrity: sha512-Wvss5ivl8TMRZXXESstBA4uR5iXgEN/VC5/sOcuXdVLzcdkz4HWetIoRfG5gb5X+ij/G9rw9YoGn3QoQ8OCSpw==}
+    engines: {node: '>=10'}
+    hasBin: true
+    dependencies:
+      lru-cache: 6.0.0
+
   /send@0.18.0:
     resolution: {integrity: sha512-qqWzuOjSFOuqPjFe4NOsMLafToQQwBSOEpS+FwEt3A2V3vKubTquT3vmLTQpFgMXp8AlFWFuP1qKaJZOtPpVXg==}
     engines: {node: '>= 0.8.0'}
@@ -9662,8 +9427,8 @@ packages:
     dependencies:
       inline-style-parser: 0.1.1
 
-  /supabase@1.54.0:
-    resolution: {integrity: sha512-1pRWYKkV7WOkZuM88pWZ4vgc77WrQAaTD67mzdV4FNjaEG1JKQUbm9wdgRjjyB1+fI3zy9QKKsaRy/wa2GxMJg==}
+  /supabase@1.61.0:
+    resolution: {integrity: sha512-/HHsTpKxHvGToTfhKx8yLZTK8ggDcqOnZJK6xB/4s3XpaOYWBU4xAhmUHm2CgU60KbgDIvsDgheCBOT6T8C4pw==}
     hasBin: true
     requiresBuild: true
     dependencies:
@@ -9740,6 +9505,18 @@ packages:
 
   /tar@6.1.14:
     resolution: {integrity: sha512-piERznXu0U7/pW7cdSn7hjqySIVTYT6F76icmFk7ptU7dDYlXTm5r9A6K04R2vU3olYgoKeo1Cg3eeu5nhftAw==}
+    engines: {node: '>=10'}
+    dependencies:
+      chownr: 2.0.0
+      fs-minipass: 2.1.0
+      minipass: 5.0.0
+      minizlib: 2.1.2
+      mkdirp: 1.0.4
+      yallist: 4.0.0
+    dev: true
+
+  /tar@6.1.15:
+    resolution: {integrity: sha512-/zKt9UyngnxIT/EAGYuxaMYgOIJiP81ab9ZfkILq4oNLPFX50qyYmu7jRj9qeXoxmJHjGlbH0+cm2uy1WCs10A==}
     engines: {node: '>=10'}
     dependencies:
       chownr: 2.0.0
@@ -9841,7 +9618,7 @@ packages:
       bs-logger: 0.2.6
       esbuild: 0.16.3
       fast-json-stable-stringify: 2.1.0
-      jest: 29.5.0(@types/node@20.1.6)(ts-node@10.9.1)
+      jest: 29.5.0(@types/node@20.2.1)(ts-node@10.9.1)
       jest-util: 29.5.0
       json5: 2.2.3
       lodash.memoize: 4.1.2
@@ -9851,7 +9628,7 @@ packages:
       yargs-parser: 21.1.1
     dev: true
 
-  /ts-node@10.9.1(@types/node@20.1.6)(typescript@5.0.4):
+  /ts-node@10.9.1(@types/node@20.2.1)(typescript@5.0.4):
     resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
     hasBin: true
     peerDependencies:
@@ -9870,7 +9647,7 @@ packages:
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 20.1.6
+      '@types/node': 20.2.1
       acorn: 8.8.2
       acorn-walk: 8.2.0
       arg: 4.1.3
@@ -10211,7 +9988,7 @@ packages:
       unist-util-stringify-position: 3.0.3
       vfile-message: 3.1.4
 
-  /vite-node@0.28.5(@types/node@20.1.6):
+  /vite-node@0.28.5(@types/node@20.2.1):
     resolution: {integrity: sha512-LmXb9saMGlrMZbXTvOveJKwMTBTNUH66c8rJnQ0ZPNX+myPEol64+szRzXtV5ORb0Hb/91yq+/D3oERoyAt6LA==}
     engines: {node: '>=v14.16.0'}
     hasBin: true
@@ -10223,7 +10000,7 @@ packages:
       picocolors: 1.0.0
       source-map: 0.6.1
       source-map-support: 0.5.21
-      vite: 4.3.4(@types/node@20.1.6)
+      vite: 4.3.4(@types/node@20.2.1)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -10233,7 +10010,7 @@ packages:
       - supports-color
       - terser
 
-  /vite@4.3.4(@types/node@20.1.6):
+  /vite@4.3.4(@types/node@20.2.1):
     resolution: {integrity: sha512-f90aqGBoxSFxWph2b39ae2uHAxm5jFBBdnfueNxZAT1FTpM13ccFQExCaKbR2xFW5atowjleRniQ7onjJ22QEg==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
@@ -10258,7 +10035,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.1.6
+      '@types/node': 20.2.1
       esbuild: 0.17.18
       postcss: 8.4.23
       rollup: 3.21.3

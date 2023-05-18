@@ -2,3 +2,4 @@
 # For remote, Project Settings on see https://app.supabase.com/projects
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_KEY=

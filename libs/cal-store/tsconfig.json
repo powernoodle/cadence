@@ -9,7 +9,7 @@
     "target": "es2020",
     "preserveConstEnums": true,
     "sourceMap": true,
-    "module": "es2020",
+    "module": "esnext",
     "composite": true,
     "noEmit": false,
     "skipLibCheck": true

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "../../source-env.sh && supabase start",
     "stop": "../../source-env.sh && supabase stop",
-    "gen-types": "mkdir -p dist && supabase gen types typescript --local > dist/types.ts",
+    "restart": "pnpm run stop && pnpm run start",
+    "build": "mkdir -p dist && tsc --build",
+    "gen-types": "mkdir -p src && supabase gen types typescript --local > src/types.ts",
     "supabase": "supabase",
     "reset": "supabase db reset",
     "diff-remote": "supabase db diff --linked | supabase migration new init",
@@ -16,6 +18,6 @@
   "author": "",
   "license": "UNLICENSED",
   "devDependencies": {
-    "supabase": "^1.54.0"
+    "supabase": "^1.61.0"
   }
 }

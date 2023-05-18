@@ -27,27 +27,22 @@ function toGoogleDate(d: Date) {
   );
 }
 
-type GoogleCredentials = {
-  access_token: string;
-  refresh_token: string;
-};
-
 export class GoogleClient extends CalendarClient {
   private authClient?: Auth.OAuth2Client;
   private client?: calendar_v3.Calendar;
 
   public constructor(
-    private clientId: string,
-    private clientSecret: string,
-    public credentials: GoogleCredentials,
-    protected updateCredentials: UpdateCredentials
+    clientId: string,
+    clientSecret: string,
+    credentials: any,
+    updateCredentials: UpdateCredentials
   ) {
     super();
-    this.authClient = new google.auth.OAuth2(this.clientId, this.clientSecret);
-    this.authClient.setCredentials(this.credentials);
+    this.authClient = new google.auth.OAuth2(clientId, clientSecret);
+    this.authClient.setCredentials(credentials);
     this.client = google.calendar({ version: "v3", auth: this.authClient });
     this.authClient.on("tokens", async (tokens: any) => {
-      this.updateCredentials(tokens);
+      updateCredentials(tokens);
     });
   }
 

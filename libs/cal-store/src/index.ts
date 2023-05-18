@@ -13,44 +13,66 @@ export class CalendarStore {
   private supabase: SupabaseClient<Database>;
   private calendar?: CalendarClient;
 
-  public constructor(
+  public static async Create(
     supabaseUrl: string,
     supabaseKey: string,
-    private googleClientId: string,
-    private googleOauthSecret: string,
-    private outlookClientId: string,
-    private outlookOauthSecret: string,
+    googleClientId: string,
+    googleOauthSecret: string,
+    outlookClientId: string,
+    outlookOauthSecret: string,
+    accountId: number
+  ) {
+    const client = new CalendarStore(supabaseUrl, supabaseKey, accountId);
+    await client.init(
+      googleClientId,
+      googleOauthSecret,
+      outlookClientId,
+      outlookOauthSecret
+    );
+    return client;
+  }
+
+  private constructor(
+    supabaseUrl: string,
+    supabaseKey: string,
     public accountId: number
   ) {
     this.supabase = createClient<Database>(supabaseUrl, supabaseKey);
   }
 
-  private init(
-    provider: "google" | "azure",
-    access_token: string,
-    refresh_token: string
+  private async init(
+    googleClientId: string,
+    googleOauthSecret: string,
+    outlookClientId: string,
+    outlookOauthSecret: string
   ) {
+    const { provider, access_token, refresh_token } =
+      await this.loadCredentials();
     const credentials = { access_token, refresh_token };
     if (provider === "google") {
       this.calendar = new GoogleClient(
-        this.googleClientId,
-        this.googleOauthSecret,
+        googleClientId,
+        googleOauthSecret,
         credentials,
-        async (creds: any) => {}
+        async (creds: any) => {
+          await this.saveCredentials(creds);
+        }
       );
     } else if (provider === "azure") {
       this.calendar = new OutlookClient(
-        this.outlookClientId,
-        this.outlookOauthSecret,
+        outlookClientId,
+        outlookOauthSecret,
         credentials,
-        async (creds: any) => {}
+        async (creds: any) => {
+          await this.saveCredentials(creds);
+        }
       );
     } else {
       throw Error(`Unknown provider: ${provider}`);
     }
   }
 
-  public loadCredentials = async () => {
+  private loadCredentials = async () => {
     const { data, error } = await this.supabase
       .from("account")
       .select()
@@ -79,20 +101,19 @@ export class CalendarStore {
       console.error(`Account ${this.accountId} missing refresh_token`);
       throw Error("Missing refresh token");
     }
-    this.init(provider, access_token, refresh_token);
+    return { provider, access_token, refresh_token };
   };
 
-  public async saveCredentials(
-    provider: "google" | "azure",
-    access_token: string,
-    refresh_token: string
-  ) {
+  private async saveCredentials(credentials: any) {
+    if (!credentials?.access_token || !credentials?.refresh_token) {
+      console.error("Missing tokens");
+      return;
+    }
     const { error } = await this.supabase
       .from("account")
-      .update({ provider, credentials: { access_token, refresh_token } })
+      .update({ credentials })
       .eq("id", this.accountId);
     if (error) throw error;
-    this.init(provider, access_token, refresh_token);
   }
 
   public async getEvents() {

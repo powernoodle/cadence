@@ -1,5 +1,10 @@
+import React from "react";
 import { useOutletContext } from "@remix-run/react";
 import { SupabaseOutletContext } from "../root";
+import {
+  GoogleLoginButton,
+  MicrosoftLoginButton,
+} from "react-social-login-buttons";
 
 export default function Login() {
   const { supabase, user } = useOutletContext<SupabaseOutletContext>();
@@ -42,8 +47,12 @@ export default function Login() {
 
   return (
     <>
-      {!user && <button onClick={signInWithGoogle}>Google Login</button>}
-      {!user && <button onClick={signInWithAzure}>Outlook Login</button>}
+      {!user && (
+        <>
+          <GoogleLoginButton onClick={signInWithGoogle} />
+          <MicrosoftLoginButton onClick={signInWithAzure} />
+        </>
+      )}
       {user && <button onClick={logout}>Logout</button>}
     </>
   );

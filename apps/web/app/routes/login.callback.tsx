@@ -21,10 +21,10 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const { data } = await supabaseAdmin.auth.exchangeCodeForSession(code);
 
   const credentials = {
-    auth_token: data?.session?.provider_token,
+    access_token: data?.session?.provider_token,
     refresh_token: data?.session?.provider_refresh_token,
   };
-  if (!credentials.auth_token || !credentials.refresh_token) {
+  if (!credentials.access_token || !credentials.refresh_token) {
     throw new Error("Missing credentials");
   }
   const provider =

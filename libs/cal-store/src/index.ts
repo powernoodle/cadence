@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@cadence/db";
 
+import type { Attendance } from "@cadence/cal";
 import { Event } from "@cadence/cal";
 
 import {
@@ -135,29 +136,45 @@ export class CalendarStore {
       )
       .select();
     if (error) throw error;
-    // const eventId = data?.[0]?.id;
-    // for (const attendee of event.attendance) {
-    //   try {
-    //     await this.saveAttendee(eventId, attendee);
-    //   } catch (e) {
-    //     console.error(e);
-    //   }
-    // }
+    const eventId = data?.[0]?.id;
+    for (const attendee of event.attendance) {
+      try {
+        await this.saveAttendee(eventId, attendee);
+      } catch (e) {
+        console.error(e);
+      }
+    }
   }
 
-  // private async saveAttendee(eventId: number, attendee: any) {
-  //   const { data, error } = await this.supabase
-  //     .from("attendee")
-  //     .upsert(
-  //       {
-  //         event_id: eventId,
-  //         account_id: attendee.accountId,
-  //       },
-  //     )
-  //     .select();
-  //   if (error) throw error;
-  // }
-  //
+  private async saveAttendee(eventId: number, attendee: Attendance) {
+    let data, error;
+    ({ data, error } = await this.supabase
+      .from("account")
+      .upsert(
+        {
+          email: attendee.email,
+        },
+        { onConflict: "email" }
+      )
+      .select());
+    if (error) throw error;
+    const attendeeAccountId = data?.[0]?.id;
+    if (!attendeeAccountId) throw Error("Account missing");
+    ({ error } = await this.supabase
+      .from("attendee")
+      .upsert(
+        {
+          event_id: eventId,
+          account_id: attendeeAccountId,
+          response: attendee.response,
+          is_organizer: attendee.isOrganizer,
+        },
+        { onConflict: "event_id, account_id" }
+      )
+      .select());
+    if (error) throw error;
+  }
+
   public async syncEvents(min: Date, max: Date) {
     if (!this.calendar) throw Error("Calendar not initialized");
     for await (const { event } of this.calendar.getEvents(

@@ -81,16 +81,17 @@ export class GoogleClient extends CalendarClient {
       googleEvent.location
     );
     event.raw = googleEvent;
+    const organizerEmail = googleEvent.organizer?.email?.toLowerCase();
     event.attendance =
       googleEvent.attendees?.reduce?.((ret, attendee) => {
         if (!attendee.email || attendee.resource) return ret;
         return [
           ...ret,
           {
-            email: attendee.email,
+            email: attendee.email?.toLowerCase(),
             name: attendee.displayName,
             response: this.transformResponse(attendee.responseStatus),
-            isOrganizer: googleEvent.organizer?.email === attendee.email,
+            isOrganizer: organizerEmail === attendee.email,
           } as Attendance,
         ];
       }, [] as Attendance[]) || [];

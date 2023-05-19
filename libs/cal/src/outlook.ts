@@ -137,9 +137,11 @@ export class OutlookClient extends CalendarClient {
       outlookEvent.bodyPreview,
       outlookEvent.location?.displayName
     );
+    const organizerEmail =
+      outlookEvent.organizer?.emailAddress?.address?.toLowerCase();
     event.attendance =
       outlookEvent.attendees?.reduce?.((ret, attendee) => {
-        const email = attendee.emailAddress?.address;
+        const email = attendee.emailAddress?.address?.toLowerCase();
         if (!email) return ret;
         const response = this.transformResponse(attendee.status?.response);
         return [
@@ -148,8 +150,7 @@ export class OutlookClient extends CalendarClient {
             email,
             name: attendee.emailAddress?.name,
             response,
-            isOrganizer:
-              outlookEvent.organizer?.emailAddress?.address === email,
+            isOrganizer: organizerEmail === email,
           } as Attendance,
         ];
       }, [] as Attendance[]) || [];

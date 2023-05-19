@@ -101,6 +101,8 @@ CREATE UNIQUE INDEX event_pkey ON public.event USING btree (id);
 
 CREATE UNIQUE INDEX event_uid_recurrence_id_key ON public.event USING btree (uid, recurrence_id) NULLS NOT DISTINCT;
 
+CREATE UNIQUE INDEX attendee_pkey ON public.attendee USING btree (event_id, account_id);
+
 CREATE UNIQUE INDEX organization_pkey ON public.organization USING btree (id);
 
 CREATE UNIQUE INDEX account_calendars_pkey ON public.account_calendars USING btree (account_id, calendar_id);

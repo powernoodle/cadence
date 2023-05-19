@@ -18,7 +18,7 @@ export class Event {
     );
   }
 
-  public raw?: object;
+  public raw?: { [key: string]: any };
   public isOnline: boolean = false;
   public isOnsite: boolean = false;
   public isOffsite: boolean = false;

@@ -13,7 +13,7 @@ CREATE TABLE "public"."attendee" (
     "event_id" bigint NOT NULL,
     "account_id" bigint NOT NULL,
     "response" attendance,
-    "is_organizer" : boolean NOT NULL DEFAULT FALSE
+    "is_organizer" boolean NOT NULL DEFAULT FALSE
 );
 
 ALTER TABLE "public"."attendee" ENABLE ROW LEVEL SECURITY;

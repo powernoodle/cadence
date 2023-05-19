@@ -21,9 +21,9 @@ CREATE OR REPLACE FUNCTION public.link_account_to_user ()
 BEGIN
     INSERT INTO public.account (email, name, provider, user_id)
         VALUES (NEW.email, NEW.identity_data ->> 'name', parse_provider (NEW.provider), NEW.user_id)
-    ON CONFLICT (email, provider)
+    ON CONFLICT (email)
         DO UPDATE SET
-            user_id = NEW.user_id, name = COALESCE(NEW.identity_data ->> 'name', account.name);
+            user_id = NEW.user_id, provider = parse_provider (NEW.provider), name = COALESCE(NEW.identity_data ->> 'name', account.name);
     RETURN new;
 END;
 $$;

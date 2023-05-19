@@ -1,7 +1,7 @@
 import { expect, test } from "@jest/globals";
 import { CalendarStore } from "./";
 
-test("fetches Google events", async () => {
+test.only("fetches Google events", async () => {
   const store = await CalendarStore.Create(
     process.env.SUPABASE_URL!,
     process.env.SUPABASE_KEY!,
@@ -11,7 +11,7 @@ test("fetches Google events", async () => {
     process.env.MICROSOFT_OAUTH_SECRET!,
     parseInt(process.env.GOOGLE_ACCOUNT_ID!)
   );
-  await store.getEvents();
+  await store.syncEvents(new Date("2023-06-05"), new Date("2023-06-24"));
 });
 
 test("fetches Outlook events", async () => {
@@ -24,5 +24,5 @@ test("fetches Outlook events", async () => {
     process.env.MICROSOFT_OAUTH_SECRET!,
     parseInt(process.env.OUTLOOK_ACCOUNT_ID!)
   );
-  await store.getEvents();
+  await store.syncEvents(new Date("2023-05-23"), new Date("2023-05-26"));
 });

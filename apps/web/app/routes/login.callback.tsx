@@ -31,14 +31,16 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     data?.session?.user?.app_metadata?.provider === "google"
       ? "google"
       : "azure";
-  const email = data?.session?.user?.email;
+  const email = data?.session?.user?.email?.toLowerCase();
   if (!email) {
     throw new Error("Missing email");
   }
+  // While the same email address can be registered with both Google and Outlook,
+  // only one functions as the primary calendar. So we simply assume whiever
+  // provider they are signing in with represents their primary calendar.
   await supabaseAdmin
     .from("account")
-    .update({ credentials })
-    .eq("provider", provider)
+    .update({ provider, credentials })
     .eq("email", email);
 
   return redirect("/", {

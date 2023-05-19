@@ -59,46 +59,45 @@ export class GoogleClient extends CalendarClient {
     }
   }
 
-  private transformEvent(event: GoogleEvent): Event | null {
+  private transformEvent(googleEvent: GoogleEvent): Event | null {
     if (
-      !event.iCalUID ||
-      !event.start?.dateTime ||
-      !event.end?.dateTime ||
-      event.eventType !== "default"
+      !googleEvent.iCalUID ||
+      !googleEvent.start?.dateTime ||
+      !googleEvent.end?.dateTime ||
+      googleEvent.eventType !== "default"
     ) {
       return null;
     }
 
-    const start = new Date(event.start.dateTime);
-    const end = new Date(event.end.dateTime);
-
-    const isOnline = !!event.conferenceData || !!event.location?.match(/^http/);
-    const isOnsite = !!event.attendees?.some((a) => a.resource);
-    return {
-      start,
-      end,
-      length: differenceInMinutes(end, start),
-      attendance:
-        event.attendees?.reduce?.((ret, attendee) => {
-          if (!attendee.email || attendee.resource) return ret;
-          return [
-            ...ret,
-            {
-              email: attendee.email,
-              name: attendee.displayName,
-              response: this.transformResponse(attendee.responseStatus),
-            } as Attendance,
-          ];
-        }, [] as Attendance[]) || [],
-      title: event.summary || null,
-      description: event.description || null,
-      isOnline,
-      isOnsite,
-      isOffsite: !isOnline && !isOnsite,
-      organizer: event.organizer?.email || null,
-      uid: event.iCalUID,
-      recurrenceId: event.originalStartTime?.toString() || null,
-    };
+    const event = new Event(
+      googleEvent.iCalUID,
+      googleEvent.originalStartTime?.dateTime?.toString() ||
+        googleEvent.originalStartTime?.date?.toString() ||
+        null,
+      new Date(googleEvent.start.dateTime),
+      new Date(googleEvent.end.dateTime),
+      googleEvent.summary,
+      googleEvent.description,
+      googleEvent.location
+    );
+    event.raw = googleEvent;
+    event.attendance =
+      googleEvent.attendees?.reduce?.((ret, attendee) => {
+        if (!attendee.email || attendee.resource) return ret;
+        return [
+          ...ret,
+          {
+            email: attendee.email,
+            name: attendee.displayName,
+            response: this.transformResponse(attendee.responseStatus),
+            isOrganizer: googleEvent.organizer?.email === attendee.email,
+          } as Attendance,
+        ];
+      }, [] as Attendance[]) || [];
+    if (googleEvent.conferenceData) event.isOnline = true;
+    event.isOnsite = !!googleEvent.attendees?.some((a) => a.resource);
+    event.isOffsite = !event.isOnline && !event.isOnsite;
+    return event;
   }
 
   public async *getCalendars(): AsyncIterableIterator<calendar_v3.Schema$CalendarListEntry> {
@@ -171,6 +170,7 @@ export class GoogleClient extends CalendarClient {
               : {
                   timeMin: toGoogleDate(min), // lower bound on end time
                   timeMax: toGoogleDate(max), // upper bound on start time
+                  singleEvents: true,
                 }),
           })
         ).data as calendar_v3.Schema$Events;
@@ -184,7 +184,6 @@ export class GoogleClient extends CalendarClient {
           try {
             if (!googleEvent.id) return;
 
-            console.dir(googleEvent);
             const event = this.transformEvent(googleEvent);
             if (event) yield { event, state };
           } catch (error) {

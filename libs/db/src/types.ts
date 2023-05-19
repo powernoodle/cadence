@@ -166,13 +166,15 @@ export interface Database {
       event: {
         Row: {
           created_at: string | null
-          description: string | null
           end_at: string | null
           id: number
+          is_meeting: boolean | null
           is_offsite: boolean
           is_online: boolean
           is_onsite: boolean
           length: number | null
+          organizer: number | null
+          raw: Json | null
           recurrence_id: string | null
           start_at: string
           title: string | null
@@ -180,13 +182,15 @@ export interface Database {
         }
         Insert: {
           created_at?: string | null
-          description?: string | null
           end_at?: string | null
           id?: number
+          is_meeting?: boolean | null
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
           length?: number | null
+          organizer?: number | null
+          raw?: Json | null
           recurrence_id?: string | null
           start_at: string
           title?: string | null
@@ -194,17 +198,45 @@ export interface Database {
         }
         Update: {
           created_at?: string | null
-          description?: string | null
           end_at?: string | null
           id?: number
+          is_meeting?: boolean | null
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
           length?: number | null
+          organizer?: number | null
+          raw?: Json | null
           recurrence_id?: string | null
           start_at?: string
           title?: string | null
           uid?: string
+        }
+      }
+      extensions: {
+        Row: {
+          id: string
+          inserted_at: string
+          settings: Json | null
+          tenant_external_id: string | null
+          type: string | null
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          inserted_at: string
+          settings?: Json | null
+          tenant_external_id?: string | null
+          type?: string | null
+          updated_at: string
+        }
+        Update: {
+          id?: string
+          inserted_at?: string
+          settings?: Json | null
+          tenant_external_id?: string | null
+          type?: string | null
+          updated_at?: string
         }
       }
       organization: {
@@ -224,6 +256,64 @@ export interface Database {
           name?: string | null
         }
       }
+      schema_migrations: {
+        Row: {
+          inserted_at: string | null
+          version: number
+        }
+        Insert: {
+          inserted_at?: string | null
+          version: number
+        }
+        Update: {
+          inserted_at?: string | null
+          version?: number
+        }
+      }
+      tenants: {
+        Row: {
+          external_id: string | null
+          id: string
+          inserted_at: string
+          jwt_secret: string | null
+          max_bytes_per_second: number
+          max_channels_per_client: number
+          max_concurrent_users: number
+          max_events_per_second: number
+          max_joins_per_second: number
+          name: string | null
+          postgres_cdc_default: string | null
+          updated_at: string
+        }
+        Insert: {
+          external_id?: string | null
+          id: string
+          inserted_at: string
+          jwt_secret?: string | null
+          max_bytes_per_second?: number
+          max_channels_per_client?: number
+          max_concurrent_users?: number
+          max_events_per_second?: number
+          max_joins_per_second?: number
+          name?: string | null
+          postgres_cdc_default?: string | null
+          updated_at: string
+        }
+        Update: {
+          external_id?: string | null
+          id?: string
+          inserted_at?: string
+          jwt_secret?: string | null
+          max_bytes_per_second?: number
+          max_channels_per_client?: number
+          max_concurrent_users?: number
+          max_events_per_second?: number
+          max_joins_per_second?: number
+          name?: string | null
+          postgres_cdc_default?: string | null
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -240,6 +330,13 @@ export interface Database {
           p_text_value: string
         }
         Returns: Database["public"]["Enums"]["provider"]
+      }
+      update_credentials: {
+        Args: {
+          account_id: number
+          new_credentials: Json
+        }
+        Returns: undefined
       }
     }
     Enums: {

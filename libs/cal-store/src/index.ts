@@ -2,6 +2,8 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@cadence/db";
 
+import { Event } from "@cadence/cal";
+
 import {
   CalendarClient,
   Credentials,
@@ -105,27 +107,70 @@ export class CalendarStore {
   };
 
   private async saveCredentials(credentials: any) {
-    if (!credentials?.access_token || !credentials?.refresh_token) {
-      console.error("Missing tokens");
-      return;
-    }
-    const { error } = await this.supabase
-      .from("account")
-      .update({ credentials })
-      .eq("id", this.accountId);
+    const { error } = await this.supabase.rpc("update_credentials", {
+      account_id: this.accountId,
+      new_credentials: credentials,
+    });
     if (error) throw error;
   }
 
-  public async getEvents() {
+  private async saveEvent(event: Event) {
+    const { data, error } = await this.supabase
+      .from("event")
+      .upsert(
+        {
+          start_at: event.start?.toISOString(),
+          end_at: event.end?.toISOString(),
+          length: event.length,
+          title: event.title,
+          uid: event.uid,
+          recurrence_id: event.recurrenceId,
+          is_meeting: event.isMeeting,
+          is_offsite: event.isOffsite,
+          is_online: event.isOnline,
+          is_onsite: event.isOnsite,
+          raw: event.raw,
+        },
+        { onConflict: "uid, recurrence_id" }
+      )
+      .select();
+    if (error) throw error;
+    // const eventId = data?.[0]?.id;
+    // for (const attendee of event.attendance) {
+    //   try {
+    //     await this.saveAttendee(eventId, attendee);
+    //   } catch (e) {
+    //     console.error(e);
+    //   }
+    // }
+  }
+
+  // private async saveAttendee(eventId: number, attendee: any) {
+  //   const { data, error } = await this.supabase
+  //     .from("attendee")
+  //     .upsert(
+  //       {
+  //         event_id: eventId,
+  //         account_id: attendee.accountId,
+  //       },
+  //     )
+  //     .select();
+  //   if (error) throw error;
+  // }
+  //
+  public async syncEvents(min: Date, max: Date) {
     if (!this.calendar) throw Error("Calendar not initialized");
-    for await (const event of this.calendar.getEvents(
+    for await (const { event } of this.calendar.getEvents(
       "primary",
-      new Date("2023-05-15"),
-      new Date("2023-05-16"),
+      min,
+      max,
       {}
     )) {
-      console.dir(event);
-      console.log(JSON.stringify(event.event.attendance));
+      try {
+        this.saveEvent(event);
+      } catch (e) {
+        console.error(e);
+      }
     }
   }
 }

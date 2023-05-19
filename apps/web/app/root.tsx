@@ -47,7 +47,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   } = await supabase.auth.getUser();
 
   const url = new URL(request.url);
-  if (!session && url.pathname !== "/login") {
+  if (!user && !url.pathname.startsWith("/login")) {
     return redirect("/login");
   }
 

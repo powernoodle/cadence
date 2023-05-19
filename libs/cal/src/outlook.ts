@@ -117,47 +117,50 @@ export class OutlookClient extends CalendarClient {
     }
   }
 
-  private transformEvent(event: OutlookEvent): Event | null {
-    if (!event.id || event.isCancelled) {
+  private transformEvent(outlookEvent: OutlookEvent): Event | null {
+    if (!outlookEvent.id || outlookEvent.isCancelled) {
       return null;
     }
 
-    const start = fromMsDate(event.start);
-    const end = fromMsDate(event.end);
+    const start = fromMsDate(outlookEvent.start);
+    const end = fromMsDate(outlookEvent.end);
     if (!start || !end) {
       return null;
     }
 
-    console.dir(event);
-    const isOnline = !!event.isOnlineMeeting;
-    const isOnsite = event.location?.locationType === "conferenceRoom";
-    return {
-      title: event.subject || null,
+    const event = new Event(
+      outlookEvent.seriesMasterId || outlookEvent.iCalUId || outlookEvent.id,
+      outlookEvent.seriesMasterId ? outlookEvent.iCalUId || null : null,
       start,
       end,
-      length: differenceInMinutes(end, start),
-      attendance:
-        event.attendees?.reduce?.((ret, attendee) => {
-          const email = attendee.emailAddress?.address;
-          if (!email) return ret;
-          const response = this.transformResponse(attendee.status?.response);
-          return [
-            ...ret,
-            {
-              email,
-              name: attendee.emailAddress?.name,
-              response,
-            } as Attendance,
-          ];
-        }, [] as Attendance[]) || [],
-      description: event.bodyPreview || null,
-      isOnline,
-      isOnsite,
-      isOffsite: !isOnline && !isOnsite && !!event.location?.displayName,
-      organizer: event.organizer?.emailAddress?.address || null,
-      uid: event.seriesMasterId || event.iCalUId || event.id,
-      recurrenceId: event.seriesMasterId ? event.iCalUId || null : null,
-    };
+      outlookEvent.subject || null,
+      outlookEvent.bodyPreview,
+      outlookEvent.location?.displayName
+    );
+    event.attendance =
+      outlookEvent.attendees?.reduce?.((ret, attendee) => {
+        const email = attendee.emailAddress?.address;
+        if (!email) return ret;
+        const response = this.transformResponse(attendee.status?.response);
+        return [
+          ...ret,
+          {
+            email,
+            name: attendee.emailAddress?.name,
+            response,
+            isOrganizer:
+              outlookEvent.organizer?.emailAddress?.address === email,
+          } as Attendance,
+        ];
+      }, [] as Attendance[]) || [];
+    if (outlookEvent.isOnlineMeeting) event.isOnline = true;
+    event.isOnsite = outlookEvent.location?.locationType === "conferenceRoom";
+    event.isOffsite =
+      !event.isOnline &&
+      !event.isOnsite &&
+      !!outlookEvent.location?.displayName;
+    event.raw = outlookEvent;
+    return event;
   }
 
   public async *getEvents(
@@ -194,7 +197,6 @@ export class OutlookClient extends CalendarClient {
       } catch (error) {
         console.error(`Failed to process event ${outlookEvent.id}`);
         console.error(error);
-        console.dir(outlookEvent);
       }
 
       if (pageIterator.isComplete()) break;

@@ -160,8 +160,8 @@ importers:
   libs/db:
     devDependencies:
       supabase:
-        specifier: ^1.61.0
-        version: 1.61.0
+        specifier: ^1.62.3
+        version: 1.62.3
 
 packages:
 
@@ -9438,14 +9438,14 @@ packages:
     dependencies:
       inline-style-parser: 0.1.1
 
-  /supabase@1.61.0:
-    resolution: {integrity: sha512-/HHsTpKxHvGToTfhKx8yLZTK8ggDcqOnZJK6xB/4s3XpaOYWBU4xAhmUHm2CgU60KbgDIvsDgheCBOT6T8C4pw==}
+  /supabase@1.62.3:
+    resolution: {integrity: sha512-uHW8rGp+mNIoTmELJD2A66iekokp/2iEt5PKpOK+hzqfY8ohgLe2OFxP/d5exAw0rCllxmAfnf1PSt3fVuf/6A==}
     hasBin: true
     requiresBuild: true
     dependencies:
       bin-links: 4.0.1
       node-fetch: 3.3.1
-      tar: 6.1.14
+      tar: 6.1.15
     dev: true
 
   /supports-color@5.5.0:
@@ -9509,18 +9509,6 @@ packages:
       chownr: 2.0.0
       fs-minipass: 2.1.0
       minipass: 3.3.6
-      minizlib: 2.1.2
-      mkdirp: 1.0.4
-      yallist: 4.0.0
-    dev: true
-
-  /tar@6.1.14:
-    resolution: {integrity: sha512-piERznXu0U7/pW7cdSn7hjqySIVTYT6F76icmFk7ptU7dDYlXTm5r9A6K04R2vU3olYgoKeo1Cg3eeu5nhftAw==}
-    engines: {node: '>=10'}
-    dependencies:
-      chownr: 2.0.0
-      fs-minipass: 2.1.0
-      minipass: 5.0.0
       minizlib: 2.1.2
       mkdirp: 1.0.4
       yallist: 4.0.0

@@ -44,8 +44,11 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     .eq("email", email)
     .select();
 
-  // @ts-ignore
-  await context.SYNC_QUEUE.send({ accountId: account.accountId });
+  const accountId = account?.[0];
+  if (accountId) {
+    // @ts-ignore
+    await context.SYNC_QUEUE.send({ accountId });
+  }
 
   return redirect("/", {
     status: 303,

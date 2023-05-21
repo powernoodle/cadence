@@ -6,12 +6,12 @@
   "scripts": {
     "build": "remix build",
     "dev:remix": "remix watch",
-    "dev:wrangler": "NODE_ENV=development pnpm run wrangler",
+    "dev:wrangler": "NODE_ENV=development wrangler pages dev --compatibility-date=2023-04-19 --experimental-local ./public",
     "dev": "npm-run-all build --parallel \"dev:*\"",
     "start": "NODE_ENV=production pnpm run wrangler",
     "typecheck": "tsc",
-    "wrangler": "wrangler pages dev --compatibility-date=2023-04-19 --experimental-local ./public",
-    "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name cf-remix"
+    "wrangler": "wrangler",
+    "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name cadence"
   },
   "dependencies": {
     "@cadence/db": "workspace:*",

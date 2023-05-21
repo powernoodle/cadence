@@ -34,9 +34,14 @@ export default {
     await Promise.all(
       batch.messages.map(async (msg) => {
         try {
-          console.log(`Sync starting (${msg.body.accountId})`);
-          await process(env, msg.body);
-          console.log(`Sync complete (${msg.body.accountId})`);
+          if (typeof msg.body.accountId === "number") {
+            console.log(`Sync starting (${msg.body.accountId})`);
+            await process(env, msg.body);
+            console.log(`Sync complete (${msg.body.accountId})`);
+          } else {
+            console.error("No accountId");
+            console.log(msg.body);
+          }
           msg.ack();
         } catch (e) {
           console.error(`Sync failed (${msg.body.accountId})`);

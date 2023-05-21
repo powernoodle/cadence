@@ -44,7 +44,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     .eq("email", email)
     .select();
 
-  const accountId = account?.[0];
+  const accountId = account?.[0]?.id;
   if (accountId) {
     // @ts-ignore
     await context.SYNC_QUEUE.send({ accountId });

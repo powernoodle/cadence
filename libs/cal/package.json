@@ -13,12 +13,13 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@microsoft/microsoft-graph-client": "^3.0.5",
-    "@microsoft/microsoft-graph-types": "^2.30.0",
+    "@worker-tools/json-fetch": "2.1.0-pre.6",
     "date-fns": "^2.30.0",
     "googleapis": "^118.0.0",
     "querystring": "^0.2.1"
   },
   "devDependencies": {
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "@microsoft/microsoft-graph-types": "^2.30.0"
   }
 }

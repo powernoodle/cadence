@@ -5,11 +5,13 @@
     "outDir": "build",
     "baseUrl": "src",
     "rootDir": "src",
-    "target": "es2020",
     "preserveConstEnums": true,
     "noEmit": true,
     "sourceMap": false,
-    "module": "commonjs",
+    "target": "esnext",
+    "module": "esnext",
+    "lib": ["esnext"],
+    "types": ["@cloudflare/workers-types"],
     "skipLibCheck": true
   }
 }

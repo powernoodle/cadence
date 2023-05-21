@@ -1,11 +1,12 @@
-import differenceInMinutes from "date-fns/differenceInMinutes";
+import { jsonFetch as fetch } from "@worker-tools/json-fetch";
 
-import { google, calendar_v3, Auth } from "googleapis";
+import { calendar_v3 } from "google-schema";
 
 import { Response, Attendance, Event } from "./event";
 import { CalendarClient, UpdateCredentials } from "./client";
 
 type GoogleEvent = calendar_v3.Schema$Event;
+type GoogleEvents = calendar_v3.Schema$Events;
 
 function toGoogleDate(d: Date) {
   function pad(n: number) {
@@ -28,22 +29,74 @@ function toGoogleDate(d: Date) {
 }
 
 export class GoogleClient extends CalendarClient {
-  private authClient?: Auth.OAuth2Client;
-  private client?: calendar_v3.Calendar;
-
   public constructor(
-    clientId: string,
-    clientSecret: string,
-    credentials: any,
-    updateCredentials: UpdateCredentials
+    private clientId: string,
+    private clientSecret: string,
+    private credentials: any,
+    private updateCredentials: UpdateCredentials
   ) {
     super();
-    this.authClient = new google.auth.OAuth2(clientId, clientSecret);
-    this.authClient.setCredentials(credentials);
-    this.client = google.calendar({ version: "v3", auth: this.authClient });
-    this.authClient.on("tokens", async (tokens: any) => {
-      updateCredentials(tokens);
+  }
+
+  private async refreshTokens() {
+    const payload = {
+      client_id: this.clientId,
+      client_secret: this.clientSecret,
+      refresh_token: this.credentials.refresh_token,
+      grant_type: "refresh_token",
+    };
+    const body = new URLSearchParams(payload);
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body,
     });
+    if (response.ok) {
+      this.credentials = {
+        ...this.credentials,
+        ...response.json(),
+      };
+      await this.updateCredentials(this.credentials);
+    } else {
+      console.error(await response.text());
+    }
+  }
+
+  private async api<T>(
+    method: string,
+    url: string,
+    params: { [key: string]: any }
+  ) {
+    const headers = {
+      Authorization: `Bearer ${this.credentials.access_token}`,
+      Accept: "application/json",
+    };
+    const query = new URLSearchParams({
+      ...params,
+    });
+    let retry = true;
+    while (true) {
+      const response = await fetch(url + "?" + query.toString(), {
+        method,
+        headers,
+      });
+      switch (response.status) {
+        case 401:
+          if (retry) {
+            await this.refreshTokens();
+            retry = false;
+          } else {
+            throw new Error(await response.text());
+          }
+          break;
+        case 200:
+          return (await response.json()) as T;
+        default:
+          throw new Error(await response.text());
+      }
+    }
   }
 
   private transformResponse(response: string | null | undefined): Response {
@@ -101,50 +154,6 @@ export class GoogleClient extends CalendarClient {
     return event;
   }
 
-  public async *getCalendars(): AsyncIterableIterator<calendar_v3.Schema$CalendarListEntry> {
-    let syncToken: string | undefined;
-    let nextPageToken: string | undefined;
-
-    do {
-      try {
-        // https://developers.google.com/calendar/v3/reference/events/list
-        const data = (
-          await this.client!.calendarList.list({
-            ...(nextPageToken
-              ? {
-                  pageToken: nextPageToken,
-                }
-              : syncToken
-              ? {
-                  syncToken,
-                }
-              : {
-                  minAccessRole: "reader",
-                  showHidden: true,
-                  showDeleted: true,
-                }),
-          })
-        ).data as calendar_v3.Schema$CalendarList;
-        syncToken = data.nextSyncToken || syncToken;
-        const calendars = data.items || [];
-        for (const calendar of calendars) {
-          try {
-            yield calendar;
-          } catch (error) {
-            console.error(
-              `Failed to update event: ${JSON.stringify(calendar)}`
-            );
-            console.error(error);
-          }
-        }
-        nextPageToken = data.nextPageToken || undefined;
-      } catch (error) {
-        console.error(error);
-        throw error;
-      }
-    } while (nextPageToken);
-  }
-
   public async *getEvents(
     calendarId: string,
     min: Date,
@@ -157,9 +166,10 @@ export class GoogleClient extends CalendarClient {
     do {
       try {
         // https://developers.google.com/calendar/v3/reference/events/list
-        const data = (
-          await this.client!.events.list({
-            calendarId,
+        const data: GoogleEvents = await this.api(
+          "GET",
+          `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`,
+          {
             ...(nextPageToken
               ? {
                   pageToken: nextPageToken,
@@ -173,8 +183,8 @@ export class GoogleClient extends CalendarClient {
                   timeMax: toGoogleDate(max), // upper bound on start time
                   singleEvents: true,
                 }),
-          })
-        ).data as calendar_v3.Schema$Events;
+          }
+        );
         syncToken = data.nextSyncToken || syncToken;
         state = {
           ...state,

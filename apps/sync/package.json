@@ -1,25 +1,21 @@
 {
   "name": "sync",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.0",
   "main": "build/index.js",
   "scripts": {
-    "build": "sam build",
-    "dev": "pnpm run build && sam local start-lambda",
-    "dev:invoke": "sam local invoke CadenceSyncFunction --event events/event.json",
-    "deploy": "pnpm run build && sam deploy --region ca-central-1 --no-confirm-changeset"
+    "build": "tsc",
+    "dev": "wrangler dev --local",
+    "deploy": "wrangler deploy"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.21.0",
+    "@cadence/cal-store": "workspace:^",
     "date-fns": "^2.30.0",
-    "googleapis": "^118.0.0"
+    "http2": "npm:is_number"
   },
   "devDependencies": {
-    "@types/aws-lambda": "^8.10.92",
-    "@types/node": "^20.1.0",
-    "esbuild": "^0.17.18"
-  }
+    "@cloudflare/workers-types": "^4.20230511.0",
+    "esbuild-plugin-ignore": "^1.1.1",
+    "wrangler": "^3.0.0"
+  },
+  "private": true
 }

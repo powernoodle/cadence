@@ -1,32 +1,65 @@
-import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-
 /**
+ * Welcome to Cloudflare Workers! This is your first worker.
  *
- * Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
- * @param {Object} event - API Gateway Lambda Proxy Input Format
+ * - Run `wrangler dev src/index.ts` in your terminal to start a development server
+ * - Open a browser tab at http://localhost:8787/ to see your worker in action
+ * - Run `wrangler publish src/index.ts --name my-worker` to publish your worker
  *
- * Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
- * @returns {Object} object - API Gateway Lambda Proxy Output Format
- *
+ * Learn more at https://developers.cloudflare.com/workers/
  */
 
-export const handler = async (
-  event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> => {
-  try {
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: "hello world",
-      }),
-    };
-  } catch (err) {
-    console.log(err);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: "some error happened",
-      }),
-    };
-  }
+import add from "date-fns/add";
+import sub from "date-fns/sub";
+
+import { CalendarStore } from "@cadence/cal-store";
+
+export type SyncRequest = {
+  accountId: number;
 };
+
+export interface Env {
+  readonly SUPABASE_URL: string;
+  readonly SUPABASE_KEY: string;
+  readonly GOOGLE_CLIENT_ID: string;
+  readonly GOOGLE_OAUTH_SECRET: string;
+  readonly MICROSOFT_CLIENT_ID: string;
+  readonly MICROSOFT_OAUTH_SECRET: string;
+
+  readonly QUEUE: Queue<SyncRequest>;
+}
+
+export default {
+  // Invoked when the Worker receives a batch of messages.
+  async queue(batch: MessageBatch<SyncRequest>, env: Env) {
+    await Promise.all(
+      batch.messages.map(async (msg) => {
+        try {
+          console.log(`Sync starting (${msg.body.accountId})`);
+          await process(env, msg.body);
+          console.log(`Sync complete (${msg.body.accountId})`);
+          msg.ack();
+        } catch (e) {
+          console.error(`Sync failed (${msg.body.accountId})`);
+          console.error(e);
+          msg.retry();
+        }
+      })
+    );
+  },
+};
+
+async function process(env: Env, req: SyncRequest) {
+  const store = await CalendarStore.Create(
+    env.SUPABASE_URL!,
+    env.SUPABASE_KEY!,
+    env.GOOGLE_CLIENT_ID!,
+    env.GOOGLE_OAUTH_SECRET!,
+    env.MICROSOFT_CLIENT_ID!,
+    env.MICROSOFT_OAUTH_SECRET!,
+    req.accountId
+  );
+  await store.syncEvents(
+    sub(new Date(), { days: 60 }),
+    add(new Date(), { days: 30 })
+  );
+}

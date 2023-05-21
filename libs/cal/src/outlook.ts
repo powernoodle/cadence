@@ -1,5 +1,5 @@
-import differenceInMinutes from "date-fns/differenceInMinutes";
 import isAfter from "date-fns/isAfter";
+import { jsonFetch as fetch } from "@worker-tools/json-fetch";
 
 import {
   Client,

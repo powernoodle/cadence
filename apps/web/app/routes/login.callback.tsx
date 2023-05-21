@@ -38,10 +38,14 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   // While the same email address can be registered with both Google and Outlook,
   // only one functions as the primary calendar. So we simply assume whiever
   // provider they are signing in with represents their primary calendar.
-  await supabaseAdmin
+  const { data: account } = await supabaseAdmin
     .from("account")
     .update({ provider, credentials })
-    .eq("email", email);
+    .eq("email", email)
+    .select();
+
+  // @ts-ignore
+  await context.SYNC_QUEUE.send({ accountId: account.accountId });
 
   return redirect("/", {
     status: 303,

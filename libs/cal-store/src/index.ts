@@ -147,12 +147,20 @@ export class CalendarStore {
   }
 
   private async saveAttendee(eventId: number, attendee: Attendance) {
+    let name = attendee.name;
+    if (name) {
+      // Remove email address from name
+      name = name.replace(/<?[^ ]+@[^ ]+>?/, "").trim();
+      // Re-order Last, First to First Last
+      name = name.replace(/^([^, ]+),\s*(.+)/, "$2 $1");
+    }
     let data, error;
     ({ data, error } = await this.supabase
       .from("account")
       .upsert(
         {
           email: attendee.email,
+          ...(name && { name }),
         },
         { onConflict: "email" }
       )
@@ -184,7 +192,7 @@ export class CalendarStore {
       {}
     )) {
       try {
-        this.saveEvent(event);
+        await this.saveEvent(event);
       } catch (e) {
         console.error(e);
       }

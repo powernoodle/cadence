@@ -83,6 +83,7 @@ class Auth implements AuthenticationProvider {
 
 export class OutlookClient extends CalendarClient {
   private client: Client;
+  private seriesMasters: { [id: string]: OutlookEvent } = {};
 
   public constructor(
     clientId: string,
@@ -129,8 +130,8 @@ export class OutlookClient extends CalendarClient {
     }
 
     const event = new Event(
-      outlookEvent.seriesMasterId || outlookEvent.iCalUId || outlookEvent.id,
-      outlookEvent.seriesMasterId ? outlookEvent.iCalUId || null : null,
+      outlookEvent.seriesMasterId || outlookEvent.id,
+      outlookEvent.seriesMasterId ? outlookEvent.id || null : null,
       start,
       end,
       outlookEvent.subject || null,
@@ -188,18 +189,34 @@ export class OutlookClient extends CalendarClient {
     while (true) {
       if (!outlookEvent) break;
       try {
-        const event = this.transformEvent(outlookEvent);
-        const deltaLink = pageIterator.getDeltaLink();
-        state = {
-          ...(state || {}),
-          deltaLink,
-        };
-        if (event) yield { event, state };
+        if (outlookEvent.type === "seriesMaster") {
+          if (outlookEvent.id) {
+            this.seriesMasters[outlookEvent.id] = outlookEvent;
+          }
+        } else {
+          if (outlookEvent.seriesMasterId) {
+            if (!this.seriesMasters[outlookEvent.seriesMasterId]) {
+              throw Error(
+                `Missing series master ${outlookEvent.seriesMasterId}`
+              );
+            }
+            outlookEvent = {
+              ...this.seriesMasters[outlookEvent.seriesMasterId],
+              ...outlookEvent,
+            };
+          }
+          const event = this.transformEvent(outlookEvent);
+          const deltaLink = pageIterator.getDeltaLink();
+          state = {
+            ...(state || {}),
+            deltaLink,
+          };
+          if (event) yield { event, state };
+        }
       } catch (error) {
         console.error(`Failed to process event ${outlookEvent.id}`);
         console.error(error);
       }
-
       if (pageIterator.isComplete()) break;
       outlookEvent = undefined;
       await pageIterator.resume();

@@ -15,3 +15,6 @@ node_compat = true
   max_batch_size = 5    # Max messages per batch
   max_batch_timeout = 1 # Max seconds to wait before batch is full
   max_retries = 3       # Max retries per batch
+
+[env.dev]
+  vars = { ENV = "dev" }

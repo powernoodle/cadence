@@ -4,7 +4,7 @@
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "wrangler dev --local",
+    "dev": "wrangler dev --local -e dev",
     "deploy": "wrangler deploy",
     "tail-logs": "wrangler tail sync"
   },

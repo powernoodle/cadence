@@ -18,6 +18,8 @@ export type SyncRequest = {
 };
 
 export interface Env {
+  readonly ENV?: string;
+
   readonly SUPABASE_URL: string;
   readonly SUPABASE_KEY: string;
   readonly GOOGLE_CLIENT_ID: string;
@@ -29,6 +31,18 @@ export interface Env {
 }
 
 export default {
+  async fetch(req: Request, env: Env): Promise<Response> {
+    if (env.ENV !== "dev") {
+      return new Response("Denied");
+    }
+    if (req.method !== "POST") return new Response("Ignored");
+    const body = await req.json();
+    if (!body || typeof (body as any).accountId !== "number")
+      return new Response("Missing accountId");
+    await process(env, body as SyncRequest);
+    return new Response("Success");
+  },
+
   // Invoked when the Worker receives a batch of messages.
   async queue(batch: MessageBatch<SyncRequest>, env: Env) {
     await Promise.all(

@@ -17,17 +17,13 @@ import {
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { redirect, json } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
-import {
-  User,
-  createBrowserClient,
-  createServerClient,
-} from "@supabase/auth-helpers-remix";
+import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 import { MantineProvider, createEmotionCache } from "@mantine/core";
 import { StylesPlaceholder } from "@mantine/remix";
-import { APP_NAME } from "./util";
+import { APP_NAME, createServerClient } from "./util";
 
 // import { theme } from "./theme";
 
@@ -45,17 +41,11 @@ export type SupabaseOutletContext = {
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {
+  const { response, supabase } = createServerClient(context, request);
   const env = {
-    SUPABASE_URL: context.SUPABASE_URL! as string,
-    SUPABASE_ANON_KEY: context.SUPABASE_ANON_KEY! as string,
+    SUPABASE_URL: context.SUPABASE_URL as string,
+    SUPABASE_ANON_KEY: context.SUPABASE_ANON_KEY as string,
   };
-
-  const response = new Response();
-
-  const supabase = createServerClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
-    request,
-    response,
-  });
 
   const {
     data: { session },

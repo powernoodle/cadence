@@ -1,27 +1,18 @@
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import { useLoaderData, useOutletContext } from "@remix-run/react";
-import { createServerClient, User } from "@supabase/auth-helpers-remix";
 import { json } from "@remix-run/cloudflare";
 import { useEffect, useState } from "react";
 import { Container, Button } from "@mantine/core";
 
 import type { Database } from "@cadence/db";
-
 import { SupabaseOutletContext } from "../root";
+import { createServerClient } from "../util";
 
 type Post = Database["public"]["Tables"]["posts"]["Row"];
 
 export const loader = async ({ context, request }: LoaderArgs) => {
-  const response = new Response();
-  const supabase = createServerClient<Database>(
-    context.SUPABASE_URL!,
-    context.SUPABASE_ANON_KEY!,
-    {
-      request,
-      response,
-    }
-  );
+  const { response, supabase } = createServerClient(context, request);
 
   const { data } = await supabase.from("posts").select();
 

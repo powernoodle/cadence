@@ -1,5 +1,8 @@
-import type { LinksFunction } from "@remix-run/cloudflare";
-import type { LoaderArgs } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
+import type {
+  LoaderArgs,
+  LinksFunction,
+  V2_MetaFunction,
+} from "@remix-run/cloudflare";
 
 import { cssBundleHref } from "@remix-run/css-bundle";
 import {
@@ -9,9 +12,10 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
+  useRevalidator,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { useLoaderData, useRevalidator } from "@remix-run/react";
 import { redirect, json } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
 import {
   User,
@@ -20,6 +24,18 @@ import {
 } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 import { SupabaseClient } from "@supabase/supabase-js";
+
+import { MantineProvider, createEmotionCache } from "@mantine/core";
+import { StylesPlaceholder } from "@mantine/remix";
+// import { theme } from "./theme";
+
+export const meta: V2_MetaFunction = () => [
+  { charset: "utf-8" },
+  { title: "New Remix App" },
+  { viewport: "width=device-width,initial-scale=1" },
+];
+
+createEmotionCache({ key: "mantine" });
 
 export type SupabaseOutletContext = {
   supabase: SupabaseClient<Database>;
@@ -98,19 +114,20 @@ export default function App() {
   }, [serverAccessToken, supabase]);
 
   return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        <Outlet context={{ supabase, session, user }} />
-        <ScrollRestoration />
-        <Scripts />
-        <LiveReload />
-      </body>
-    </html>
+    <MantineProvider withGlobalStyles withNormalizeCSS>
+      <html lang="en">
+        <head>
+          <StylesPlaceholder />
+          <Meta />
+          <Links />
+        </head>
+        <body>
+          <Outlet context={{ supabase, session, user }} />
+          <ScrollRestoration />
+          <Scripts />
+          <LiveReload />
+        </body>
+      </html>
+    </MantineProvider>
   );
 }

@@ -1,6 +1,7 @@
 import React from "react";
 import { useOutletContext } from "@remix-run/react";
 import { SupabaseOutletContext } from "../root";
+import { Container, Stack } from "@mantine/core";
 import {
   GoogleLoginButton,
   MicrosoftLoginButton,
@@ -49,10 +50,12 @@ export default function Login() {
   return (
     <>
       {!user && (
-        <>
-          <GoogleLoginButton onClick={signInWithGoogle} />
-          <MicrosoftLoginButton onClick={signInWithAzure} />
-        </>
+        <Container size="xs" p="sm">
+          <Stack>
+            <GoogleLoginButton onClick={signInWithGoogle} />
+            <MicrosoftLoginButton onClick={signInWithAzure} />
+          </Stack>
+        </Container>
       )}
       {user && <button onClick={logout}>Logout</button>}
     </>

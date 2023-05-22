@@ -1,5 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { AppLoadContext } from "@remix-run/cloudflare";
+import { redirect } from "@remix-run/cloudflare";
 import { createServerClient as createSupabaseClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 
@@ -24,14 +25,24 @@ export const createServerClient = (
 };
 
 export const getAccountId = async (
+  request: Request,
   supabase: SupabaseClient
-): Promise<number | null> => {
+): Promise<number> => {
+  const url = new URL(request.url);
+  const accountParam = url.searchParams.get("account");
+  if (accountParam) {
+    return parseInt(accountParam);
+  }
+
   const userId = (await supabase.auth.getSession()).data.session?.user?.id;
-  if (!userId) return null;
+  if (!userId) throw redirect("/login");
   const { data } = await supabase
     .from("account")
     .select()
     .eq("user_id", userId);
-  if (!data) return null;
-  return data[0]?.id;
+  if (data) {
+    return data[0]?.id;
+  }
+  console.error(`No account found for ${userId}`);
+  throw redirect("/login");
 };

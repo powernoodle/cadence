@@ -16,7 +16,7 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { redirect, json } from "@remix-run/cloudflare"; // change this import to whatever runtime you are using
+import { redirect, json } from "@remix-run/cloudflare";
 import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 import { SupabaseClient } from "@supabase/supabase-js";

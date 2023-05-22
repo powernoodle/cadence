@@ -7,7 +7,7 @@ import {
 } from "react-social-login-buttons";
 
 export default function Login() {
-  const { supabase, user } = useOutletContext<SupabaseOutletContext>();
+  const { supabase } = useOutletContext<SupabaseOutletContext>();
 
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
@@ -41,21 +41,12 @@ export default function Login() {
     });
   }
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-  };
-
   return (
-    <>
-      {!user && (
-        <Container size="xs" p="sm">
-          <Stack>
-            <GoogleLoginButton onClick={signInWithGoogle} />
-            <MicrosoftLoginButton onClick={signInWithAzure} />
-          </Stack>
-        </Container>
-      )}
-      {user && <button onClick={logout}>Logout</button>}
-    </>
+    <Container size="xs" p="sm">
+      <Stack>
+        <GoogleLoginButton onClick={signInWithGoogle} />
+        <MicrosoftLoginButton onClick={signInWithAzure} />
+      </Stack>
+    </Container>
   );
 }

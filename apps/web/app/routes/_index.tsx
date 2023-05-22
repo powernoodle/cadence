@@ -1,12 +1,13 @@
 import type { LoaderArgs } from "@remix-run/cloudflare";
-import type { V2_MetaFunction } from "@remix-run/cloudflare";
 
 import { useLoaderData, useOutletContext } from "@remix-run/react";
 import { createServerClient, User } from "@supabase/auth-helpers-remix";
 import { json } from "@remix-run/cloudflare";
 import { useEffect, useState } from "react";
+import { Container, Button } from "@mantine/core";
 
 import type { Database } from "@cadence/db";
+
 import { SupabaseOutletContext } from "../root";
 
 type Post = Database["public"]["Tables"]["posts"]["Row"];
@@ -32,6 +33,10 @@ export default function Index() {
   const [posts, setPosts] = useState(serverPosts);
   const { supabase } = useOutletContext<SupabaseOutletContext>();
 
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
   useEffect(() => {
     setPosts(serverPosts);
   }, [serverPosts]);
@@ -51,5 +56,9 @@ export default function Index() {
     };
   }, [supabase, posts, setPosts]);
 
-  return <pre>{JSON.stringify(posts, null, 2)}</pre>;
+  return (
+    <Container p="sm">
+      <Button onClick={logout}>Logout</Button>
+    </Container>
+  );
 }

@@ -68,6 +68,9 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   if (!user && !url.pathname.startsWith("/login")) {
     return redirect("/login");
   }
+  if (user && url.pathname === "/login") {
+    return redirect("/");
+  }
 
   return json(
     {

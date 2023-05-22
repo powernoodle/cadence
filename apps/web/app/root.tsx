@@ -27,11 +27,13 @@ import { SupabaseClient } from "@supabase/supabase-js";
 
 import { MantineProvider, createEmotionCache } from "@mantine/core";
 import { StylesPlaceholder } from "@mantine/remix";
+import { APP_NAME } from "./util";
+
 // import { theme } from "./theme";
 
 export const meta: V2_MetaFunction = () => [
   { charset: "utf-8" },
-  { title: "New Remix App" },
+  { title: APP_NAME },
   { viewport: "width=device-width,initial-scale=1" },
 ];
 

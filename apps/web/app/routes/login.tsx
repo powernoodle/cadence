@@ -1,4 +1,3 @@
-import React from "react";
 import { useOutletContext } from "@remix-run/react";
 import { SupabaseOutletContext } from "../root";
 import { Container, Stack } from "@mantine/core";

@@ -11,10 +11,6 @@ import { SupabaseOutletContext } from "../root";
 
 type Post = Database["public"]["Tables"]["posts"]["Row"];
 
-export const meta: V2_MetaFunction = () => {
-  return [{ title: "New Remix App" }];
-};
-
 export const loader = async ({ context, request }: LoaderArgs) => {
   const response = new Response();
   const supabase = createServerClient<Database>(

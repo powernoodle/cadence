@@ -138,10 +138,8 @@ export class OutlookClient extends CalendarClient {
       outlookEvent.bodyPreview,
       outlookEvent.location?.displayName
     );
-    const organizerEmail =
-      outlookEvent.organizer?.emailAddress?.address?.toLowerCase();
-    event.attendance =
-      outlookEvent.attendees?.reduce?.((ret, attendee) => {
+    event.attendance = [
+      ...(outlookEvent.attendees?.reduce?.((ret, attendee) => {
         const email = attendee.emailAddress?.address?.toLowerCase();
         if (!email) return ret;
         const response = this.transformResponse(attendee.status?.response);
@@ -151,10 +149,20 @@ export class OutlookClient extends CalendarClient {
             email,
             name: attendee.emailAddress?.name,
             response,
-            isOrganizer: organizerEmail === email,
           } as Attendance,
         ];
-      }, [] as Attendance[]) || [];
+      }, [] as Attendance[]) || []),
+      ...(outlookEvent.organizer?.emailAddress?.address
+        ? [
+            {
+              email: outlookEvent.organizer.emailAddress.address.toLowerCase(),
+              name: outlookEvent.organizer.emailAddress.name || undefined,
+              response: "accepted" as Response,
+              isOrganizer: true,
+            },
+          ]
+        : []),
+    ];
     if (outlookEvent.isOnlineMeeting) event.isOnline = true;
     event.isOnsite = outlookEvent.location?.locationType === "conferenceRoom";
     event.isOffsite =

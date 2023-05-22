@@ -16,12 +16,11 @@ export default function Login() {
       options: {
         redirectTo: `${location.origin}/login/callback`,
         scopes: [
-          "https://www.googleapis.com/auth/calendar.readonly",
           "https://www.googleapis.com/auth/calendar.events.readonly",
         ].join(" "),
         queryParams: {
           access_type: "offline",
-          prompt: "consent select_account",
+          prompt: "select_account",
         },
       },
     });

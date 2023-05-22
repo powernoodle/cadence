@@ -122,11 +122,13 @@ export class GoogleClient extends CalendarClient {
       return null;
     }
 
+    let calId = googleEvent.iCalUID;
+    if (googleEvent.originalStartTime) {
+      calId += `:${googleEvent.originalStartTime?.dateTime?.toString()}`;
+    }
     const event = new Event(
+      calId,
       googleEvent.iCalUID,
-      googleEvent.originalStartTime?.dateTime?.toString() ||
-        googleEvent.originalStartTime?.date?.toString() ||
-        null,
       new Date(googleEvent.start.dateTime),
       new Date(googleEvent.end.dateTime),
       googleEvent.summary,

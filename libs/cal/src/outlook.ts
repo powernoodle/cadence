@@ -130,8 +130,8 @@ export class OutlookClient extends CalendarClient {
     }
 
     const event = new Event(
-      outlookEvent.seriesMasterId || outlookEvent.id,
-      outlookEvent.seriesMasterId ? outlookEvent.id || null : null,
+      outlookEvent.id,
+      outlookEvent.seriesMasterId || null,
       start,
       end,
       outlookEvent.subject || null,

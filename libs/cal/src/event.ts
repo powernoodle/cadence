@@ -25,8 +25,8 @@ export class Event {
   public attendance: Attendance[] = [];
 
   constructor(
-    public uid: string,
-    public recurrenceId: string | null,
+    public id: string,
+    public series: string | null,
     public start: Date,
     public end: Date,
     public title: string | null = null,

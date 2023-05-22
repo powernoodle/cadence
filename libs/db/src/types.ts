@@ -66,81 +66,24 @@ export interface Database {
           user_id?: string | null
         }
       }
-      account_calendars: {
-        Row: {
-          account_id: number
-          calendar_id: number
-          created_at: string | null
-        }
-        Insert: {
-          account_id: number
-          calendar_id: number
-          created_at?: string | null
-        }
-        Update: {
-          account_id?: number
-          calendar_id?: number
-          created_at?: string | null
-        }
-      }
       attendee: {
         Row: {
           account_id: number
           event_id: number
+          is_organizer: boolean
           response: Database["public"]["Enums"]["attendance"] | null
         }
         Insert: {
           account_id: number
           event_id: number
+          is_organizer?: boolean
           response?: Database["public"]["Enums"]["attendance"] | null
         }
         Update: {
           account_id?: number
           event_id?: number
+          is_organizer?: boolean
           response?: Database["public"]["Enums"]["attendance"] | null
-        }
-      }
-      calendar: {
-        Row: {
-          calendar_id: string
-          created_at: string | null
-          id: number
-          name: string
-          organization_id: number | null
-          provider: Database["public"]["Enums"]["provider"]
-        }
-        Insert: {
-          calendar_id: string
-          created_at?: string | null
-          id?: number
-          name: string
-          organization_id?: number | null
-          provider: Database["public"]["Enums"]["provider"]
-        }
-        Update: {
-          calendar_id?: string
-          created_at?: string | null
-          id?: number
-          name?: string
-          organization_id?: number | null
-          provider?: Database["public"]["Enums"]["provider"]
-        }
-      }
-      calendar_events: {
-        Row: {
-          calendar_id: number
-          event_id: number
-          synced_at: string
-        }
-        Insert: {
-          calendar_id: number
-          event_id: number
-          synced_at?: string
-        }
-        Update: {
-          calendar_id?: number
-          event_id?: number
-          synced_at?: string
         }
       }
       domain: {
@@ -165,78 +108,52 @@ export interface Database {
       }
       event: {
         Row: {
+          account_id: number
+          cal_id: string
           created_at: string | null
           end_at: string | null
           id: number
-          is_meeting: boolean | null
+          is_meeting: boolean
           is_offsite: boolean
           is_online: boolean
           is_onsite: boolean
           length: number | null
-          organizer: number | null
           raw: Json | null
-          recurrence_id: string | null
+          series: string | null
           start_at: string
           title: string | null
-          uid: string
         }
         Insert: {
+          account_id: number
+          cal_id: string
           created_at?: string | null
           end_at?: string | null
           id?: number
-          is_meeting?: boolean | null
+          is_meeting?: boolean
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
           length?: number | null
-          organizer?: number | null
           raw?: Json | null
-          recurrence_id?: string | null
+          series?: string | null
           start_at: string
           title?: string | null
-          uid: string
         }
         Update: {
+          account_id?: number
+          cal_id?: string
           created_at?: string | null
           end_at?: string | null
           id?: number
-          is_meeting?: boolean | null
+          is_meeting?: boolean
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
           length?: number | null
-          organizer?: number | null
           raw?: Json | null
-          recurrence_id?: string | null
+          series?: string | null
           start_at?: string
           title?: string | null
-          uid?: string
-        }
-      }
-      extensions: {
-        Row: {
-          id: string
-          inserted_at: string
-          settings: Json | null
-          tenant_external_id: string | null
-          type: string | null
-          updated_at: string
-        }
-        Insert: {
-          id: string
-          inserted_at: string
-          settings?: Json | null
-          tenant_external_id?: string | null
-          type?: string | null
-          updated_at: string
-        }
-        Update: {
-          id?: string
-          inserted_at?: string
-          settings?: Json | null
-          tenant_external_id?: string | null
-          type?: string | null
-          updated_at?: string
         }
       }
       organization: {
@@ -254,64 +171,6 @@ export interface Database {
           created_at?: string | null
           id?: number
           name?: string | null
-        }
-      }
-      schema_migrations: {
-        Row: {
-          inserted_at: string | null
-          version: number
-        }
-        Insert: {
-          inserted_at?: string | null
-          version: number
-        }
-        Update: {
-          inserted_at?: string | null
-          version?: number
-        }
-      }
-      tenants: {
-        Row: {
-          external_id: string | null
-          id: string
-          inserted_at: string
-          jwt_secret: string | null
-          max_bytes_per_second: number
-          max_channels_per_client: number
-          max_concurrent_users: number
-          max_events_per_second: number
-          max_joins_per_second: number
-          name: string | null
-          postgres_cdc_default: string | null
-          updated_at: string
-        }
-        Insert: {
-          external_id?: string | null
-          id: string
-          inserted_at: string
-          jwt_secret?: string | null
-          max_bytes_per_second?: number
-          max_channels_per_client?: number
-          max_concurrent_users?: number
-          max_events_per_second?: number
-          max_joins_per_second?: number
-          name?: string | null
-          postgres_cdc_default?: string | null
-          updated_at: string
-        }
-        Update: {
-          external_id?: string | null
-          id?: string
-          inserted_at?: string
-          jwt_secret?: string | null
-          max_bytes_per_second?: number
-          max_channels_per_client?: number
-          max_concurrent_users?: number
-          max_events_per_second?: number
-          max_joins_per_second?: number
-          name?: string | null
-          postgres_cdc_default?: string | null
-          updated_at?: string
         }
       }
     }

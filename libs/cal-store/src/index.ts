@@ -120,19 +120,20 @@ export class CalendarStore {
       .from("event")
       .upsert(
         {
+          account_id: this.accountId,
           start_at: event.start?.toISOString(),
           end_at: event.end?.toISOString(),
           length: event.length,
           title: event.title,
-          uid: event.uid,
-          recurrence_id: event.recurrenceId,
+          cal_id: event.id,
+          series: event.series,
           is_meeting: event.isMeeting,
           is_offsite: event.isOffsite,
           is_online: event.isOnline,
           is_onsite: event.isOnsite,
           raw: event.raw,
         },
-        { onConflict: "uid, recurrence_id" }
+        { onConflict: "account_id, cal_id" }
       )
       .select();
     if (error) throw error;

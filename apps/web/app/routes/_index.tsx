@@ -1,55 +1,111 @@
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { useLoaderData, useOutletContext } from "@remix-run/react";
+import {
+  useLoaderData,
+  useOutletContext,
+  useSearchParams,
+} from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import { useEffect, useState } from "react";
-import { Container, Button, Table } from "@mantine/core";
+import { useState } from "react";
+import { Container, Flex, Button, Table, Select } from "@mantine/core";
 
 import type { Database } from "@cadence/db";
 import { SupabaseOutletContext } from "../root";
-import { createServerClient } from "../util";
+import { createServerClient, getAccountId } from "../util";
 
 type Event = Database["public"]["Tables"]["event"]["Row"];
+type Account = Database["public"]["Tables"]["account"]["Row"];
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
 
-  const { data } = await supabase.from("event").select();
+  const { data: accounts } = await supabase
+    .from("account")
+    .select("id, name, email")
+    .not("user_id", "is", null);
 
-  return json({ serverEvents: data ?? [] }, { headers: response.headers });
+  const url = new URL(request.url);
+  const accountParam = url.searchParams.get("account");
+  let accountId: number | null = null;
+  if (accountParam) {
+    accountId = parseInt(accountParam);
+  }
+  if (!accountId) {
+    accountId = await getAccountId(supabase);
+  }
+
+  const { data: events } = await supabase
+    .from("event")
+    .select()
+    .eq("account_id", accountId);
+
+  return json(
+    { accountId, accounts: accounts ?? [], events: events ?? [] },
+    { headers: response.headers }
+  );
 };
 
+function AccountSelect({
+  accounts,
+  defaultValue,
+  onChange,
+}: {
+  accounts: Pick<Account, "id" | "name" | "email">[];
+  defaultValue?: number;
+  onChange: (id: number) => void;
+}) {
+  const [value, setValue] = useState<number | null>(defaultValue || null);
+  const handleChange = (id: string) => {
+    const idNum = parseInt(id);
+    setValue(idNum);
+    onChange(idNum);
+  };
+  return (
+    <Select
+      placeholder="Select account"
+      w="20em"
+      value={value?.toString()}
+      onChange={handleChange}
+      data={accounts.map((account) => ({
+        value: account.id.toString(),
+        label: account.name
+          ? `${account.name} (${account.email})`
+          : account.email,
+      }))}
+    />
+  );
+}
+
 export default function Index() {
-  const { serverEvents } = useLoaderData<typeof loader>();
-  const [events, setEvents] = useState(serverEvents);
+  const [_, setSearchParams] = useSearchParams();
+  const { accountId, accounts, events } = useLoaderData<typeof loader>();
   const { supabase } = useOutletContext<SupabaseOutletContext>();
 
   const logout = async () => {
     await supabase.auth.signOut();
   };
 
-  useEffect(() => {
-    setEvents(serverEvents);
-  }, [serverEvents]);
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("*")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "events" },
-        (payload) => setEvents([...events, payload.new as Event])
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, events, setEvents]);
+  const accountSwitch = async (id: number) => {
+    setSearchParams({ account: id.toString() });
+  };
 
   return (
     <Container p="sm">
-      <Button onClick={logout}>Logout</Button>
+      <Flex
+        mih={50}
+        gap="md"
+        justify="space-between"
+        align="flex-start"
+        direction="row"
+        wrap="wrap"
+      >
+        <AccountSelect
+          accounts={accounts}
+          defaultValue={accountId || undefined}
+          onChange={accountSwitch}
+        />
+        <Button onClick={logout}>Logout</Button>
+      </Flex>
       <Table>
         <thead>
           <tr>

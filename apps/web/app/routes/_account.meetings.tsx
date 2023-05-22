@@ -23,7 +23,16 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const { data: organizers } = await supabase
     .from("organizer")
     .select()
-    .eq("account_id", accountId);
+    .eq("account_id", accountId)
+    .order("minutes_sum", { ascending: false })
+    .limit(10);
+
+  const { data: lengths } = await supabase
+    .from("event_length")
+    .select()
+    .eq("account_id", accountId)
+    .order("minutes_sum", { ascending: false })
+    .limit(10);
 
   const { data: events } = await supabase
     .from("event")
@@ -31,50 +40,89 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     .eq("account_id", accountId);
 
   return json(
-    { organizers: organizers ?? [], events: events ?? [] },
+    {
+      organizers: organizers ?? [],
+      lengths: lengths ?? [],
+      events: events ?? [],
+    },
     { headers: response.headers }
   );
 };
 
+function MeetingStats({
+  title,
+  data,
+}: {
+  title: string;
+  data: {
+    id: number;
+    title: string;
+    minutes_sum: number;
+    meeting_count: number;
+    attendee_count: number;
+  }[];
+}) {
+  return (
+    <Card shadow="sm" padding="lg" radius="md" withBorder>
+      <Card.Section>
+        <Table>
+          <thead>
+            <tr>
+              <th>{title}</th>
+              <th css={{ textAlign: "right !important" }}>⏳</th>
+              <th css={{ textAlign: "right !important" }}>🧮</th>
+              <th css={{ textAlign: "right !important" }}>💰</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {data.map((row) => (
+              <tr key={row.id}>
+                <td>{row.title}</td>
+                <td align="right">
+                  <code>{row.minutes_sum.toLocaleString()}</code>
+                </td>
+                <td align="right">
+                  <code>{row.meeting_count.toLocaleString()}</code>
+                </td>
+                <td align="right">
+                  <code>{row.attendee_count.toLocaleString()}</code>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card.Section>
+    </Card>
+  );
+}
+
 export default function Index() {
   const [_, setSearchParams] = useSearchParams();
-  const { organizers, events } = useLoaderData<typeof loader>();
+  const { organizers, lengths, events } = useLoaderData<typeof loader>();
 
   return (
     <>
       <Grid columns={12}>
         <Grid.Col sm={12} md={6} lg={4}>
-          <Card shadow="sm" padding="lg" radius="md" withBorder>
-            <Card.Section>
-              <Table>
-                <thead>
-                  <tr>
-                    <th>Organizer</th>
-                    <th css={{ textAlign: "right !important" }}>⏳</th>
-                    <th css={{ textAlign: "right !important" }}>🧮</th>
-                    <th css={{ textAlign: "right !important" }}>💰</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {organizers.map((organizer) => (
-                    <tr key={organizer.id}>
-                      <td>{organizer.name || organizer.email}</td>
-                      <td align="right">
-                        <code>{organizer.minutes.toLocaleString()}</code>
-                      </td>
-                      <td align="right">
-                        <code>{organizer.meeting_count.toLocaleString()}</code>
-                      </td>
-                      <td align="right">
-                        <code>{organizer.attendee_count.toLocaleString()}</code>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card.Section>
-          </Card>
+          <MeetingStats
+            title="Organizer"
+            // @ts-ignore
+            data={organizers.map((o) => ({
+              ...o,
+              title: o.name || o.email || "Unknown",
+            }))}
+          />
+        </Grid.Col>
+        <Grid.Col sm={12} md={6} lg={4}>
+          <MeetingStats
+            title="Length (minutes)"
+            // @ts-ignore
+            data={lengths.map((o) => ({
+              ...o,
+              title: o.minutes.toLocaleString(),
+            }))}
+          />
         </Grid.Col>
       </Grid>
       <Space h="lg" />

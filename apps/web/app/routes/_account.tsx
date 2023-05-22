@@ -8,11 +8,19 @@ import {
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import { useState } from "react";
-import { Container, Flex, Button, Select } from "@mantine/core";
+import {
+  AppShell,
+  Header,
+  Container,
+  Flex,
+  Title,
+  Button,
+  Select,
+} from "@mantine/core";
 
 import type { Database } from "@cadence/db";
 import { SupabaseOutletContext } from "../root";
-import { createServerClient, getAccountId } from "../util";
+import { APP_NAME, createServerClient, getAccountId } from "../util";
 
 type Account = Database["public"]["Tables"]["account"]["Row"];
 
@@ -62,21 +70,20 @@ function AccountSelect({
   );
 }
 
-export default function Index() {
-  const [_, setSearchParams] = useSearchParams();
+function AppHeader() {
   const { accountId, accounts } = useLoaderData<typeof loader>();
   const { supabase } = useOutletContext<SupabaseOutletContext>();
 
   const logout = async () => {
     await supabase.auth.signOut();
   };
-
+  const [_, setSearchParams] = useSearchParams();
   const accountSwitch = async (id: number) => {
     setSearchParams({ account: id.toString() });
   };
 
   return (
-    <Container p="sm">
+    <Header height={60} p="xs">
       <Flex
         mih={50}
         gap="md"
@@ -85,14 +92,26 @@ export default function Index() {
         direction="row"
         wrap="wrap"
       >
+        <Title order={1} size="h2">
+          {APP_NAME}
+        </Title>
         <AccountSelect
           accounts={accounts}
           defaultValue={accountId || undefined}
           onChange={accountSwitch}
         />
         <Button onClick={logout}>Logout</Button>
-        <Outlet />
       </Flex>
-    </Container>
+    </Header>
+  );
+}
+
+export default function Index() {
+  return (
+    <AppShell header={<AppHeader />}>
+      <Container p="sm">
+        <Outlet />
+      </Container>
+    </AppShell>
   );
 }

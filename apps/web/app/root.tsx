@@ -22,6 +22,7 @@ import type { Database } from "@cadence/db";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 import { MantineProvider, createEmotionCache } from "@mantine/core";
+import { useColorScheme } from "@mantine/hooks";
 import { StylesPlaceholder } from "@mantine/remix";
 import { APP_NAME, createServerClient } from "./util";
 
@@ -81,6 +82,8 @@ export const links: LinksFunction = () => [
 export default function App() {
   const { env, session, user } = useLoaderData<typeof loader>();
 
+  const colorScheme = useColorScheme();
+
   const { revalidate } = useRevalidator();
 
   const [supabase] = useState(() =>
@@ -109,7 +112,7 @@ export default function App() {
   }, [serverAccessToken, supabase]);
 
   return (
-    <MantineProvider withGlobalStyles withNormalizeCSS>
+    <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
       <html lang="en">
         <head>
           <StylesPlaceholder />

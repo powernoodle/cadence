@@ -109,9 +109,7 @@ function AppHeader() {
 export default function Index() {
   return (
     <AppShell header={<AppHeader />}>
-      <Container p="sm">
-        <Outlet />
-      </Container>
+      <Outlet />
     </AppShell>
   );
 }

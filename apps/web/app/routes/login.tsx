@@ -19,7 +19,7 @@ export default function Login() {
         ].join(" "),
         queryParams: {
           access_type: "offline",
-          prompt: "select_account",
+          prompt: "consent select_account",
         },
       },
     });

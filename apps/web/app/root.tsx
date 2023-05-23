@@ -21,7 +21,7 @@ import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-import { MantineProvider } from "@mantine/core";
+import { MantineProvider, createEmotionCache } from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import { StylesPlaceholder } from "@mantine/remix";
 
@@ -32,6 +32,8 @@ export const meta: V2_MetaFunction = () => [
   { title: APP_NAME },
   { viewport: "width=device-width,initial-scale=1" },
 ];
+
+createEmotionCache({ key: "mantine" });
 
 export type SupabaseOutletContext = {
   supabase: SupabaseClient<Database>;

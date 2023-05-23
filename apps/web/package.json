@@ -11,12 +11,11 @@
     "start": "NODE_ENV=production pnpm run wrangler",
     "typecheck": "tsc",
     "wrangler": "wrangler",
-    "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name cadence"
+    "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name divvy"
   },
   "dependencies": {
     "@cadence/db": "workspace:*",
     "@cadence/emotion-server": "workspace:^",
-    "@cloudflare/pages-plugin-sentry": "^1.1.1",
     "@emotion/react": "^11.11.0",
     "@emotion/server": "^11.11.0",
     "@mantine/core": "^6.0.11",

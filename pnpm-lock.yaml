@@ -69,9 +69,6 @@ importers:
       '@cadence/emotion-server':
         specifier: workspace:^
         version: link:../../libs/emotion-server
-      '@cloudflare/pages-plugin-sentry':
-        specifier: ^1.1.1
-        version: 1.1.1
       '@emotion/react':
         specifier: ^11.11.0
         version: 11.11.0(@types/react@18.0.35)(react@18.2.0)
@@ -1403,12 +1400,6 @@ packages:
     dependencies:
       mime: 3.0.0
     dev: true
-
-  /@cloudflare/pages-plugin-sentry@1.1.1:
-    resolution: {integrity: sha512-GrqUSBNuJIA4JdlJmG+T+PpednuLcijxFUF0nd+m+B2OY0ZOlz1KKMxurN80dXmxYyq5jzM8LW5EiE1WNOPg5w==}
-    dependencies:
-      toucan-js: 3.1.0
-    dev: false
 
   /@cloudflare/workerd-darwin-64@1.20230419.0:
     resolution: {integrity: sha512-d2yId8NOkbdEC81PV9fWvihFcysukjTZVkEeiBwne/8HXy80QDfp7nOCzBENUC5KexB2eJyEjMus9mL/QO9DFQ==}

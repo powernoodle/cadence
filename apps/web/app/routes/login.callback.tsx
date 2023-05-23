@@ -18,7 +18,8 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       response,
     }
   );
-  const { data } = await supabaseAdmin.auth.exchangeCodeForSession(code);
+  const { data, error } = await supabaseAdmin.auth.exchangeCodeForSession(code);
+  if (error) throw error;
 
   const credentials = {
     access_token: data?.session?.provider_token,

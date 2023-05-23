@@ -47,9 +47,24 @@ export default {
       return new Response("Success");
     } catch (e) {
       sentry.captureException(e);
+      console.error(e);
 
-      return new Response("Worker error", {
+      let error: object = { message: "Unknown error" };
+      if (e instanceof Error) {
+        error = {
+          message: e.message,
+          stack: e.stack,
+        };
+      } else if (typeof e === "string" || e instanceof String) {
+        error = {
+          message: e,
+        };
+      }
+      return new Response(JSON.stringify(error), {
         status: 500,
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+        },
       });
     }
   },

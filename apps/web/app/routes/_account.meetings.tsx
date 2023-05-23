@@ -216,7 +216,7 @@ export default function Index() {
             <tbody>
               {events.map((event, i) => (
                 <tr
-                  key={event.id}
+                  key={event.series}
                   css={{
                     display: i < 3 || opened ? "table-row" : "none",
                   }}

@@ -32,21 +32,21 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     .from("organizer")
     .select()
     .eq("account_id", accountId)
-    .order("minutes_sum", { ascending: false })
+    .order("length_sum", { ascending: false })
     .limit(10);
 
   const { data: lengths } = await supabase
     .from("event_length")
     .select()
     .eq("account_id", accountId)
-    .order("minutes_sum", { ascending: false })
+    .order("length_sum", { ascending: false })
     .limit(10);
 
   const { data: events } = await supabase
     .from("event_series")
     .select()
     .eq("account_id", accountId)
-    .order("minutes_sum", { ascending: false })
+    .order("length_sum", { ascending: false })
     .limit(30);
 
   return json(
@@ -67,7 +67,7 @@ function MeetingStats({
   data: {
     id: number;
     title: string;
-    minutes_sum: number;
+    length_sum: number;
     meeting_count: number;
     cost: number;
   }[];
@@ -105,7 +105,7 @@ function MeetingStats({
                   <code>{row.meeting_count.toLocaleString()}</code>
                 </td>
                 <td align="right">
-                  <code>{row.minutes_sum.toLocaleString()}</code>
+                  <code>{row.length_sum.toLocaleString()}</code>
                 </td>
                 <td align="right">
                   <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
@@ -150,9 +150,9 @@ export default function Index() {
             title="Length (minutes)"
             // @ts-ignore
             data={lengths.map((o) => ({
-              id: o.minutes,
+              id: o.length,
               ...o,
-              title: o.minutes?.toLocaleString() || "?",
+              title: o.length?.toLocaleString() || "?",
             }))}
           />
         </Grid.Col>
@@ -223,16 +223,18 @@ export default function Index() {
                 >
                   <td>{event.title}</td>
                   <td align="right">
-                    {Math.round(event.minutes).toLocaleString()}
+                    <code>{Math.round(event.length).toLocaleString()}</code>
                   </td>
                   <td align="right">
-                    {Math.round(event.attendee_count).toLocaleString()}
+                    <code>
+                      {Math.round(event.attendee_count).toLocaleString()}
+                    </code>
                   </td>
                   <td align="right">
                     <code>{event.meeting_count.toLocaleString()}</code>
                   </td>
                   <td align="right">
-                    <code>{event.minutes_sum.toLocaleString()}</code>
+                    <code>{event.length_sum.toLocaleString()}</code>
                   </td>
                   <td align="right">
                     <code>

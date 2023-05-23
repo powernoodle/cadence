@@ -118,7 +118,6 @@ export interface Database {
           is_online: boolean
           is_onsite: boolean
           length: number | null
-          raw: Json | null
           series: string | null
           start_at: string
           title: string | null
@@ -134,7 +133,6 @@ export interface Database {
           is_online?: boolean
           is_onsite?: boolean
           length?: number | null
-          raw?: Json | null
           series?: string | null
           start_at: string
           title?: string | null
@@ -150,7 +148,6 @@ export interface Database {
           is_online?: boolean
           is_onsite?: boolean
           length?: number | null
-          raw?: Json | null
           series?: string | null
           start_at?: string
           title?: string | null
@@ -173,14 +170,93 @@ export interface Database {
           name?: string | null
         }
       }
+      raw_events: {
+        Row: {
+          event_id: number
+          ical: Json | null
+        }
+        Insert: {
+          event_id: number
+          ical?: Json | null
+        }
+        Update: {
+          event_id?: number
+          ical?: Json | null
+        }
+      }
     }
     Views: {
-      [_ in never]: never
+      event_length: {
+        Row: {
+          account_id: number | null
+          cost: number | null
+          length: number | null
+          length_sum: number | null
+          meeting_count: number | null
+        }
+      }
+      event_series: {
+        Row: {
+          account_id: number | null
+          attendee_count: number | null
+          cost: number | null
+          is_meeting: boolean | null
+          is_offsite: boolean | null
+          is_online: boolean | null
+          is_onsite: boolean | null
+          length: number | null
+          length_sum: number | null
+          meeting_count: number | null
+          series: string | null
+          title: string | null
+        }
+      }
+      event_stats: {
+        Row: {
+          account_id: number | null
+          attendee_count: number | null
+          cal_id: string | null
+          created_at: string | null
+          end_at: string | null
+          id: number | null
+          is_meeting: boolean | null
+          is_offsite: boolean | null
+          is_online: boolean | null
+          is_onsite: boolean | null
+          length: number | null
+          series: string | null
+          start_at: string | null
+          title: string | null
+        }
+      }
+      organizer: {
+        Row: {
+          account_id: number | null
+          cost: number | null
+          email: string | null
+          id: number | null
+          length_sum: number | null
+          meeting_count: number | null
+          name: string | null
+        }
+      }
     }
     Functions: {
       get_or_create_organization_id: {
         Args: {
           email: string
+        }
+        Returns: number
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      meeting_cost: {
+        Args: {
+          occurrence_count: number
+          attendee_count: number
+          minute_sum: number
         }
         Returns: number
       }

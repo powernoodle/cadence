@@ -131,13 +131,17 @@ export class CalendarStore {
           is_offsite: event.isOffsite,
           is_online: event.isOnline,
           is_onsite: event.isOnsite,
-          raw: event.raw,
         },
         { onConflict: "account_id, cal_id" }
       )
       .select();
     if (error) throw error;
     const eventId = data?.[0]?.id;
+    if (!eventId) throw Error("Failed to get event_id");
+    await this.supabase.from("raw_event").upsert({
+      event_id: eventId,
+      ical: event.raw,
+    });
     for (const attendee of event.attendance) {
       try {
         await this.saveAttendee(eventId, attendee);

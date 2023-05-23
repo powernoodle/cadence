@@ -123,6 +123,13 @@ export default function Index() {
   const [_, setSearchParams] = useSearchParams();
   const { organizers, lengths, events } = useLoaderData<typeof loader>();
 
+  const costFmt = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
   const [opened, { toggle }] = useDisclosure(false);
 
   return (
@@ -194,7 +201,13 @@ export default function Index() {
                   <Text ta="right">Attendees</Text>
                 </th>
                 <th css={{ width: "10em" }}>
-                  <Text ta="right">Occurrences</Text>
+                  <Text ta="right">🧮</Text>
+                </th>
+                <th css={{ width: "10em" }}>
+                  <Text ta="right">⏳</Text>
+                </th>
+                <th css={{ width: "10em" }}>
+                  <Text ta="right">💰</Text>
                 </th>
                 <th></th>
               </tr>
@@ -209,9 +222,23 @@ export default function Index() {
                   }}
                 >
                   <td>{event.title}</td>
-                  <td align="right">{Math.round(event.minutes)}</td>
-                  <td align="right">{Math.round(event.attendee_count)}</td>
-                  <td align="right">{event.meeting_count}</td>
+                  <td align="right">
+                    {Math.round(event.minutes).toLocaleString()}
+                  </td>
+                  <td align="right">
+                    {Math.round(event.attendee_count).toLocaleString()}
+                  </td>
+                  <td align="right">
+                    <code>{event.meeting_count.toLocaleString()}</code>
+                  </td>
+                  <td align="right">
+                    <code>{event.minutes_sum.toLocaleString()}</code>
+                  </td>
+                  <td align="right">
+                    <code>
+                      {costFmt.format((event.cost * HOURLY_WAGE) / 60)}
+                    </code>
+                  </td>
                   <td></td>
                 </tr>
               ))}

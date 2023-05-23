@@ -119,6 +119,7 @@ export default function Index() {
             title="Length (minutes)"
             // @ts-ignore
             data={lengths.map((o) => ({
+              id: o.minutes,
               ...o,
               title: o.minutes.toLocaleString(),
             }))}

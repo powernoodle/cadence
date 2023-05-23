@@ -3,10 +3,11 @@
   "version": "0.0.0",
   "main": "build/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "wrangler publish --dry-run --outdir build",
     "dev": "wrangler dev --local -e dev",
-    "deploy": "wrangler deploy",
-    "tail-logs": "wrangler tail sync"
+    "deploy": "wrangler deploy && pnpm source-map",
+    "tail-logs": "wrangler tail sync",
+    "source-map": "pnpm build && sentry-cli sourcemaps inject build && sentry-cli sourcemaps upload build"
   },
   "dependencies": {
     "@cadence/cal-store": "workspace:^",
@@ -17,7 +18,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230511.0",
     "esbuild-plugin-ignore": "^1.1.1",
-    "wrangler": "^3.0.0"
+    "wrangler": "^3.0.1"
   },
   "private": true
 }

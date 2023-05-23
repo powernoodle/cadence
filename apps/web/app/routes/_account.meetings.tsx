@@ -6,6 +6,7 @@ import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   Card,
+  Text,
   Box,
   Space,
   Grid,
@@ -42,9 +43,11 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     .limit(10);
 
   const { data: events } = await supabase
-    .from("event")
+    .from("event_series")
     .select()
-    .eq("account_id", accountId);
+    .eq("account_id", accountId)
+    .order("minutes_sum", { ascending: false })
+    .limit(30);
 
   return json(
     {
@@ -82,9 +85,15 @@ function MeetingStats({
           <thead>
             <tr>
               <th>{title}</th>
-              <th css={{ textAlign: "right !important" }}>🧮</th>
-              <th css={{ textAlign: "right !important" }}>⏳</th>
-              <th css={{ textAlign: "right !important" }}>💰</th>
+              <th>
+                <Text ta="right">🧮</Text>
+              </th>
+              <th>
+                <Text ta="right">⏳</Text>
+              </th>
+              <th>
+                <Text ta="right">💰</Text>
+              </th>
             </tr>
           </thead>
 
@@ -136,7 +145,7 @@ export default function Index() {
             data={lengths.map((o) => ({
               id: o.minutes,
               ...o,
-              title: o.minutes.toLocaleString(),
+              title: o.minutes?.toLocaleString() || "?",
             }))}
           />
         </Grid.Col>
@@ -174,10 +183,20 @@ export default function Index() {
           </div>
           <Space h="0.5em" />
 
-          <Table>
+          <Table sx={{ tableLayout: "fixed" }}>
             <thead>
               <tr>
-                <th>Meeting</th>
+                <th css={{ width: "30em" }}>Meeting</th>
+                <th css={{ width: "10em" }}>
+                  <Text ta="right">Length</Text>
+                </th>
+                <th css={{ width: "10em" }}>
+                  <Text ta="right">Attendees</Text>
+                </th>
+                <th css={{ width: "10em" }}>
+                  <Text ta="right">Occurrences</Text>
+                </th>
+                <th></th>
               </tr>
             </thead>
 
@@ -190,6 +209,10 @@ export default function Index() {
                   }}
                 >
                   <td>{event.title}</td>
+                  <td align="right">{Math.round(event.minutes)}</td>
+                  <td align="right">{Math.round(event.attendee_count)}</td>
+                  <td align="right">{event.meeting_count}</td>
+                  <td></td>
                 </tr>
               ))}
             </tbody>

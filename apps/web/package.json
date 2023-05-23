@@ -33,7 +33,8 @@
     "isbot": "^3.6.8",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-social-login-buttons": "^3.9.1"
+    "react-social-login-buttons": "^3.9.1",
+    "tabler-icons-react": "^1.56.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.19.0",

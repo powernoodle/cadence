@@ -126,6 +126,9 @@ importers:
       react-social-login-buttons:
         specifier: ^3.9.1
         version: 3.9.1(react@18.2.0)
+      tabler-icons-react:
+        specifier: ^1.56.0
+        version: 1.56.0(react@18.2.0)
     devDependencies:
       '@cloudflare/workers-types':
         specifier: ^3.19.0
@@ -9947,6 +9950,14 @@ packages:
 
   /tabbable@6.1.2:
     resolution: {integrity: sha512-qCN98uP7i9z0fIS4amQ5zbGBOq+OSigYeGvPy7NDk8Y9yncqDZ9pRPgfsc2PJIVM9RrJj7GIfuRgmjoUU9zTHQ==}
+    dev: false
+
+  /tabler-icons-react@1.56.0(react@18.2.0):
+    resolution: {integrity: sha512-FOme3w6PJIWDpeXqQ4xjArQqdxzrr9xNy7PSSgWpRzOUQ71RyZ7jt6WThsfyLBz5os78TPJRA8f/0NLjnKcx9A==}
+    peerDependencies:
+      react: '>= 16.8.0'
+    dependencies:
+      react: 18.2.0
     dev: false
 
   /tapable@2.2.1:

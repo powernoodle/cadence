@@ -2,19 +2,24 @@
 /** @jsxfrag */
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import {
-  useLoaderData,
-  useOutletContext,
-  useSearchParams,
-} from "@remix-run/react";
+import { useLoaderData, useSearchParams } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import { Card, Grid, Table, Space } from "@mantine/core";
-import { jsx, css } from "@emotion/react";
+import {
+  Card,
+  Box,
+  Space,
+  Grid,
+  ActionIcon,
+  Table,
+  Affix,
+} from "@mantine/core";
+import {
+  LayoutBottombarExpand,
+  LayoutBottombarCollapse,
+} from "tabler-icons-react";
+import { useDisclosure } from "@mantine/hooks";
 
-import type { Database } from "@cadence/db";
 import { createServerClient, getAccountId } from "../util";
-
-type Event = Database["public"]["Tables"]["event"]["Row"];
 
 const HOURLY_WAGE = 50;
 
@@ -71,7 +76,7 @@ function MeetingStats({
     maximumFractionDigits: 0,
   });
   return (
-    <Card shadow="sm" padding="lg" radius="md" withBorder>
+    <Card shadow="xs" padding="lg" radius="md" withBorder>
       <Card.Section>
         <Table>
           <thead>
@@ -109,6 +114,8 @@ export default function Index() {
   const [_, setSearchParams] = useSearchParams();
   const { organizers, lengths, events } = useLoaderData<typeof loader>();
 
+  const [opened, { toggle }] = useDisclosure(false);
+
   return (
     <>
       <Grid columns={12}>
@@ -134,22 +141,61 @@ export default function Index() {
           />
         </Grid.Col>
       </Grid>
-      <Space h="lg" />
-      <Table>
-        <thead>
-          <tr>
-            <th>Meeting</th>
-          </tr>
-        </thead>
+      <Space h={200}></Space>
+      <Affix position={{ bottom: 0, left: 0, right: 0 }}>
+        <Box
+          sx={(theme) => ({
+            backgroundColor:
+              theme.colorScheme === "dark"
+                ? theme.colors.dark[6]
+                : theme.colors.gray[0],
+            borderTopWidth: "1px",
+            borderTopStyle: "solid",
+            borderTopColor:
+              theme.colorScheme === "dark"
+                ? theme.colors.dark[3]
+                : theme.colors.gray[3],
+            boxShadow:
+              "0 -0.0625rem 0.1875rem rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 0 -0.625rem 0.9375rem -0.3125rem, rgba(0, 0, 0, 0.04) 0 0.4375rem 0.4375rem -0.3125rem",
+            maxHeight: "50vh",
+            overflow: "auto",
+          })}
+        >
+          <div
+            css={{
+              position: "absolute",
+              top: "0.5em",
+              right: "0.5em",
+            }}
+          >
+            <ActionIcon onClick={toggle}>
+              {opened ? <LayoutBottombarCollapse /> : <LayoutBottombarExpand />}
+            </ActionIcon>
+          </div>
+          <Space h="0.5em" />
 
-        <tbody>
-          {events.map((event) => (
-            <tr key={event.id}>
-              <td>{event.title}</td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
+          <Table>
+            <thead>
+              <tr>
+                <th>Meeting</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {events.map((event, i) => (
+                <tr
+                  key={event.id}
+                  css={{
+                    display: i < 3 || opened ? "table-row" : "none",
+                  }}
+                >
+                  <td>{event.title}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </Box>
+      </Affix>
     </>
   );
 }

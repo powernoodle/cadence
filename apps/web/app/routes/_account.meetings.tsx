@@ -16,6 +16,8 @@ import { createServerClient, getAccountId } from "../util";
 
 type Event = Database["public"]["Tables"]["event"]["Row"];
 
+const HOURLY_WAGE = 50;
+
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
@@ -59,9 +61,15 @@ function MeetingStats({
     title: string;
     minutes_sum: number;
     meeting_count: number;
-    attendee_count: number;
+    cost: number;
   }[];
 }) {
+  const costFmt = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Card.Section>
@@ -69,8 +77,8 @@ function MeetingStats({
           <thead>
             <tr>
               <th>{title}</th>
-              <th css={{ textAlign: "right !important" }}>⏳</th>
               <th css={{ textAlign: "right !important" }}>🧮</th>
+              <th css={{ textAlign: "right !important" }}>⏳</th>
               <th css={{ textAlign: "right !important" }}>💰</th>
             </tr>
           </thead>
@@ -80,13 +88,13 @@ function MeetingStats({
               <tr key={row.id}>
                 <td>{row.title}</td>
                 <td align="right">
-                  <code>{row.minutes_sum.toLocaleString()}</code>
-                </td>
-                <td align="right">
                   <code>{row.meeting_count.toLocaleString()}</code>
                 </td>
                 <td align="right">
-                  <code>{row.attendee_count.toLocaleString()}</code>
+                  <code>{row.minutes_sum.toLocaleString()}</code>
+                </td>
+                <td align="right">
+                  <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
                 </td>
               </tr>
             ))}

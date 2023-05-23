@@ -12,6 +12,8 @@
     "supabase": "supabase",
     "reset": "supabase db reset",
     "diff-remote": "supabase db diff --linked | supabase migration new init",
+    "new-migration": "supabase db diff | supabase migration new",
+    "push": "supabase db push",
     "dump-seed": "supabase db dump --data-only -f supabase/seed.sql"
   },
   "keywords": [],

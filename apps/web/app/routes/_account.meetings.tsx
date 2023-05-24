@@ -19,6 +19,7 @@ import {
   ActionIcon,
   Table,
   Affix,
+  LoadingOverlay,
 } from "@mantine/core";
 import {
   LayoutBottombarExpand,
@@ -160,6 +161,7 @@ export default function Meetings() {
 
   return (
     <>
+      <LoadingOverlay visible={events.length === 0} />
       <Grid columns={12}>
         <Grid.Col sm={12} md={6} lg={4}>
           <MeetingStats

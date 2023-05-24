@@ -110,20 +110,18 @@ async function process(env: Env, request: SyncRequest) {
     env.MICROSOFT_OAUTH_SECRET,
     request.accountId
   );
-  const client = createClient(env.SUPABASE_URL, env.SUPABASE_KEY, {
-    realtime: {
-      transport: WebSocketProxy,
-    },
-  });
-
-  const channel = client.channel(`sync:${request.accountId}`);
-  await new Promise((resolve) => setTimeout(resolve, 3000));
 
   await store.syncEvents(
     sub(new Date(), { days: 60 }),
     add(new Date(), { days: 30 })
   );
 
+  const client = createClient(env.SUPABASE_URL, env.SUPABASE_KEY, {
+    realtime: {
+      transport: WebSocketProxy,
+    },
+  });
+  const channel = client.channel(`account:${request.accountId}`);
   channel.subscribe(async (status: any, err: any) => {
     if (status === "SUBSCRIBED") {
       await channel.send({

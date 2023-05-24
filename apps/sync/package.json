@@ -11,8 +11,8 @@
   },
   "dependencies": {
     "@cadence/cal-store": "workspace:^",
+    "@supabase/supabase-js": "^2.21.0",
     "date-fns": "^2.30.0",
-    "http2": "npm:is_number",
     "toucan-js": "^3.1.0"
   },
   "devDependencies": {

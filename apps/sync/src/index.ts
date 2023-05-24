@@ -1,4 +1,5 @@
 import { Toucan } from "toucan-js";
+import { createClient } from "@supabase/supabase-js";
 
 import add from "date-fns/add";
 import sub from "date-fns/sub";
@@ -93,18 +94,59 @@ export default {
   },
 };
 
+class WebSocketProxy extends WebSocket {
+  public constructor(url: string, protocols?: string | string[]) {
+    super(url, protocols?.length ? protocols : undefined);
+  }
+}
+
 async function process(env: Env, request: SyncRequest) {
   const store = await CalendarStore.Create(
-    env.SUPABASE_URL!,
-    env.SUPABASE_KEY!,
-    env.GOOGLE_CLIENT_ID!,
-    env.GOOGLE_OAUTH_SECRET!,
-    env.MICROSOFT_CLIENT_ID!,
-    env.MICROSOFT_OAUTH_SECRET!,
+    env.SUPABASE_URL,
+    env.SUPABASE_KEY,
+    env.GOOGLE_CLIENT_ID,
+    env.GOOGLE_OAUTH_SECRET,
+    env.MICROSOFT_CLIENT_ID,
+    env.MICROSOFT_OAUTH_SECRET,
     request.accountId
   );
+  const client = createClient(env.SUPABASE_URL, env.SUPABASE_KEY, {
+    realtime: {
+      transport: WebSocketProxy,
+    },
+  });
+
+  const channel = client.channel(`sync:${request.accountId}`);
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+
   await store.syncEvents(
     sub(new Date(), { days: 60 }),
     add(new Date(), { days: 30 })
   );
+
+  channel.subscribe(async (status: any, err: any) => {
+    if (status === "SUBSCRIBED") {
+      await channel.send({
+        type: "broadcast",
+        event: "sync",
+        payload: { status: "DONE" },
+      });
+    }
+
+    if (status === "CHANNEL_ERROR") {
+      console.error(
+        `There was an error subscribing to channel: ${err.message}`
+      );
+    }
+
+    if (status === "TIMED_OUT") {
+      console.error("Realtime server did not respond in time.");
+    }
+
+    if (status === "CLOSED") {
+      console.error("Realtime channel was unexpectedly closed.");
+    }
+  });
+
+  await new Promise((resolve) => setTimeout(resolve, 3000));
 }

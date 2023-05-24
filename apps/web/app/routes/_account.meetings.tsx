@@ -1,8 +1,14 @@
 /** @jsx jsx */
 /** @jsxfrag */
+import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { useLoaderData, useSearchParams } from "@remix-run/react";
+import {
+  useLoaderData,
+  useOutletContext,
+  useSearchParams,
+  useRevalidator,
+} from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   Card,
@@ -20,6 +26,7 @@ import {
 } from "tabler-icons-react";
 import { useDisclosure } from "@mantine/hooks";
 
+import { SupabaseOutletContext } from "../root";
 import { createServerClient, getAccountId } from "../util";
 
 const HOURLY_WAGE = 50;
@@ -51,6 +58,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
   return json(
     {
+      accountId,
       organizers: organizers ?? [],
       lengths: lengths ?? [],
       events: events ?? [],
@@ -119,9 +127,12 @@ function MeetingStats({
   );
 }
 
-export default function Index() {
+export default function Meetings() {
   const [_, setSearchParams] = useSearchParams();
-  const { organizers, lengths, events } = useLoaderData<typeof loader>();
+  const { accountId, organizers, lengths, events } =
+    useLoaderData<typeof loader>();
+
+  const { supabase } = useOutletContext<SupabaseOutletContext>();
 
   const costFmt = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -131,6 +142,21 @@ export default function Index() {
   });
 
   const [opened, { toggle }] = useDisclosure(false);
+
+  const revalidator = useRevalidator();
+
+  useEffect(() => {
+    const channel = supabase.channel(`account:${accountId}`);
+    channel
+      .on("broadcast", { event: "sync" }, (payload) => {
+        console.log(payload);
+        revalidator.revalidate();
+      })
+      .subscribe();
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [supabase, accountId]);
 
   return (
     <>

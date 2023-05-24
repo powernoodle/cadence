@@ -44,12 +44,12 @@ importers:
       '@cadence/cal-store':
         specifier: workspace:^
         version: link:../../libs/cal-store
+      '@supabase/supabase-js':
+        specifier: ^2.21.0
+        version: 2.21.0
       date-fns:
         specifier: ^2.30.0
         version: 2.30.0
-      http2:
-        specifier: npm:is_number
-        version: /is_number@0.0.1
       toucan-js:
         specifier: ^3.1.0
         version: 3.1.0
@@ -3399,7 +3399,7 @@ packages:
   /@types/graceful-fs@4.1.6:
     resolution: {integrity: sha512-Sig0SNORX9fdW+bQuTEovKj3uHcUL6LQKbCrrqb1X7J6/ReAbhCXRAhc+SMejhLELFj2QcyuxmUooZ4bt5ReSw==}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
     dev: true
 
   /@types/hast@2.3.4:
@@ -3455,6 +3455,7 @@ packages:
 
   /@types/node@20.1.0:
     resolution: {integrity: sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==}
+    dev: true
 
   /@types/node@20.2.1:
     resolution: {integrity: sha512-DqJociPbZP1lbZ5SQPk4oag6W7AyaGMO6gSfRwq3PWl4PXTwJpRQJhDq4W0kzrg3w6tJ1SwlvGZ5uKFHY13LIg==}
@@ -3509,7 +3510,7 @@ packages:
   /@types/websocket@1.0.5:
     resolution: {integrity: sha512-NbsqiNX9CnEfC1Z0Vf4mE1SgAJ07JnRYcNex7AJ9zAVzmiGHmjKFEk7O4TJIsgv2B1sLEb6owKFZrACwdYngsQ==}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
     dev: false
 
   /@types/yargs-parser@21.0.0:
@@ -6796,10 +6797,6 @@ packages:
       is-docker: 2.2.1
     dev: true
 
-  /is_number@0.0.1:
-    resolution: {integrity: sha512-d7seU4Xy2LwbRrL2H4qHK9WNKR653lZcPFEBzfC5aeQHQZEqUVqbbDtrThm8o2qWX33tOkuHPQI6VLJhMFLENw==}
-    dev: false
-
   /isarray@0.0.1:
     resolution: {integrity: sha512-D2S+3GLxWH+uhrNEcoh/fnmYeP8E8/zHl644d/jdA0g2uyXvy3sb0qxotE+ne0LtccHknQzWwZEzhak7oJ0COQ==}
 
@@ -6883,7 +6880,7 @@ packages:
       '@jest/expect': 29.5.0
       '@jest/test-result': 29.5.0
       '@jest/types': 29.5.0
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
       chalk: 4.1.2
       co: 4.6.0
       dedent: 0.7.0
@@ -7046,7 +7043,7 @@ packages:
       '@jest/environment': 29.5.0
       '@jest/fake-timers': 29.5.0
       '@jest/types': 29.5.0
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
       jest-mock: 29.5.0
       jest-util: 29.5.0
     dev: true
@@ -7291,7 +7288,7 @@ packages:
     resolution: {integrity: sha512-NcrQnevGoSp4b5kg+akIpthoAFHxPBcb5P6mYPY0fUNT+sSvmtu6jlkEle3anczUKIKEbMxFimk9oTP/tpIPgA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
     dependencies:
-      '@types/node': 20.1.0
+      '@types/node': 20.2.1
       jest-util: 29.5.0
       merge-stream: 2.0.0
       supports-color: 8.1.1

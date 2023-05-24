@@ -107,9 +107,10 @@ function AppHeader() {
 }
 
 export default function Index() {
+  const ctx = useOutletContext<SupabaseOutletContext>();
   return (
     <AppShell header={<AppHeader />}>
-      <Outlet />
+      <Outlet context={ctx} />
     </AppShell>
   );
 }

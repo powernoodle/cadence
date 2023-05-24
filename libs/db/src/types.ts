@@ -170,7 +170,7 @@ export interface Database {
           name?: string | null
         }
       }
-      raw_events: {
+      raw_event: {
         Row: {
           event_id: number
           ical: Json | null
@@ -215,6 +215,7 @@ export interface Database {
         Row: {
           account_id: number | null
           attendee_count: number | null
+          attendees: string | null
           cal_id: string | null
           created_at: string | null
           end_at: string | null

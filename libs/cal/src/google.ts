@@ -126,18 +126,10 @@ export class GoogleClient extends CalendarClient {
     if (googleEvent.originalStartTime) {
       calId += `:${googleEvent.originalStartTime?.dateTime?.toString()}`;
     }
-    const event = new Event(
-      calId,
-      googleEvent.iCalUID,
-      new Date(googleEvent.start.dateTime),
-      new Date(googleEvent.end.dateTime),
-      googleEvent.summary,
-      googleEvent.description,
-      googleEvent.location
-    );
-    event.raw = googleEvent;
+    const isOnline = !!googleEvent.conferenceData;
+    const isOnsite = !!googleEvent.attendees?.some((a) => a.resource);
     const organizerEmail = googleEvent.organizer?.email?.toLowerCase();
-    event.attendance =
+    const attendance =
       googleEvent.attendees?.reduce?.((ret, attendee) => {
         if (!attendee.email || attendee.resource) return ret;
         return [
@@ -147,12 +139,28 @@ export class GoogleClient extends CalendarClient {
             name: attendee.displayName,
             response: this.transformResponse(attendee.responseStatus),
             isOrganizer: organizerEmail === attendee.email,
+            isSelf: attendee.self,
           } as Attendance,
         ];
       }, [] as Attendance[]) || [];
-    if (googleEvent.conferenceData) event.isOnline = true;
-    event.isOnsite = !!googleEvent.attendees?.some((a) => a.resource);
-    event.isOffsite = !event.isOnline && !event.isOnsite;
+    const event = new Event({
+      id: calId,
+      series: googleEvent.iCalUID,
+      start: new Date(googleEvent.start.dateTime),
+      end: new Date(googleEvent.end.dateTime),
+      title: googleEvent.summary || undefined,
+      description: googleEvent.description || undefined,
+      location: googleEvent.location || undefined,
+      isOnline,
+      isOnsite,
+      isCancelled: googleEvent.status === "cancelled",
+      isPrivate: googleEvent.visibility === "private",
+      notMeeting:
+        googleEvent.transparency === "transparent" ||
+        googleEvent.eventType !== "default",
+      attendance,
+      raw: googleEvent,
+    });
     return event;
   }
 

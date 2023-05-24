@@ -191,7 +191,7 @@ export default function Index() {
           <Space h="0.5em" />
 
           <Table sx={{ tableLayout: "fixed" }}>
-            <thead>
+            <thead onClick={toggle}>
               <tr>
                 <th css={{ width: "30em" }}>Meeting</th>
                 <th css={{ width: "10em" }}>

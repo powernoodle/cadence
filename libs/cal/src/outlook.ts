@@ -118,7 +118,10 @@ export class OutlookClient extends CalendarClient {
     }
   }
 
-  private transformEvent(outlookEvent: OutlookEvent): Event | null {
+  private transformEvent(
+    outlookEvent: OutlookEvent,
+    ownerEmail?: string
+  ): Event | null {
     if (!outlookEvent.id || outlookEvent.isCancelled) {
       return null;
     }
@@ -129,16 +132,7 @@ export class OutlookClient extends CalendarClient {
       return null;
     }
 
-    const event = new Event(
-      outlookEvent.id,
-      outlookEvent.seriesMasterId || null,
-      start,
-      end,
-      outlookEvent.subject || null,
-      outlookEvent.bodyPreview,
-      outlookEvent.location?.displayName
-    );
-    event.attendance = [
+    const attendance = [
       ...(outlookEvent.attendees?.reduce?.((ret, attendee) => {
         const email = attendee.emailAddress?.address?.toLowerCase();
         if (!email) return ret;
@@ -149,6 +143,7 @@ export class OutlookClient extends CalendarClient {
             email,
             name: attendee.emailAddress?.name,
             response,
+            isSelf: email === ownerEmail,
           } as Attendance,
         ];
       }, [] as Attendance[]) || []),
@@ -159,17 +154,33 @@ export class OutlookClient extends CalendarClient {
               name: outlookEvent.organizer.emailAddress.name || undefined,
               response: "accepted" as Response,
               isOrganizer: true,
+              isSelf:
+                outlookEvent.organizer.emailAddress.address.toLowerCase() ===
+                ownerEmail,
             },
           ]
         : []),
     ];
-    if (outlookEvent.isOnlineMeeting) event.isOnline = true;
-    event.isOnsite = outlookEvent.location?.locationType === "conferenceRoom";
-    event.isOffsite =
-      !event.isOnline &&
-      !event.isOnsite &&
-      !!outlookEvent.location?.displayName;
-    event.raw = outlookEvent;
+    const event = new Event({
+      id: outlookEvent.id,
+      series: outlookEvent.seriesMasterId || undefined,
+      start,
+      end,
+      title: outlookEvent.subject || undefined,
+      description: outlookEvent.bodyPreview || undefined,
+      location: outlookEvent.location?.displayName || undefined,
+      isOnline: outlookEvent.isOnlineMeeting || undefined,
+      isOnsite: outlookEvent.location?.locationType === "conferenceRoom",
+      isCancelled: outlookEvent.isCancelled || undefined,
+      isPrivate: outlookEvent.sensitivity
+        ? outlookEvent.sensitivity !== "normal"
+        : false,
+      notMeeting: outlookEvent.showAs
+        ? ["free", "oof", "workingElsewhere"].includes(outlookEvent.showAs)
+        : false,
+      attendance,
+      raw: outlookEvent,
+    });
     return event;
   }
 
@@ -179,12 +190,15 @@ export class OutlookClient extends CalendarClient {
     max: Date,
     state: any
   ): AsyncIterableIterator<{ event: Event; state: any }> {
+    const calendar = await this.client.api("/me/calendar").get();
+
     const response = await this.client
       .api(
         state?.deltaLink ||
           `/me/calendarview/delta?startDateTime=${min.toISOString()}&endDateTime=${max.toISOString()}`
       )
       .get();
+    const ownerEmail = calendar.owner?.address?.toLowerCase();
 
     let outlookEvent: OutlookEvent | undefined;
     const callback = (nextEvent: OutlookEvent) => {
@@ -213,7 +227,7 @@ export class OutlookClient extends CalendarClient {
               ...outlookEvent,
             };
           }
-          const event = this.transformEvent(outlookEvent);
+          const event = this.transformEvent(outlookEvent, ownerEmail);
           const deltaLink = pageIterator.getDeltaLink();
           state = {
             ...(state || {}),

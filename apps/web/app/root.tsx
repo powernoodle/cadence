@@ -3,6 +3,7 @@ import type {
   LinksFunction,
   V2_MetaFunction,
 } from "@remix-run/cloudflare";
+import * as Sentry from "@sentry/remix";
 
 import { cssBundleHref } from "@remix-run/css-bundle";
 import {
@@ -14,6 +15,8 @@ import {
   ScrollRestoration,
   useLoaderData,
   useRevalidator,
+  useRouteError,
+  isRouteErrorResponse,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { redirect, json } from "@remix-run/cloudflare";
@@ -21,7 +24,14 @@ import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 import { SupabaseClient } from "@supabase/supabase-js";
 
-import { MantineProvider, createEmotionCache } from "@mantine/core";
+import {
+  MantineProvider,
+  createEmotionCache,
+  Title,
+  Text,
+  Container,
+  Card,
+} from "@mantine/core";
 import { useColorScheme } from "@mantine/hooks";
 import { StylesPlaceholder } from "@mantine/remix";
 
@@ -41,6 +51,12 @@ export type SupabaseOutletContext = {
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {
+  Sentry.init({
+    dsn: context.dsn as string | undefined,
+    tracesSampleRate: 1,
+    integrations: [],
+  });
+
   const { response, supabase } = createServerClient(context, request);
   const env = {
     SUPABASE_URL: context.SUPABASE_URL as string,
@@ -73,6 +89,56 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     }
   );
 };
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+  Sentry.captureException(error);
+  let message;
+  if (isRouteErrorResponse(error)) {
+    message = `${error.status} ${error.statusText}`;
+  } else if (error instanceof Error) {
+    if (error.stack) {
+      message = error.stack;
+    } else {
+      message = error.message;
+    }
+  } else if (typeof error === "string") {
+    message = error;
+  } else if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    message = error.message;
+  } else {
+    message = "Unknown error";
+  }
+  const colorScheme = useColorScheme();
+  return (
+    <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
+      <html lang="en">
+        <head>
+          <StylesPlaceholder />
+          <Meta />
+          <Links />
+        </head>
+        <body>
+          <Container mt="xl">
+            <Card>
+              <Title mb="md">Something went wrong</Title>
+              <Text>
+                <pre>{message}</pre>
+              </Text>
+            </Card>
+          </Container>
+          <Scripts />
+          <LiveReload />
+        </body>
+      </html>
+    </MantineProvider>
+  );
+}
 
 export const links: LinksFunction = () => [
   ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),

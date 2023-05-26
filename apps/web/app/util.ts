@@ -1,4 +1,4 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient, PostgrestError } from "@supabase/supabase-js";
 import type { AppLoadContext } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 import { createServerClient as createSupabaseClient } from "@supabase/auth-helpers-remix";
@@ -23,6 +23,21 @@ export const createServerClient = (
   );
   return { response, supabase };
 };
+
+export function safeQuery<T>({
+  data,
+  error,
+}: {
+  data: T;
+  error: PostgrestError | null;
+}) {
+  if (error) {
+    console.error(error);
+    const exception = new Error(error.message);
+    throw exception;
+  }
+  return data;
+}
 
 export const getAccountId = async (
   request: Request,

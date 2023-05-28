@@ -85,12 +85,20 @@ function AppHeader() {
   const logout = async () => {
     await supabase.auth.signOut();
   };
-  const [, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const defaultDateRange: [Date, Date] = [
-    startOfWeek(new Date(), { weekStartsOn: 1 }),
-    endOfWeek(new Date(), { weekStartsOn: 1 }),
-  ];
+  let defaultDateRange: [Date, Date];
+  if (searchParams.get("start") && searchParams.get("end")) {
+    defaultDateRange = [
+      new Date(searchParams.get("start") as string),
+      new Date(searchParams.get("end") as string),
+    ];
+  } else {
+    defaultDateRange = [
+      startOfWeek(new Date(), { weekStartsOn: 1 }),
+      endOfWeek(new Date(), { weekStartsOn: 1 }),
+    ];
+  }
   const [dateRange, setDateRange] =
     useState<[Date | null, Date | null]>(defaultDateRange);
 

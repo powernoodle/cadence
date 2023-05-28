@@ -3,10 +3,12 @@
 import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
+import startOfWeek from "date-fns/startOfWeek";
+import endOfWeek from "date-fns/endOfWeek";
+
 import {
   useLoaderData,
   useOutletContext,
-  useSearchParams,
   useRevalidator,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
@@ -28,41 +30,56 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 
 import { SupabaseOutletContext } from "../root";
-import { createServerClient, getAccountId } from "../util";
+import { createServerClient, safeQuery, getAccountId } from "../util";
 
 const HOURLY_WAGE = 50;
+
+const getDateRange = (request: Request) => {
+  const url = new URL(request.url);
+  const startParam = url.searchParams.get("start");
+  const endParam = url.searchParams.get("end");
+  const start = startParam
+    ? new Date(startParam)
+    : startOfWeek(new Date(), { weekStartsOn: 1 });
+  const end = endParam
+    ? new Date(endParam)
+    : endOfWeek(new Date(), { weekStartsOn: 1 });
+  return [start, end];
+};
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
+  const [start, end] = getDateRange(request);
+  const during = `[${start.toISOString()}, ${end.toISOString()})`;
 
-  const { data: organizers } = await supabase
-    .from("organizer")
-    .select()
-    .eq("account_id", accountId)
-    .order("length_sum", { ascending: false })
-    .limit(10);
+  const organizers = safeQuery(
+    await supabase
+      .rpc("event_by_organizer", { event_account_id: accountId, during })
+      .order("length_sum", { ascending: false })
+      .limit(10)
+  );
 
-  const { data: lengths } = await supabase
-    .from("event_length")
-    .select()
-    .eq("account_id", accountId)
-    .order("length_sum", { ascending: false })
-    .limit(10);
+  const lengths = safeQuery(
+    await supabase
+      .rpc("event_by_length", { event_account_id: accountId, during })
+      .order("length_sum", { ascending: false })
+      .limit(10)
+  );
 
-  const { data: events } = await supabase
-    .from("event_series")
-    .select()
-    .eq("account_id", accountId)
-    .order("length_sum", { ascending: false })
-    .limit(30);
+  const events = safeQuery(
+    await supabase
+      .rpc("event_series", { event_account_id: accountId, during })
+      .order("length_sum", { ascending: false })
+      .limit(30)
+  );
 
   return json(
     {
       accountId,
-      organizers: organizers ?? [],
-      lengths: lengths ?? [],
-      events: events ?? [],
+      organizers,
+      lengths,
+      events,
     },
     { headers: response.headers }
   );
@@ -107,14 +124,19 @@ function MeetingStats({
           </thead>
 
           <tbody>
+            {data.length === 0 && (
+              <tr>
+                <td colSpan={4}>None</td>
+              </tr>
+            )}
             {data.map((row) => (
               <tr key={row.id}>
                 <td>{row.title}</td>
                 <td align="right">
-                  <code>{row.meeting_count.toLocaleString()}</code>
+                  <code>{row.meeting_count?.toLocaleString()}</code>
                 </td>
                 <td align="right">
-                  <code>{row.length_sum.toLocaleString()}</code>
+                  <code>{row.length_sum?.toLocaleString()}</code>
                 </td>
                 <td align="right">
                   <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
@@ -129,7 +151,6 @@ function MeetingStats({
 }
 
 export default function Meetings() {
-  const [_, setSearchParams] = useSearchParams();
   const { accountId, organizers, lengths, events } =
     useLoaderData<typeof loader>();
 
@@ -150,7 +171,6 @@ export default function Meetings() {
     const channel = supabase.channel(`account:${accountId}`);
     channel
       .on("broadcast", { event: "sync" }, (payload) => {
-        console.log(payload);
         revalidator.revalidate();
       })
       .subscribe();

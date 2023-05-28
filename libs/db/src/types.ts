@@ -109,47 +109,41 @@ export interface Database {
       event: {
         Row: {
           account_id: number
+          at: unknown | null
           cal_id: string
           created_at: string | null
-          end_at: string | null
           id: number
           is_meeting: boolean
           is_offsite: boolean
           is_online: boolean
           is_onsite: boolean
-          length: number | null
           series: string | null
-          start_at: string
           title: string | null
         }
         Insert: {
           account_id: number
+          at?: unknown | null
           cal_id: string
           created_at?: string | null
-          end_at?: string | null
           id?: number
           is_meeting?: boolean
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
-          length?: number | null
           series?: string | null
-          start_at: string
           title?: string | null
         }
         Update: {
           account_id?: number
+          at?: unknown | null
           cal_id?: string
           created_at?: string | null
-          end_at?: string | null
           id?: number
           is_meeting?: boolean
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
-          length?: number | null
           series?: string | null
-          start_at?: string
           title?: string | null
         }
       }
@@ -186,39 +180,14 @@ export interface Database {
       }
     }
     Views: {
-      event_length: {
-        Row: {
-          account_id: number | null
-          cost: number | null
-          length: number | null
-          length_sum: number | null
-          meeting_count: number | null
-        }
-      }
-      event_series: {
-        Row: {
-          account_id: number | null
-          attendee_count: number | null
-          cost: number | null
-          is_meeting: boolean | null
-          is_offsite: boolean | null
-          is_online: boolean | null
-          is_onsite: boolean | null
-          length: number | null
-          length_sum: number | null
-          meeting_count: number | null
-          series: string | null
-          title: string | null
-        }
-      }
       event_stats: {
         Row: {
           account_id: number | null
+          at: unknown | null
           attendee_count: number | null
           attendees: string | null
           cal_id: string | null
           created_at: string | null
-          end_at: string | null
           id: number | null
           is_meeting: boolean | null
           is_offsite: boolean | null
@@ -226,23 +195,80 @@ export interface Database {
           is_onsite: boolean | null
           length: number | null
           series: string | null
-          start_at: string | null
           title: string | null
-        }
-      }
-      organizer: {
-        Row: {
-          account_id: number | null
-          cost: number | null
-          email: string | null
-          id: number | null
-          length_sum: number | null
-          meeting_count: number | null
-          name: string | null
         }
       }
     }
     Functions: {
+      current_account_id: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      event_by_length: {
+        Args: {
+          event_account_id: number
+          during: unknown
+        }
+        Returns: {
+          account_id: number
+          length: number
+          meeting_count: number
+          length_sum: number
+          cost: number
+        }[]
+      }
+      event_by_organizer: {
+        Args: {
+          event_account_id: number
+          during: unknown
+        }
+        Returns: {
+          account_id: number
+          id: number
+          name: string
+          email: string
+          meeting_count: number
+          length_sum: number
+          cost: number
+        }[]
+      }
+      event_length: {
+        Args: {
+          at: unknown
+          during?: unknown
+        }
+        Returns: number
+      }
+      event_series: {
+        Args: {
+          event_account_id: number
+          during: unknown
+        }
+        Returns: {
+          account_id: number
+          series: string
+          title: string
+          is_meeting: boolean
+          is_online: boolean
+          is_onsite: boolean
+          is_offsite: boolean
+          meeting_count: number
+          length_sum: number
+          cost: number
+          attendee_count: number
+          length: number
+        }[]
+      }
+      foo: {
+        Args: {
+          num: number
+        }
+        Returns: number
+      }
+      get_accounts_for_user: {
+        Args: Record<PropertyKey, never>
+        Returns: number[]
+      }
       get_or_create_organization_id: {
         Args: {
           email: string
@@ -255,9 +281,8 @@ export interface Database {
       }
       meeting_cost: {
         Args: {
-          occurrence_count: number
-          attendee_count: number
-          minute_sum: number
+          attendee_occurrences: number
+          attendee_minutes: number
         }
         Returns: number
       }

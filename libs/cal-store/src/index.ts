@@ -22,7 +22,7 @@ export class CalendarStore {
     googleClientId: string,
     googleOauthSecret: string,
     outlookClientId: string,
-    outlookOauthSecret: string,
+    this.outlookOauthSecret = args.outlookOauthSecret;
     accountId: number
   ) {
     const client = new CalendarStore(supabaseUrl, supabaseKey, accountId);
@@ -159,9 +159,7 @@ export class CalendarStore {
       .upsert(
         {
           account_id: this.accountId,
-          start_at: event.start?.toISOString(),
-          end_at: event.end?.toISOString(),
-          length: event.length,
+          at: `[${event.start?.toISOString()},${event.end?.toISOString()})`,
           title: event.title,
           cal_id: event.id,
           series: event.series,

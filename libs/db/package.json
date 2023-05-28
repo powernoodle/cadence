@@ -8,7 +8,7 @@
     "stop": "../../source-env.sh && supabase stop",
     "restart": "pnpm run stop && pnpm run start",
     "build": "mkdir -p dist && tsc --build",
-    "gen-types": "mkdir -p src && supabase gen types typescript --local > src/types.ts",
+    "gen-types": "mkdir -p src && supabase gen types typescript --local > src/types.ts && pnpm build",
     "supabase": "supabase",
     "reset": "supabase db reset",
     "diff-remote": "supabase db diff --linked | supabase migration new init",

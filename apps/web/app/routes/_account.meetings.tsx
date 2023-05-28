@@ -247,12 +247,18 @@ function MatchingMeetings({
                 </td>
                 <td align="right">
                   <code>
-                    {Math.round(event.invitee_count)?.toLocaleString()}
+                    {event.invitee_count &&
+                      (
+                        Math.round(event.invitee_count * 10) / 10
+                      ).toLocaleString()}
                   </code>
                 </td>
                 <td align="right">
                   <code>
-                    {Math.round(event.attendee_count)?.toLocaleString()}
+                    {event.attendee_count &&
+                      (
+                        Math.round(event.attendee_count * 10) / 10
+                      ).toLocaleString()}
                   </code>
                 </td>
                 <td align="right">

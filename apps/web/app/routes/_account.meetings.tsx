@@ -164,6 +164,7 @@ function MatchingMeetings({
     series: string;
     title: string;
     length: number;
+    invitee_count: number;
     attendee_count: number;
     length_sum: number;
     meeting_count: number;
@@ -214,6 +215,9 @@ function MatchingMeetings({
                 <Text ta="right">Length</Text>
               </th>
               <th css={{ width: "10em" }}>
+                <Text ta="right">Invitees</Text>
+              </th>
+              <th css={{ width: "10em" }}>
                 <Text ta="right">Attendees</Text>
               </th>
               <th css={{ width: "10em" }}>
@@ -240,6 +244,11 @@ function MatchingMeetings({
                 <td>{event.title}</td>
                 <td align="right">
                   <code>{Math.round(event.length)?.toLocaleString()}</code>
+                </td>
+                <td align="right">
+                  <code>
+                    {Math.round(event.invitee_count)?.toLocaleString()}
+                  </code>
                 </td>
                 <td align="right">
                   <code>

@@ -1,4 +1,5 @@
 import type { LoaderArgs } from "@remix-run/cloudflare";
+import { ClientOnly } from "remix-utils";
 
 import {
   useLoaderData,
@@ -181,12 +182,16 @@ function AppHeader() {
             onChange={onTimeframeChange}
             data={timeframes}
           />
-          <DatePickerInput
-            type="range"
-            value={dateRange}
-            onChange={onDateRangeChange}
-            allowSingleDateInRange
-          />
+          <ClientOnly>
+            {() => (
+              <DatePickerInput
+                type="range"
+                value={dateRange}
+                onChange={onDateRangeChange}
+                allowSingleDateInRange
+              />
+            )}
+          </ClientOnly>
         </Group>
         <Group>
           {isAdmin && (

@@ -5,6 +5,11 @@ import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import startOfWeek from "date-fns/startOfWeek";
 import endOfWeek from "date-fns/endOfWeek";
+import startOfMonth from "date-fns/startOfMonth";
+import endOfMonth from "date-fns/endOfMonth";
+import startOfDay from "date-fns/startOfDay";
+import endOfDay from "date-fns/endOfDay";
+import sub from "date-fns/sub";
 
 import {
   useLoaderData,
@@ -45,13 +50,20 @@ const getDateRange = (request: Request) => {
   const url = new URL(request.url);
   const startParam = url.searchParams.get("start");
   const endParam = url.searchParams.get("end");
-  const start = startParam
-    ? new Date(startParam)
-    : startOfWeek(new Date(), { weekStartsOn: 1 });
-  const end = endParam
-    ? new Date(endParam)
-    : endOfWeek(new Date(), { weekStartsOn: 1 });
-  return [start, end];
+  const timeframe = url.searchParams.get("timeframe") || "28d";
+  const start = startParam ? new Date(startParam) : startOfDay(new Date());
+  const end = endParam ? new Date(endParam) : endOfDay(new Date());
+
+  switch (timeframe) {
+    case "month":
+      return [startOfMonth(end), endOfMonth(end)];
+    case "week":
+      return [startOfWeek(end), endOfWeek(end)];
+    case "28d":
+      return [startOfDay(sub(end, { days: 27 })), endOfDay(end)];
+    default:
+      return [start, end];
+  }
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -208,7 +220,11 @@ function MatchingMeetings({
         <Space h="0.5em" />
 
         <Table sx={{ tableLayout: "fixed" }}>
-          <thead onClick={toggle}>
+          <thead
+            onClick={() => {
+              events?.length > 3 ? toggle() : null;
+            }}
+          >
             <tr>
               <th css={{ width: "30em" }}>Meeting</th>
               <th css={{ width: "10em" }}>

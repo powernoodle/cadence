@@ -116,8 +116,9 @@ function AppHeader() {
     setSearchParams((p) => ({
       ...Object.fromEntries(p.entries()),
       timeframe,
-      start: range[0].toISOString(),
-      end: range[1].toISOString(),
+      ...(timeframe === "custom"
+        ? { start: range[0].toISOString(), end: range[1].toISOString() }
+        : { start: "", end: "" }),
     }));
   };
 
@@ -146,7 +147,6 @@ function AppHeader() {
     useState<[Date | null, Date | null]>(defaultDateRange);
 
   const updateDateRange = (range: [Date | null, Date | null]) => {
-    console.log(range);
     if (range[0] !== null && range[1] !== null) {
       setSearchParams((p) => ({
         ...Object.fromEntries(p.entries()),

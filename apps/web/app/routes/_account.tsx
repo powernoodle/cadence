@@ -100,14 +100,6 @@ function AppHeader() {
   const [timeframe, setTimeframeState] = useState(
     searchParams.get("timeframe") || "28d"
   );
-  const setTimeframe = (timeframe: string) => {
-    if (!timeframe) return;
-    setTimeframeState(timeframe);
-    setSearchParams((p) => ({
-      ...Object.fromEntries(p.entries()),
-      timeframe,
-    }));
-  };
   const onTimeframeChange = async (timeframe: string) => {
     if (!timeframe) return;
     setTimeframeState(timeframe);
@@ -146,26 +138,21 @@ function AppHeader() {
   const [dateRange, setDateRange] =
     useState<[Date | null, Date | null]>(defaultDateRange);
 
-  const updateDateRange = (range: [Date | null, Date | null]) => {
+  const onDateRangeChange = (range: [Date | null, Date | null]) => {
+    setDateRange(range);
     if (range[0] !== null && range[1] !== null) {
+      setTimeframeState("custom");
       setSearchParams((p) => ({
         ...Object.fromEntries(p.entries()),
+        timeframe: "custom",
         ...(range[0] && range[1]
           ? {
-              start: range[0].toISOString(),
-              end: range[1].toISOString(),
+              start: startOfDay(range[0]).toISOString(),
+              end: endOfDay(range[1]).toISOString(),
             }
           : {}),
       }));
     }
-  };
-  const onDateRangeChange = (range: [Date | null, Date | null]) => {
-    if (range[1]) {
-      range[1] = endOfDay(range[1]);
-    }
-    setTimeframe("custom");
-    setDateRange(range);
-    updateDateRange(range);
   };
 
   const accountSwitch = async (id: number) => {

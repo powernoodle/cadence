@@ -10,6 +10,7 @@ import endOfMonth from "date-fns/endOfMonth";
 import startOfDay from "date-fns/startOfDay";
 import endOfDay from "date-fns/endOfDay";
 import sub from "date-fns/sub";
+import add from "date-fns/add";
 
 import {
   useLoaderData,
@@ -36,6 +37,7 @@ import { useDisclosure } from "@mantine/hooks";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery, getAccountId } from "../util";
+import { differenceInDays } from "date-fns";
 
 const HOURLY_WAGE = 50;
 
@@ -56,21 +58,87 @@ const getDateRange = (request: Request) => {
 
   switch (timeframe) {
     case "month":
-      return [startOfMonth(end), endOfMonth(end)];
+      return [
+        [startOfMonth(end), endOfMonth(end)],
+        [
+          startOfMonth(sub(end, { months: 1 })),
+          endOfMonth(sub(end, { months: 1 })),
+        ],
+        [
+          startOfMonth(add(end, { months: 1 })),
+          endOfMonth(add(end, { months: 1 })),
+        ],
+      ];
     case "week":
-      return [startOfWeek(end), endOfWeek(end)];
+      return [
+        [startOfWeek(end), endOfWeek(end)],
+        [
+          startOfWeek(sub(end, { weeks: 1 })),
+          endOfWeek(sub(end, { weeks: 1 })),
+        ],
+        [
+          startOfWeek(add(end, { weeks: 1 })),
+          endOfWeek(add(end, { weeks: 1 })),
+        ],
+      ];
     case "28d":
-      return [startOfDay(sub(end, { days: 27 })), endOfDay(end)];
+      return [
+        [startOfDay(sub(end, { days: 27 })), endOfDay(end)],
+        [
+          startOfDay(sub(end, { days: 27 + 28 })),
+          endOfDay(sub(end, { days: 28 })),
+        ],
+        [startOfDay(add(end, { days: 1 })), endOfDay(add(end, { days: 28 }))],
+      ];
     default:
-      return [start, end];
+      return [
+        [start, end],
+        [
+          sub(start, { days: differenceInDays(start, end) }),
+          sub(end, { days: differenceInDays(start, end) }),
+        ],
+        [
+          add(start, { days: differenceInDays(start, end) }),
+          add(end, { days: differenceInDays(start, end) }),
+        ],
+      ];
   }
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
-  const [start, end] = getDateRange(request);
-  const during = `[${start.toISOString()}, ${end.toISOString()})`;
+  const [current, previous, next] = getDateRange(request);
+  const during = `[${current[0].toISOString()}, ${current[1].toISOString()})`;
+  const previousDuring = `[${previous[0].toISOString()}, ${previous[1].toISOString()})`;
+  const nextDuring = `[${next[0].toISOString()}, ${next[1].toISOString()})`;
+
+  let totals = [
+    safeQuery(
+      await supabase
+        .rpc("event_totals", {
+          event_account_id: accountId,
+          during,
+        })
+        .single()
+    ),
+    safeQuery(
+      await supabase
+        .rpc("event_totals", {
+          event_account_id: accountId,
+          during: previousDuring,
+        })
+        .single()
+    ),
+    safeQuery(
+      await supabase
+        .rpc("event_totals", {
+          event_account_id: accountId,
+          during: nextDuring,
+        })
+        .single()
+    ),
+  ];
 
   const organizers = safeQuery(
     await supabase
@@ -102,6 +170,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   return json(
     {
       accountId,
+      totals,
       organizers,
       lengths,
       events,
@@ -152,10 +221,10 @@ function MeetingStats({
               <tr key={row.id}>
                 <td>{row.title}</td>
                 <td align="right">
-                  <code>{row.meeting_count?.toLocaleString()}</code>
+                  <code>{(row.meeting_count || 0).toLocaleString()}</code>
                 </td>
                 <td align="right">
-                  <code>{row.length_sum?.toLocaleString()}</code>
+                  <code>{(row.length_sum || 0).toLocaleString()}</code>
                 </td>
                 <td align="right">
                   <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
@@ -297,7 +366,7 @@ function MatchingMeetings({
 }
 
 export default function Meetings() {
-  const { accountId, organizers, lengths, events } =
+  const { accountId, totals, organizers, lengths, events } =
     useLoaderData<typeof loader>();
 
   const { supabase } = useOutletContext<SupabaseOutletContext>();
@@ -316,10 +385,23 @@ export default function Meetings() {
     };
   }, [supabase, accountId]);
 
+  const totalTitles = ["Current", "Previous", "Next"];
+
   return (
     <>
       <LoadingOverlay visible={events === null} zIndex={99} />
       <Grid columns={12}>
+        <Grid.Col sm={12} md={6} lg={4}>
+          <MeetingStats
+            title="Period"
+            // @ts-ignore
+            data={totals.map((t, i) => ({
+              id: i,
+              ...t,
+              title: totalTitles[i],
+            }))}
+          />
+        </Grid.Col>
         <Grid.Col sm={12} md={6} lg={4}>
           <MeetingStats
             title="Organizer"

@@ -189,6 +189,7 @@ export interface Database {
           cal_id: string | null
           created_at: string | null
           id: number | null
+          invitee_count: number | null
           is_meeting: boolean | null
           is_offsite: boolean | null
           is_online: boolean | null
@@ -257,6 +258,18 @@ export interface Database {
           cost: number
           attendee_count: number
           length: number
+          invitee_count: number
+        }[]
+      }
+      event_totals: {
+        Args: {
+          event_account_id: number
+          during: unknown
+        }
+        Returns: {
+          meeting_count: number
+          length_sum: number
+          cost: number
         }[]
       }
       foo: {

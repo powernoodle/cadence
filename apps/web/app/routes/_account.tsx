@@ -20,7 +20,11 @@ import {
 import { DatePickerInput } from "@mantine/dates";
 import startOfWeek from "date-fns/startOfWeek";
 import endOfWeek from "date-fns/endOfWeek";
+import startOfMonth from "date-fns/startOfMonth";
+import endOfMonth from "date-fns/endOfMonth";
+import startOfDay from "date-fns/startOfDay";
 import endOfDay from "date-fns/endOfDay";
+import sub from "date-fns/sub";
 
 import type { Database } from "@cadence/db";
 import { SupabaseOutletContext } from "../root";
@@ -87,6 +91,48 @@ function AppHeader() {
   };
   const [searchParams, setSearchParams] = useSearchParams();
 
+  const timeframes = [
+    { label: "28 Days", value: "28d" },
+    { label: "Month", value: "month" },
+    { label: "Week", value: "week" },
+    { label: "Custom", value: "custom" },
+  ];
+  const [timeframe, setTimeframeState] = useState(
+    searchParams.get("timeframe") || "28d"
+  );
+  const setTimeframe = (timeframe: string) => {
+    if (!timeframe) return;
+    setTimeframeState(timeframe);
+    setSearchParams((p) => ({
+      ...Object.fromEntries(p.entries()),
+      timeframe,
+    }));
+  };
+  const onTimeframeChange = async (timeframe: string) => {
+    if (!timeframe) return;
+    setTimeframeState(timeframe);
+    const range = getDefaultDateRange(timeframe, new Date());
+    setDateRange(range);
+    setSearchParams((p) => ({
+      ...Object.fromEntries(p.entries()),
+      timeframe,
+      start: range[0].toISOString(),
+      end: range[1].toISOString(),
+    }));
+  };
+
+  const getDefaultDateRange = (timeframe: string, date: Date): [Date, Date] => {
+    switch (timeframe) {
+      case "month":
+        return [startOfMonth(date), endOfMonth(date)];
+      case "week":
+        return [startOfWeek(date), endOfWeek(date)];
+      default:
+      case "28d":
+        return [startOfDay(sub(date, { days: 27 })), endOfDay(date)];
+    }
+  };
+
   let defaultDateRange: [Date, Date];
   if (searchParams.get("start") && searchParams.get("end")) {
     defaultDateRange = [
@@ -94,19 +140,13 @@ function AppHeader() {
       new Date(searchParams.get("end") as string),
     ];
   } else {
-    defaultDateRange = [
-      startOfWeek(new Date(), { weekStartsOn: 1 }),
-      endOfWeek(new Date(), { weekStartsOn: 1 }),
-    ];
+    defaultDateRange = getDefaultDateRange(timeframe, new Date());
   }
   const [dateRange, setDateRange] =
     useState<[Date | null, Date | null]>(defaultDateRange);
 
-  const onDateRangeChange = (range: [Date | null, Date | null]) => {
-    if (range[1]) {
-      range[1] = endOfDay(range[1]);
-    }
-    setDateRange(range);
+  const updateDateRange = (range: [Date | null, Date | null]) => {
+    console.log(range);
     if (range[0] !== null && range[1] !== null) {
       setSearchParams((p) => ({
         ...Object.fromEntries(p.entries()),
@@ -118,6 +158,14 @@ function AppHeader() {
           : {}),
       }));
     }
+  };
+  const onDateRangeChange = (range: [Date | null, Date | null]) => {
+    if (range[1]) {
+      range[1] = endOfDay(range[1]);
+    }
+    setTimeframe("custom");
+    setDateRange(range);
+    updateDateRange(range);
   };
 
   const accountSwitch = async (id: number) => {
@@ -141,6 +189,11 @@ function AppHeader() {
           <Title order={1} size="h2">
             {APP_NAME}
           </Title>
+          <Select
+            value={timeframe}
+            onChange={onTimeframeChange}
+            data={timeframes}
+          />
           <DatePickerInput
             type="range"
             value={dateRange}

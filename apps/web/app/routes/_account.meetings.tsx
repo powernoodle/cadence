@@ -48,6 +48,20 @@ const costFmt = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
+const lengthFmt = (length: number, full: boolean = false) => {
+  const hours = Math.floor(length / 60);
+  const minutes = length % 60;
+  let ret = "";
+  if (hours) {
+    ret = `${hours.toLocaleString()}h`;
+  }
+  if (full || minutes) {
+    if (ret) ret += " ";
+    ret += `${String(minutes).padStart(2, "0")}m`;
+  }
+  return ret;
+};
+
 const getDateRange = (request: Request) => {
   const url = new URL(request.url);
   const startParam = url.searchParams.get("start");
@@ -223,7 +237,7 @@ function MeetingStats({
                   <code>{(row.meeting_count || 0).toLocaleString()}</code>
                 </td>
                 <td align="right">
-                  <code>{(row.length_sum || 0).toLocaleString()}</code>
+                  <code>{lengthFmt(row.length_sum || 0, true)}</code>
                 </td>
                 <td align="right">
                   <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
@@ -327,7 +341,7 @@ function MatchingMeetings({
               >
                 <td>{event.title}</td>
                 <td align="right">
-                  <code>{Math.round(event.length)?.toLocaleString()}</code>
+                  <code>{lengthFmt(event.length_sum || 0)}</code>
                 </td>
                 <td align="right">
                   <code>
@@ -413,12 +427,12 @@ export default function Meetings() {
         </Grid.Col>
         <Grid.Col sm={12} md={6} lg={4}>
           <MeetingStats
-            title="Length (minutes)"
+            title="Length"
             // @ts-ignore
             data={lengths.map((o) => ({
               id: o.length,
               ...o,
-              title: o.length?.toLocaleString() || "?",
+              title: lengthFmt(o.length),
             }))}
           />
         </Grid.Col>

@@ -158,7 +158,6 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     await supabase
       .rpc("event_series", { event_account_id: accountId, during })
       .order("length_sum", { ascending: false })
-      .limit(30)
   );
   if (events?.length === 0) {
     const anyEvent = safeQuery(

@@ -50,6 +50,8 @@ export type SupabaseOutletContext = {
   user: User;
 };
 
+const PublicRoutes = ["/login", "/terms", "/privacy"];
+
 export const loader = async ({ context, request }: LoaderArgs) => {
   Sentry.init({
     dsn: context.dsn as string | undefined,
@@ -71,7 +73,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   } = await supabase.auth.getUser();
 
   const url = new URL(request.url);
-  if (!user && !url.pathname.startsWith("/login")) {
+  if (!user && !PublicRoutes.some((r) => url.pathname.startsWith(r))) {
     return redirect("/login");
   }
   if (user && url.pathname === "/login") {

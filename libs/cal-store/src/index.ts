@@ -22,7 +22,7 @@ export class CalendarStore {
     googleClientId: string,
     googleOauthSecret: string,
     outlookClientId: string,
-    this.outlookOauthSecret = args.outlookOauthSecret;
+    outlookOauthSecret: string,
     accountId: number
   ) {
     const client = new CalendarStore(supabaseUrl, supabaseKey, accountId);

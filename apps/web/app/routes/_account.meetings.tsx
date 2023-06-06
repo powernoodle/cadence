@@ -94,12 +94,12 @@ const getDateRange = (request: Request) => {
       return [
         [start, end],
         [
-          sub(start, { days: differenceInDays(start, end) }),
-          sub(end, { days: differenceInDays(start, end) }),
+          sub(start, { days: differenceInDays(end, start) }),
+          sub(end, { days: differenceInDays(end, start) }),
         ],
         [
-          add(start, { days: differenceInDays(start, end) }),
-          add(end, { days: differenceInDays(start, end) }),
+          add(start, { days: differenceInDays(end, start) }),
+          add(end, { days: differenceInDays(end, start) }),
         ],
       ];
   }

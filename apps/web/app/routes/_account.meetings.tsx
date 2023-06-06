@@ -57,7 +57,7 @@ const lengthFmt = (length: number, full: boolean = false) => {
   }
   if (full || minutes) {
     if (ret) ret += " ";
-    ret += `${String(minutes).padStart(2, "0")}m`;
+    ret += `${String(minutes).padStart(hours ? 2 : 1, "0")}m`;
   }
   return ret;
 };

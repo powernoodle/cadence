@@ -115,12 +115,21 @@ export class GoogleClient extends CalendarClient {
   private transformEvent(googleEvent: GoogleEvent): Event | null {
     if (
       !googleEvent.iCalUID ||
-      !googleEvent.start?.dateTime ||
-      !googleEvent.end?.dateTime ||
+      !(googleEvent.start?.dateTime || googleEvent.start?.date) ||
+      !(googleEvent.end?.dateTime || googleEvent.end?.date) ||
       googleEvent.eventType !== "default"
     ) {
       return null;
     }
+
+    const start = new Date(
+      // @ts-ignore
+      googleEvent.start.dateTime || googleEvent.start.date
+    );
+    const end = new Date(
+      // @ts-ignore
+      googleEvent.end.dateTime || googleEvent.end.date
+    );
 
     let calId = googleEvent.iCalUID;
     if (googleEvent.originalStartTime) {
@@ -146,8 +155,8 @@ export class GoogleClient extends CalendarClient {
     const event = new Event({
       id: calId,
       series: googleEvent.iCalUID,
-      start: new Date(googleEvent.start.dateTime),
-      end: new Date(googleEvent.end.dateTime),
+      start,
+      end,
       title: googleEvent.summary || undefined,
       description: googleEvent.description || undefined,
       location: googleEvent.location || undefined,

@@ -1,13 +1,23 @@
-import { useOutletContext } from "@remix-run/react";
+import { useOutletContext, useLocation } from "@remix-run/react";
 import { SupabaseOutletContext } from "../root";
-import { Container, Stack, Card, Title, Text, Space } from "@mantine/core";
+import {
+  Container,
+  Stack,
+  Card,
+  Title,
+  Text,
+  Space,
+  Alert,
+} from "@mantine/core";
 import {
   GoogleLoginButton,
   MicrosoftLoginButton,
 } from "react-social-login-buttons";
+import { AlertCircle } from "tabler-icons-react";
 
 export default function Login() {
   const { supabase } = useOutletContext<SupabaseOutletContext>();
+  const params = new URLSearchParams(useLocation().search);
 
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({
@@ -51,6 +61,17 @@ export default function Login() {
           <MicrosoftLoginButton onClick={signInWithAzure} />
         </Stack>
       </Card>
+      <Space h="md" />
+      {params.has("error") && (
+        <Alert
+          icon={<AlertCircle size="1rem" />}
+          title="Authorization failed"
+          color="red"
+        >
+          <Text>Divvy was not granted access to your calendar.</Text>
+          <Text mt="md">{params.get("error")}</Text>
+        </Alert>
+      )}
     </Container>
   );
 }

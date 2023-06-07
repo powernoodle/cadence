@@ -14,9 +14,7 @@ export default function Login() {
       provider: "google",
       options: {
         redirectTo: `${location.origin}/login/callback`,
-        scopes: [
-          "https://www.googleapis.com/auth/calendar.events.readonly",
-        ].join(" "),
+        scopes: ["https://www.googleapis.com/auth/calendar.readonly"].join(" "),
         queryParams: {
           access_type: "offline",
           prompt: "consent select_account",

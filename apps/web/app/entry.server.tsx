@@ -4,6 +4,9 @@ import type { EntryContext } from "@remix-run/cloudflare";
 import { injectStyles } from "@mantine/remix";
 import { defaultMantineEmotionCache } from "@mantine/styles";
 import { createEmotionServer } from "@cadence/emotion-server";
+import { SentrySeverInit } from "./sentry";
+
+SentrySeverInit();
 
 export function createStylesServer() {
   return createEmotionServer(defaultMantineEmotionCache);

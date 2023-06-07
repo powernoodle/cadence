@@ -53,12 +53,6 @@ export type SupabaseOutletContext = {
 const PublicRoutes = ["/login", "/terms", "/privacy"];
 
 export const loader = async ({ context, request }: LoaderArgs) => {
-  Sentry.init({
-    dsn: context.dsn as string | undefined,
-    tracesSampleRate: 1,
-    integrations: [],
-  });
-
   const { response, supabase } = createServerClient(context, request);
   const env = {
     SUPABASE_URL: context.SUPABASE_URL as string,

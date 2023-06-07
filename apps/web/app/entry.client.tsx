@@ -1,39 +1,10 @@
 import { RemixBrowser } from "@remix-run/react";
 import { hydrateRoot } from "react-dom/client";
 import { ClientProvider } from "@mantine/remix";
-import { useLocation, useMatches } from "@remix-run/react";
-import { useEffect } from "react";
-import * as Sentry from "@sentry/remix";
 
-Sentry.init({
-  dsn:
-    location.hostname === "localhost"
-      ? undefined
-      : "https://5d95ce1a49ab4eb1956c0d5a15f55960@o4505134083997696.ingest.sentry.io/4505134085832704",
-  integrations: [
-    new Sentry.BrowserTracing({
-      // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
-      tracePropagationTargets: ["localhost", /^https:\/\/yourserver\.io\/api/],
-      routingInstrumentation: Sentry.remixRouterInstrumentation(
-        useEffect,
-        useLocation,
-        useMatches
-      ),
-    }),
-    // Replay is only available in the client
-    new Sentry.Replay(),
-  ],
+import { SentryClientInit } from "./sentry";
 
-  // Set tracesSampleRate to 1.0 to capture 100%
-  // of transactions for performance monitoring.
-  // We recommend adjusting this value in production
-  tracesSampleRate: 1.0,
-
-  // Capture Replay for 10% of all sessions,
-  // plus for 100% of sessions with an error
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-});
+SentryClientInit();
 
 hydrateRoot(
   document,

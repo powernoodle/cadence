@@ -1,6 +1,6 @@
 /** @jsx jsx */
 /** @jsxfrag */
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import startOfWeek from "date-fns/startOfWeek";
@@ -11,6 +11,8 @@ import startOfDay from "date-fns/startOfDay";
 import endOfDay from "date-fns/endOfDay";
 import sub from "date-fns/sub";
 import add from "date-fns/add";
+import isSameDay from "date-fns/isSameDay";
+import dateFormat from "date-fns/format";
 
 import {
   useLoaderData,
@@ -18,35 +20,11 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import {
-  Card,
-  Text,
-  Box,
-  Space,
-  Grid,
-  ActionIcon,
-  Table,
-  Affix,
-  LoadingOverlay,
-} from "@mantine/core";
-import {
-  LayoutBottombarExpand,
-  LayoutBottombarCollapse,
-} from "tabler-icons-react";
-import { useDisclosure } from "@mantine/hooks";
+import { Card, Text, Table, LoadingOverlay } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery, getAccountId } from "../util";
 import { differenceInDays } from "date-fns";
-
-const HOURLY_WAGE = 50;
-
-const costFmt = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
 
 const getDateRange = (request: Request) => {
   const url = new URL(request.url);
@@ -128,6 +106,14 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   );
 };
 
+const fmtDate = (start: Date, _end: Date) => {
+  return dateFormat(start, "cccc, MMMM d, yyyy");
+};
+
+const fmtTime = (start: Date, end: Date) => {
+  return `${dateFormat(start, "h:mm aaa")} - ${dateFormat(end, "h:mm aaa")}`;
+};
+
 function Meetings({
   events,
 }: {
@@ -140,13 +126,14 @@ function Meetings({
     attendee_count: number;
   }[];
 }) {
+  let last: Date | undefined;
   return (
     <Card shadow="xs" padding="lg" radius="md" withBorder>
       <Card.Section>
         <Table>
           <thead>
             <tr>
-              <th></th>
+              <th>Time</th>
               <th>Meeting</th>
               <th>
                 <Text ta="right">Length</Text>
@@ -166,21 +153,37 @@ function Meetings({
                 <td colSpan={4}>None</td>
               </tr>
             )}
-            {events.map((row) => (
-              <tr key={row.id}>
-                <td>{row.at}</td>
-                <td>{row.title}</td>
-                <td align="right">
-                  <code>{(row.length || 0).toLocaleString()}</code>
-                </td>
-                <td align="right">
-                  <code>{(row.invitee_count || 0).toLocaleString()}</code>
-                </td>
-                <td align="right">
-                  <code>{(row.attendee_count || 0).toLocaleString()}</code>
-                </td>
-              </tr>
-            ))}
+            {events.map((row) => {
+              const dates = row.at.replaceAll(/["\[\]]/g, "").split(",");
+              const start = new Date(dates[0]);
+              const end = new Date(dates[1]);
+              const isNewDay = !last || !isSameDay(last, start);
+              last = start;
+              return (
+                <React.Fragment key={row.id}>
+                  {isNewDay && (
+                    <tr>
+                      <td colSpan={4}>
+                        <Text c="dimmed">{fmtDate(start, end)}</Text>
+                      </td>
+                    </tr>
+                  )}
+                  <tr>
+                    <td>{fmtTime(start, end)}</td>
+                    <td>{row.title}</td>
+                    <td align="right">
+                      <code>{(row.length || 0).toLocaleString()}</code>
+                    </td>
+                    <td align="right">
+                      <code>{(row.invitee_count || 0).toLocaleString()}</code>
+                    </td>
+                    <td align="right">
+                      <code>{(row.attendee_count || 0).toLocaleString()}</code>
+                    </td>
+                  </tr>
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </Table>
       </Card.Section>

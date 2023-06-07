@@ -3,14 +3,6 @@
 import React, { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import startOfWeek from "date-fns/startOfWeek";
-import endOfWeek from "date-fns/endOfWeek";
-import startOfMonth from "date-fns/startOfMonth";
-import endOfMonth from "date-fns/endOfMonth";
-import startOfDay from "date-fns/startOfDay";
-import endOfDay from "date-fns/endOfDay";
-import sub from "date-fns/sub";
-import add from "date-fns/add";
 import isSameDay from "date-fns/isSameDay";
 import dateFormat from "date-fns/format";
 
@@ -24,70 +16,10 @@ import { Card, Text, Table, LoadingOverlay } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery, getAccountId } from "../util";
-import { differenceInDays } from "date-fns";
-
-const getDateRange = (request: Request) => {
-  const url = new URL(request.url);
-  const startParam = url.searchParams.get("start");
-  const endParam = url.searchParams.get("end");
-  const timeframe = url.searchParams.get("timeframe") || "28d";
-  const start = startParam ? new Date(startParam) : startOfDay(new Date());
-  const end = endParam ? new Date(endParam) : endOfDay(new Date());
-
-  switch (timeframe) {
-    case "month":
-      return [
-        [startOfMonth(end), endOfMonth(end)],
-        [
-          startOfMonth(sub(end, { months: 1 })),
-          endOfMonth(sub(end, { months: 1 })),
-        ],
-        [
-          startOfMonth(add(end, { months: 1 })),
-          endOfMonth(add(end, { months: 1 })),
-        ],
-      ];
-    case "week":
-      return [
-        [startOfWeek(end), endOfWeek(end)],
-        [
-          startOfWeek(sub(end, { weeks: 1 })),
-          endOfWeek(sub(end, { weeks: 1 })),
-        ],
-        [
-          startOfWeek(add(end, { weeks: 1 })),
-          endOfWeek(add(end, { weeks: 1 })),
-        ],
-      ];
-    case "28d":
-      return [
-        [startOfDay(sub(end, { days: 27 })), endOfDay(end)],
-        [
-          startOfDay(sub(end, { days: 27 + 28 })),
-          endOfDay(sub(end, { days: 28 })),
-        ],
-        [startOfDay(add(end, { days: 1 })), endOfDay(add(end, { days: 28 }))],
-      ];
-    default:
-      return [
-        [start, end],
-        [
-          sub(start, { days: differenceInDays(start, end) }),
-          sub(end, { days: differenceInDays(start, end) }),
-        ],
-        [
-          add(start, { days: differenceInDays(start, end) }),
-          add(end, { days: differenceInDays(start, end) }),
-        ],
-      ];
-  }
-};
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
-  const [current] = getDateRange(request);
-  const during = `[${current[0].toISOString()}, ${current[1].toISOString()})`;
 
   let events = safeQuery(
     await supabase

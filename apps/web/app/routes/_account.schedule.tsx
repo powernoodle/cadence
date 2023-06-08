@@ -3,8 +3,7 @@
 import React, { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import isSameDay from "date-fns/isSameDay";
-import dateFormat from "date-fns/format";
+import { isSameDay, toDate, formatDate } from "../tz";
 
 import {
   useLoaderData,
@@ -16,16 +15,21 @@ import { Card, Text, Table, LoadingOverlay } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery, getAccountId } from "../util";
+import { getDateRange, USER_TZ } from "./_account";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
+
+  const [current] = getDateRange(new URL(request.url).searchParams);
+  const during = `[${current[0].toISOString()}, ${current[1].toISOString()})`;
 
   let events = safeQuery(
     await supabase
       .from("event_stats")
       .select()
       .eq("account_id", accountId)
+      .overlaps("at", during)
       .order("at")
   );
 
@@ -39,11 +43,15 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 };
 
 const fmtDate = (start: Date, _end: Date) => {
-  return dateFormat(start, "cccc, MMMM d, yyyy");
+  return formatDate(start, USER_TZ, "cccc, MMMM d, yyyy");
 };
 
 const fmtTime = (start: Date, end: Date) => {
-  return `${dateFormat(start, "h:mm aaa")} - ${dateFormat(end, "h:mm aaa")}`;
+  return `${formatDate(start, USER_TZ, "h:mm aaa")} - ${formatDate(
+    end,
+    USER_TZ,
+    "h:mm aaa"
+  )}`;
 };
 
 function Meetings({
@@ -87,9 +95,9 @@ function Meetings({
             )}
             {events.map((row) => {
               const dates = row.at.replaceAll(/["\[\]]/g, "").split(",");
-              const start = new Date(dates[0]);
-              const end = new Date(dates[1]);
-              const isNewDay = !last || !isSameDay(last, start);
+              const start = toDate(dates[0], USER_TZ);
+              const end = toDate(dates[1], USER_TZ);
+              const isNewDay = !last || !isSameDay(last, start, USER_TZ);
               last = start;
               return (
                 <React.Fragment key={row.id}>

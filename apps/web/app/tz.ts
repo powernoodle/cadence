@@ -5,6 +5,7 @@ import _formatDate from "date-fns/format";
 import _startOfDay from "date-fns/startOfDay";
 import _startOfMonth from "date-fns/startOfMonth";
 import _startOfWeek from "date-fns/startOfWeek";
+import _isSameDay from "date-fns/isSameDay";
 import {
   zonedTimeToUtc,
   utcToZonedTime,
@@ -21,6 +22,17 @@ function zoned<T>(
   const inputZoned = utcToZonedTime(date, tz);
   const fnZoned = options ? fn(inputZoned, options) : fn(inputZoned);
   return zonedTimeToUtc(fnZoned, tz);
+}
+
+function zoned2<T>(
+  d1: Date,
+  d2: Date,
+  tz: string,
+  fn: (d1: Date, d2: Date) => T
+): T {
+  const d1z = utcToZonedTime(d1, tz);
+  const d2z = utcToZonedTime(d2, tz);
+  return fn(d1z, d2z);
 }
 
 export const toDate = (date: string, tz: string) => {
@@ -66,4 +78,8 @@ export function endOfWeek(
   options?: Parameters<typeof _endOfWeek>[1]
 ) {
   return zoned(date, tz, _endOfWeek, options);
+}
+
+export function isSameDay(d1: Date, d2: Date, tz: string) {
+  return zoned2(d1, d2, tz, _isSameDay);
 }

@@ -42,7 +42,8 @@ import { APP_NAME, createServerClient, getAccountId, safeQuery } from "../util";
 type Account = Database["public"]["Tables"]["account"]["Row"];
 
 // TODO: load this from the account
-export const USER_TZ = "America/New_York";
+//export const USER_TZ = "America/New_York";
+export const USER_TZ = "America/Los_Angeles";
 
 export const getDateRange = (params: URLSearchParams, timeframe?: string) => {
   const startParam = params.get("start");
@@ -122,8 +123,8 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
   const [current] = getDateRange(new URL(request.url).searchParams);
   const dateRange: [Date | null, Date | null] = [
-    fromTz(current[0], USER_TZ),
-    fromTz(startOfDay(current[1], USER_TZ), USER_TZ),
+    current[0],
+    startOfDay(current[1], USER_TZ),
   ];
 
   return json(

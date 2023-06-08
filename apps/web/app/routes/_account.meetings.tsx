@@ -15,16 +15,9 @@ import {
   Box,
   Space,
   Grid,
-  ActionIcon,
   Table,
-  Affix,
   LoadingOverlay,
 } from "@mantine/core";
-import {
-  LayoutBottombarExpand,
-  LayoutBottombarCollapse,
-} from "tabler-icons-react";
-import { useDisclosure } from "@mantine/hooks";
 
 import { SupabaseOutletContext } from "../root";
 import { getDateRange } from "./_account";
@@ -201,48 +194,11 @@ function MatchingMeetings({
     cost: number;
   }[];
 }) {
-  const [opened, { toggle }] = useDisclosure(false);
   return (
-    <Affix position={{ bottom: 0, left: 0, right: 0 }}>
-      <Box
-        sx={(theme) => ({
-          backgroundColor:
-            theme.colorScheme === "dark"
-              ? theme.colors.dark[6]
-              : theme.colors.gray[0],
-          borderTopWidth: "1px",
-          borderTopStyle: "solid",
-          borderTopColor:
-            theme.colorScheme === "dark"
-              ? theme.colors.dark[3]
-              : theme.colors.gray[3],
-          boxShadow:
-            "0 -0.0625rem 0.1875rem rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.05) 0 -0.625rem 0.9375rem -0.3125rem, rgba(0, 0, 0, 0.04) 0 0.4375rem 0.4375rem -0.3125rem",
-          maxHeight: "50vh",
-          overflow: "auto",
-        })}
-      >
-        <div
-          css={{
-            position: "absolute",
-            top: "0.5em",
-            right: "0.5em",
-          }}
-        >
-          {events?.length > 3 && (
-            <ActionIcon onClick={toggle}>
-              {opened ? <LayoutBottombarCollapse /> : <LayoutBottombarExpand />}
-            </ActionIcon>
-          )}
-        </div>
-        <Space h="0.5em" />
-
+    <Card shadow="xs" padding="lg" radius="md" withBorder>
+      <Card.Section>
         <Table sx={{ tableLayout: "fixed" }}>
-          <thead
-            onClick={() => {
-              events?.length > 3 ? toggle() : null;
-            }}
-          >
+          <thead>
             <tr>
               <th css={{ width: "30em" }}>Meeting</th>
               <th css={{ width: "10em" }}>
@@ -268,13 +224,8 @@ function MatchingMeetings({
           </thead>
 
           <tbody>
-            {events?.map((event, i: number) => (
-              <tr
-                key={event.series}
-                css={{
-                  display: i < 3 || opened ? "table-row" : "none",
-                }}
-              >
+            {events?.map((event) => (
+              <tr key={event.series}>
                 <td>{event.title}</td>
                 <td align="right">
                   <code>{lengthFmt(event.length_sum || 0)}</code>
@@ -309,8 +260,8 @@ function MatchingMeetings({
             ))}
           </tbody>
         </Table>
-      </Box>
-    </Affix>
+      </Card.Section>
+    </Card>
   );
 }
 
@@ -373,7 +324,7 @@ export default function Meetings() {
           />
         </Grid.Col>
       </Grid>
-      <Space h={200}></Space>
+      <Space h="md" />
       {events && <MatchingMeetings events={events} />}
     </>
   );

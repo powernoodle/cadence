@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import {
@@ -8,15 +8,21 @@ import {
   Outlet,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import { useState } from "react";
 import {
   AppShell,
-  Header,
-  Group,
-  Flex,
-  Title,
+  Aside,
+  Burger,
   Button,
+  Flex,
+  Footer,
+  Group,
+  Header,
+  MediaQuery,
+  Navbar,
   Select,
+  Text,
+  Title,
+  useMantineTheme,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 
@@ -165,13 +171,55 @@ function AccountSelect({
   );
 }
 
-function AppHeader() {
-  const {
-    isAdmin,
-    accountId,
-    accounts,
-    dateRange: _defaultDateRange,
-  } = useLoaderData<typeof loader>();
+function AppHeader({ menu }: { menu: ReactNode }) {
+  const { isAdmin, accountId, accounts } = useLoaderData<typeof loader>();
+  const { supabase } = useOutletContext<SupabaseOutletContext>();
+
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+  const [_searchParams, setSearchParams] = useSearchParams();
+
+  const accountSwitch = async (id: number) => {
+    setSearchParams((p) => ({
+      ...Object.fromEntries(p.entries()),
+      account: id.toString(),
+    }));
+  };
+
+  return (
+    <Header height={60} p="xs">
+      <Flex
+        mih={50}
+        gap="md"
+        justify="space-between"
+        align="flex-start"
+        direction="row"
+        wrap="wrap"
+      >
+        <Group>
+          {menu}
+          <Title order={1} size="h2">
+            {APP_NAME}
+          </Title>
+        </Group>
+        <Group>
+          {isAdmin && (
+            <AccountSelect
+              accounts={accounts}
+              defaultValue={accountId || undefined}
+              onChange={accountSwitch}
+            />
+          )}
+          <Button onClick={logout}>Logout</Button>
+        </Group>
+      </Flex>
+    </Header>
+  );
+}
+
+function AppNavbar({ opened }: { opened: boolean }) {
+  const { dateRange: _defaultDateRange } = useLoaderData<typeof loader>();
   const defaultDateRange: [Date, Date] = [
     fromTz(new Date(_defaultDateRange[0] as string), USER_TZ),
     fromTz(new Date(_defaultDateRange[1] as string), USER_TZ),
@@ -179,11 +227,7 @@ function AppHeader() {
   useEffect(() => {
     setDateRange(defaultDateRange);
   }, _defaultDateRange);
-  const { supabase } = useOutletContext<SupabaseOutletContext>();
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-  };
   const [searchParams, setSearchParams] = useSearchParams();
 
   const timeframes = [
@@ -250,15 +294,13 @@ function AppHeader() {
     }));
   };
 
-  const accountSwitch = async (id: number) => {
-    setSearchParams((p) => ({
-      ...Object.fromEntries(p.entries()),
-      account: id.toString(),
-    }));
-  };
-
   return (
-    <Header height={60} p="xs">
+    <Navbar
+      p="md"
+      hiddenBreakpoint="sm"
+      hidden={!opened}
+      width={{ sm: 200, lg: 300 }}
+    >
       <Flex
         mih={50}
         gap="md"
@@ -267,41 +309,55 @@ function AppHeader() {
         direction="row"
         wrap="wrap"
       >
-        <Group>
-          <Title order={1} size="h2">
-            {APP_NAME}
-          </Title>
-          <Select
-            value={timeframe}
-            onChange={onTimeframeChange}
-            data={timeframes}
-          />
-          <DatePickerInput
-            type="range"
-            value={dateRange}
-            onChange={onDateRangeChange}
-            allowSingleDateInRange
-          />
-        </Group>
-        <Group>
-          {isAdmin && (
-            <AccountSelect
-              accounts={accounts}
-              defaultValue={accountId || undefined}
-              onChange={accountSwitch}
-            />
-          )}
-          <Button onClick={logout}>Logout</Button>
-        </Group>
+        <Select
+          value={timeframe}
+          onChange={onTimeframeChange}
+          data={timeframes}
+        />
+        <DatePickerInput
+          type="range"
+          value={dateRange}
+          onChange={onDateRangeChange}
+          allowSingleDateInRange
+        />
       </Flex>
-    </Header>
+    </Navbar>
   );
 }
 
 export default function Index() {
   const ctx = useOutletContext<SupabaseOutletContext>();
+  const theme = useMantineTheme();
+  const [opened, setOpened] = useState(false);
   return (
-    <AppShell header={<AppHeader />}>
+    <AppShell
+      styles={{
+        main: {
+          background:
+            theme.colorScheme === "dark"
+              ? theme.colors.dark[8]
+              : theme.colors.gray[0],
+        },
+      }}
+      navbarOffsetBreakpoint="sm"
+      asideOffsetBreakpoint="sm"
+      navbar={<AppNavbar opened={opened} />}
+      header={
+        <AppHeader
+          menu={
+            <MediaQuery largerThan="sm" styles={{ display: "none" }}>
+              <Burger
+                opened={opened}
+                onClick={() => setOpened((o) => !o)}
+                size="sm"
+                color={theme.colors.gray[6]}
+                mr="xl"
+              />
+            </MediaQuery>
+          }
+        />
+      }
+    >
       <Outlet context={ctx} />
     </AppShell>
   );

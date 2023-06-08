@@ -64,7 +64,7 @@ export class Event {
       args.isOnline || Event.HasConferencing(args.location, args.description);
     this.isOnsite = !!args.isOnsite;
     this.isOffsite =
-      !this.isOffsite || (!this.isOnline && !this.isOnsite && !!location);
+      !this.isOffsite || (!this.isOnline && !this.isOnsite && !!args.location);
 
     if (args.attendance) {
       this.attendance = args.attendance;

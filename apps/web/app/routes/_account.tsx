@@ -171,8 +171,8 @@ function AppHeader() {
     dateRange: _defaultDateRange,
   } = useLoaderData<typeof loader>();
   const defaultDateRange: [Date, Date] = [
-    new Date(_defaultDateRange[0] as string),
-    new Date(_defaultDateRange[1] as string),
+    fromTz(new Date(_defaultDateRange[0] as string), USER_TZ),
+    fromTz(new Date(_defaultDateRange[1] as string), USER_TZ),
   ];
   useEffect(() => {
     setDateRange(defaultDateRange);

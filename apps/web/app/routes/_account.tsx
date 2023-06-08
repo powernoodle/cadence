@@ -3,24 +3,24 @@ import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import {
   useLoaderData,
+  useLocation,
   useOutletContext,
   useSearchParams,
   Outlet,
+  Link,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   AppShell,
-  Aside,
   Burger,
   Button,
   Flex,
-  Footer,
   Group,
   Header,
   MediaQuery,
   Navbar,
+  NavLink,
   Select,
-  Text,
   Title,
   useMantineTheme,
 } from "@mantine/core";
@@ -128,7 +128,6 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const isAdmin = safeQuery(await supabase.rpc("is_admin"));
 
   const [current] = getDateRange(new URL(request.url).searchParams);
-  console.log(current);
   const dateRange: [Date | null, Date | null] = [
     current[0],
     startOfDay(current[1], USER_TZ),
@@ -140,25 +139,23 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   );
 };
 
-function AccountSelect({
-  accounts,
-  defaultValue,
-  onChange,
-}: {
-  accounts: Pick<Account, "id" | "name" | "email">[];
-  defaultValue?: number;
-  onChange: (id: number) => void;
-}) {
-  const [value, setValue] = useState<number | null>(defaultValue || null);
+function AccountSelect() {
+  const { accountId, accounts } = useLoaderData<typeof loader>();
+  const [value, setValue] = useState<number | null>(accountId || null);
   const handleChange = (id: string) => {
     const idNum = parseInt(id);
     setValue(idNum);
-    onChange(idNum);
+    setSearchParams((p) => ({
+      ...Object.fromEntries(p.entries()),
+      account: id.toString(),
+    }));
   };
+
+  const [_searchParams, setSearchParams] = useSearchParams();
+
   return (
     <Select
       placeholder="Select account"
-      w="20em"
       value={value?.toString()}
       onChange={handleChange}
       data={accounts.map((account) => ({
@@ -172,19 +169,10 @@ function AccountSelect({
 }
 
 function AppHeader({ menu }: { menu: ReactNode }) {
-  const { isAdmin, accountId, accounts } = useLoaderData<typeof loader>();
   const { supabase } = useOutletContext<SupabaseOutletContext>();
 
   const logout = async () => {
     await supabase.auth.signOut();
-  };
-  const [_searchParams, setSearchParams] = useSearchParams();
-
-  const accountSwitch = async (id: number) => {
-    setSearchParams((p) => ({
-      ...Object.fromEntries(p.entries()),
-      account: id.toString(),
-    }));
   };
 
   return (
@@ -204,13 +192,6 @@ function AppHeader({ menu }: { menu: ReactNode }) {
           </Title>
         </Group>
         <Group>
-          {isAdmin && (
-            <AccountSelect
-              accounts={accounts}
-              defaultValue={accountId || undefined}
-              onChange={accountSwitch}
-            />
-          )}
           <Button onClick={logout}>Logout</Button>
         </Group>
       </Flex>
@@ -219,7 +200,9 @@ function AppHeader({ menu }: { menu: ReactNode }) {
 }
 
 function AppNavbar({ opened }: { opened: boolean }) {
-  const { dateRange: _defaultDateRange } = useLoaderData<typeof loader>();
+  const location = useLocation();
+  const { dateRange: _defaultDateRange, isAdmin } =
+    useLoaderData<typeof loader>();
   const defaultDateRange: [Date, Date] = [
     fromTz(new Date(_defaultDateRange[0] as string), USER_TZ),
     fromTz(new Date(_defaultDateRange[1] as string), USER_TZ),
@@ -301,26 +284,40 @@ function AppNavbar({ opened }: { opened: boolean }) {
       hidden={!opened}
       width={{ sm: 200, lg: 300 }}
     >
-      <Flex
-        mih={50}
-        gap="md"
-        justify="space-between"
-        align="flex-start"
-        direction="row"
-        wrap="wrap"
-      >
+      <Navbar.Section>
+        <NavLink
+          label="Insights"
+          component={Link}
+          to={`/meetings?${location.search}`}
+          active={location.pathname === "/meetings"}
+        />
+        <NavLink
+          label="Schedule"
+          component={Link}
+          to={`/schedule?${location.search}`}
+          active={location.pathname === "/schedule"}
+        />
+      </Navbar.Section>
+      <Navbar.Section mt="md" grow>
         <Select
+          mb="sm"
           value={timeframe}
           onChange={onTimeframeChange}
           data={timeframes}
         />
         <DatePickerInput
+          mb="sm"
           type="range"
           value={dateRange}
           onChange={onDateRangeChange}
           allowSingleDateInRange
         />
-      </Flex>
+      </Navbar.Section>
+      {isAdmin && (
+        <Navbar.Section>
+          <AccountSelect />
+        </Navbar.Section>
+      )}
     </Navbar>
   );
 }

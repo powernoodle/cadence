@@ -3,15 +3,6 @@
 import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import startOfWeek from "date-fns/startOfWeek";
-import endOfWeek from "date-fns/endOfWeek";
-import startOfMonth from "date-fns/startOfMonth";
-import endOfMonth from "date-fns/endOfMonth";
-import startOfDay from "date-fns/startOfDay";
-import endOfDay from "date-fns/endOfDay";
-import sub from "date-fns/sub";
-import add from "date-fns/add";
-
 import {
   useLoaderData,
   useOutletContext,
@@ -36,8 +27,8 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 
 import { SupabaseOutletContext } from "../root";
+import { getDateRange } from "./_account";
 import { createServerClient, safeQuery, getAccountId } from "../util";
-import { differenceInDays } from "date-fns";
 
 const HOURLY_WAGE = 50;
 
@@ -60,63 +51,6 @@ const lengthFmt = (length: number, full: boolean = false) => {
     ret += `${String(minutes).padStart(hours ? 2 : 1, "0")}m`;
   }
   return ret;
-};
-
-const getDateRange = (request: Request) => {
-  const url = new URL(request.url);
-  const startParam = url.searchParams.get("start");
-  const endParam = url.searchParams.get("end");
-  const timeframe = url.searchParams.get("timeframe") || "28d";
-  const start = startParam ? new Date(startParam) : startOfDay(new Date());
-  const end = endParam ? new Date(endParam) : endOfDay(new Date());
-
-  switch (timeframe) {
-    case "month":
-      return [
-        [startOfMonth(end), endOfMonth(end)],
-        [
-          startOfMonth(sub(end, { months: 1 })),
-          endOfMonth(sub(end, { months: 1 })),
-        ],
-        [
-          startOfMonth(add(end, { months: 1 })),
-          endOfMonth(add(end, { months: 1 })),
-        ],
-      ];
-    case "week":
-      return [
-        [startOfWeek(end), endOfWeek(end)],
-        [
-          startOfWeek(sub(end, { weeks: 1 })),
-          endOfWeek(sub(end, { weeks: 1 })),
-        ],
-        [
-          startOfWeek(add(end, { weeks: 1 })),
-          endOfWeek(add(end, { weeks: 1 })),
-        ],
-      ];
-    case "28d":
-      return [
-        [startOfDay(sub(end, { days: 27 })), endOfDay(end)],
-        [
-          startOfDay(sub(end, { days: 27 + 28 })),
-          endOfDay(sub(end, { days: 28 })),
-        ],
-        [startOfDay(add(end, { days: 1 })), endOfDay(add(end, { days: 28 }))],
-      ];
-    default:
-      return [
-        [start, end],
-        [
-          sub(start, { days: differenceInDays(end, start) }),
-          sub(end, { days: differenceInDays(end, start) }),
-        ],
-        [
-          add(start, { days: differenceInDays(end, start) }),
-          add(end, { days: differenceInDays(end, start) }),
-        ],
-      ];
-  }
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {

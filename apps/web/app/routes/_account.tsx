@@ -1,5 +1,4 @@
 import type { LoaderArgs } from "@remix-run/cloudflare";
-import { ClientOnly } from "remix-utils";
 
 import {
   useLoaderData,
@@ -19,19 +18,98 @@ import {
   Select,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
-import startOfWeek from "date-fns/startOfWeek";
-import endOfWeek from "date-fns/endOfWeek";
-import startOfMonth from "date-fns/startOfMonth";
-import endOfMonth from "date-fns/endOfMonth";
-import startOfDay from "date-fns/startOfDay";
-import endOfDay from "date-fns/endOfDay";
+
+import add from "date-fns/add";
+import differenceInDays from "date-fns/differenceInDays";
 import sub from "date-fns/sub";
+import {
+  fromTz,
+  toTz,
+  toDate,
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  formatDate,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from "../tz";
 
 import type { Database } from "@cadence/db";
 import { SupabaseOutletContext } from "../root";
 import { APP_NAME, createServerClient, getAccountId, safeQuery } from "../util";
 
 type Account = Database["public"]["Tables"]["account"]["Row"];
+
+// TODO: load this from the account
+export const USER_TZ = "America/New_York";
+
+export const getDateRange = (request: Request) => {
+  const url = new URL(request.url);
+  const startParam = url.searchParams.get("start");
+  const endParam = url.searchParams.get("end");
+  const timeframe = url.searchParams.get("timeframe") || "28d";
+  const start = startParam
+    ? toDate(startParam, USER_TZ)
+    : startOfDay(new Date(), USER_TZ);
+  const end = add(
+    endParam ? toDate(endParam, USER_TZ) : endOfDay(new Date(), USER_TZ),
+    {
+      seconds: 60 * 60 * 24 - 1,
+    }
+  );
+
+  switch (timeframe) {
+    case "month":
+      return [
+        [startOfMonth(end, USER_TZ), endOfMonth(end, USER_TZ)],
+        [
+          startOfMonth(sub(end, { months: 1 }), USER_TZ),
+          endOfMonth(sub(end, { months: 1 }), USER_TZ),
+        ],
+        [
+          startOfMonth(add(end, { months: 1 }), USER_TZ),
+          endOfMonth(add(end, { months: 1 }), USER_TZ),
+        ],
+      ];
+    case "week":
+      return [
+        [startOfWeek(end, USER_TZ), endOfWeek(end, USER_TZ)],
+        [
+          startOfWeek(sub(end, { weeks: 1 }), USER_TZ),
+          endOfWeek(sub(end, { weeks: 1 }), USER_TZ),
+        ],
+        [
+          startOfWeek(add(end, { weeks: 1 }), USER_TZ),
+          endOfWeek(add(end, { weeks: 1 }), USER_TZ),
+        ],
+      ];
+    case "28d":
+      return [
+        [startOfDay(sub(end, { days: 27 }), USER_TZ), endOfDay(end, USER_TZ)],
+        [
+          startOfDay(sub(end, { days: 27 + 28 }), USER_TZ),
+          endOfDay(sub(end, { days: 28 }), USER_TZ),
+        ],
+        [
+          startOfDay(add(end, { days: 1 }), USER_TZ),
+          endOfDay(add(end, { days: 28 }), USER_TZ),
+        ],
+      ];
+    default:
+      return [
+        [start, end],
+        [
+          sub(start, { days: differenceInDays(end, start) }),
+          sub(end, { days: differenceInDays(end, start) }),
+        ],
+        [
+          add(start, { days: differenceInDays(end, start) }),
+          add(end, { days: differenceInDays(end, start) }),
+        ],
+      ];
+  }
+};
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -106,24 +184,37 @@ function AppHeader() {
     setTimeframeState(timeframe);
     const range = getDefaultDateRange(timeframe, new Date());
     setDateRange(range);
-    setSearchParams((p) => ({
-      ...Object.fromEntries(p.entries()),
-      timeframe,
-      ...(timeframe === "custom"
-        ? { start: range[0].toISOString(), end: range[1].toISOString() }
-        : { start: "", end: "" }),
-    }));
+    setSearchParams((p) => {
+      const {
+        start: _1,
+        end: _2,
+        ...otherParams
+      } = Object.fromEntries(p.entries());
+      return {
+        ...otherParams,
+        timeframe,
+        ...(timeframe === "custom"
+          ? {
+              start: formatDate(range[0], USER_TZ, "yyyy-MM-dd"),
+              end: formatDate(range[1], USER_TZ, "yyyy-MM-dd"),
+            }
+          : {}),
+      };
+    });
   };
 
   const getDefaultDateRange = (timeframe: string, date: Date): [Date, Date] => {
     switch (timeframe) {
       case "month":
-        return [startOfMonth(date), endOfMonth(date)];
+        return [startOfMonth(date, USER_TZ), endOfMonth(date, USER_TZ)];
       case "week":
-        return [startOfWeek(date), endOfWeek(date)];
+        return [startOfWeek(date, USER_TZ), endOfWeek(date, USER_TZ)];
       default:
       case "28d":
-        return [startOfDay(sub(date, { days: 27 })), endOfDay(date)];
+        return [
+          startOfDay(sub(date, { days: 27 }), USER_TZ),
+          endOfDay(date, USER_TZ),
+        ];
     }
   };
 
@@ -148,8 +239,8 @@ function AppHeader() {
         timeframe: "custom",
         ...(range[0] && range[1]
           ? {
-              start: startOfDay(range[0]).toISOString(),
-              end: endOfDay(range[1]).toISOString(),
+              start: formatDate(range[0], USER_TZ, "yyyy-MM-dd"),
+              end: formatDate(range[1], USER_TZ, "yyyy-MM-dd"),
             }
           : {}),
       }));
@@ -182,16 +273,12 @@ function AppHeader() {
             onChange={onTimeframeChange}
             data={timeframes}
           />
-          <ClientOnly>
-            {() => (
-              <DatePickerInput
-                type="range"
-                value={dateRange}
-                onChange={onDateRangeChange}
-                allowSingleDateInRange
-              />
-            )}
-          </ClientOnly>
+          <DatePickerInput
+            type="range"
+            value={dateRange}
+            onChange={onDateRangeChange}
+            allowSingleDateInRange
+          />
         </Group>
         <Group>
           {isAdmin && (

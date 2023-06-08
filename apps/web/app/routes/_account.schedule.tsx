@@ -1,6 +1,6 @@
 /** @jsx jsx */
 /** @jsxfrag */
-import React, { useEffect } from "react";
+import React, { useEffect, PropsWithChildren } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import { isSameDay, toDate, formatDate } from "../tz";
@@ -67,6 +67,7 @@ function Meetings({
     title: string;
     length: number;
     at: string;
+    is_meeting: boolean;
     invitee_count: number;
     attendee_count: number;
   }[];
@@ -104,26 +105,46 @@ function Meetings({
               const end = toDate(dates[1], USER_TZ);
               const isNewDay = !last || !isSameDay(last, start, USER_TZ);
               last = start;
+              const StyledText = ({ children }: PropsWithChildren<{}>) => (
+                <Text
+                  fw={row.is_meeting ? 700 : 300}
+                  c={row.is_meeting ? "blue" : ""}
+                >
+                  {children}
+                </Text>
+              );
               return (
                 <React.Fragment key={row.id}>
                   {isNewDay && (
                     <tr>
                       <td colSpan={4}>
-                        <Text c="dimmed">{fmtDate(start, end)}</Text>
+                        <Text fs="italic">{fmtDate(start, end)}</Text>
                       </td>
                     </tr>
                   )}
                   <tr>
-                    <td>{fmtTime(start, end)}</td>
-                    <td>{row.title}</td>
-                    <td align="right">
-                      <code>{durationFmt(row.length || 0)}</code>
+                    <td>
+                      <StyledText>{fmtTime(start, end)}</StyledText>
+                    </td>
+                    <td>
+                      <StyledText>{row.title}</StyledText>
                     </td>
                     <td align="right">
-                      <code>{(row.invitee_count || 0).toLocaleString()}</code>
+                      <StyledText>
+                        <code>{durationFmt(row.length || 0)}</code>
+                      </StyledText>
                     </td>
                     <td align="right">
-                      <code>{(row.attendee_count || 0).toLocaleString()}</code>
+                      <StyledText>
+                        <code>{(row.invitee_count || 0).toLocaleString()}</code>
+                      </StyledText>
+                    </td>
+                    <td align="right">
+                      <StyledText>
+                        <code>
+                          {(row.attendee_count || 0).toLocaleString()}
+                        </code>
+                      </StyledText>
                     </td>
                   </tr>
                 </React.Fragment>

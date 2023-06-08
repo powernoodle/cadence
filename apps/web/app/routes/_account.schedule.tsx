@@ -14,7 +14,12 @@ import { json } from "@remix-run/cloudflare";
 import { Card, Text, Table, LoadingOverlay } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
-import { createServerClient, safeQuery, getAccountId } from "../util";
+import {
+  createServerClient,
+  safeQuery,
+  getAccountId,
+  durationFmt,
+} from "../util";
 import { getDateRange, USER_TZ } from "./_account";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -112,7 +117,7 @@ function Meetings({
                     <td>{fmtTime(start, end)}</td>
                     <td>{row.title}</td>
                     <td align="right">
-                      <code>{(row.length || 0).toLocaleString()}</code>
+                      <code>{durationFmt(row.length || 0)}</code>
                     </td>
                     <td align="right">
                       <code>{(row.invitee_count || 0).toLocaleString()}</code>

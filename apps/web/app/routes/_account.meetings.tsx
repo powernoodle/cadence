@@ -21,30 +21,15 @@ import {
 
 import { SupabaseOutletContext } from "../root";
 import { getDateRange } from "./_account";
-import { createServerClient, safeQuery, getAccountId } from "../util";
+import {
+  createServerClient,
+  safeQuery,
+  getAccountId,
+  costFmt,
+  durationFmt,
+} from "../util";
 
 const HOURLY_WAGE = 50;
-
-const costFmt = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 0,
-  maximumFractionDigits: 0,
-});
-
-const lengthFmt = (length: number, full: boolean = false) => {
-  const hours = Math.floor(length / 60);
-  const minutes = length % 60;
-  let ret = "";
-  if (hours) {
-    ret = `${hours.toLocaleString()}h`;
-  }
-  if (full || minutes) {
-    if (ret) ret += " ";
-    ret += `${String(minutes).padStart(hours ? 2 : 1, "0")}m`;
-  }
-  return ret;
-};
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -166,7 +151,7 @@ function MeetingStats({
                   <code>{(row.meeting_count || 0).toLocaleString()}</code>
                 </td>
                 <td align="right">
-                  <code>{lengthFmt(row.length_sum || 0, true)}</code>
+                  <code>{durationFmt(row.length_sum || 0, true)}</code>
                 </td>
                 <td align="right">
                   <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
@@ -228,7 +213,7 @@ function MatchingMeetings({
               <tr key={event.series}>
                 <td>{event.title}</td>
                 <td align="right">
-                  <code>{lengthFmt(event.length_sum || 0)}</code>
+                  <code>{durationFmt(event.length_sum || 0)}</code>
                 </td>
                 <td align="right">
                   <code>
@@ -319,7 +304,7 @@ export default function Meetings() {
             data={lengths.map((o) => ({
               id: o.length,
               ...o,
-              title: lengthFmt(o.length),
+              title: durationFmt(o.length),
             }))}
           />
         </Grid.Col>

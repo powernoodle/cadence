@@ -61,3 +61,24 @@ export const getAccountId = async (
   console.error(`No account found for ${userId}`);
   throw redirect("/login");
 };
+
+export const costFmt = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 0,
+});
+
+export const durationFmt = (length: number, full: boolean = false) => {
+  const hours = Math.floor(length / 60);
+  const minutes = length % 60;
+  let ret = "";
+  if (hours) {
+    ret = `${hours.toLocaleString()}h`;
+  }
+  if (full || minutes) {
+    if (ret) ret += " ";
+    ret += `${String(minutes).padStart(hours ? 2 : 1, "0")}m`;
+  }
+  return ret;
+};

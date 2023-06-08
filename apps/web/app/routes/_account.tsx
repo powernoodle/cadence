@@ -24,6 +24,7 @@ import add from "date-fns/add";
 import differenceInDays from "date-fns/differenceInDays";
 import sub from "date-fns/sub";
 import {
+  toTz,
   fromTz,
   toDate,
   endOfDay,
@@ -42,8 +43,7 @@ import { APP_NAME, createServerClient, getAccountId, safeQuery } from "../util";
 type Account = Database["public"]["Tables"]["account"]["Row"];
 
 // TODO: load this from the account
-//export const USER_TZ = "America/New_York";
-export const USER_TZ = "America/Los_Angeles";
+export const USER_TZ = "America/New_York";
 
 export const getDateRange = (params: URLSearchParams, timeframe?: string) => {
   const startParam = params.get("start");
@@ -122,6 +122,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const isAdmin = safeQuery(await supabase.rpc("is_admin"));
 
   const [current] = getDateRange(new URL(request.url).searchParams);
+  console.log(current);
   const dateRange: [Date | null, Date | null] = [
     current[0],
     startOfDay(current[1], USER_TZ),
@@ -238,12 +239,12 @@ function AppHeader() {
       ...Object.fromEntries(p.entries()),
       ...(range[0]
         ? {
-            start: formatDate(range[0], USER_TZ, "yyyy-MM-dd"),
+            start: formatDate(toTz(range[0], USER_TZ), USER_TZ, "yyyy-MM-dd"),
           }
         : {}),
       ...(range[1]
         ? {
-            end: formatDate(range[1], USER_TZ, "yyyy-MM-dd"),
+            end: formatDate(toTz(range[1], USER_TZ), USER_TZ, "yyyy-MM-dd"),
           }
         : {}),
     }));

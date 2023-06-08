@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import {
@@ -24,7 +25,6 @@ import differenceInDays from "date-fns/differenceInDays";
 import sub from "date-fns/sub";
 import {
   fromTz,
-  toTz,
   toDate,
   endOfDay,
   endOfMonth,
@@ -44,20 +44,16 @@ type Account = Database["public"]["Tables"]["account"]["Row"];
 // TODO: load this from the account
 export const USER_TZ = "America/New_York";
 
-export const getDateRange = (request: Request) => {
-  const url = new URL(request.url);
-  const startParam = url.searchParams.get("start");
-  const endParam = url.searchParams.get("end");
-  const timeframe = url.searchParams.get("timeframe") || "28d";
+export const getDateRange = (params: URLSearchParams, timeframe?: string) => {
+  const startParam = params.get("start");
+  const endParam = params.get("end");
+  if (!timeframe) timeframe = params.get("timeframe") || "28d";
   const start = startParam
-    ? toDate(startParam, USER_TZ)
+    ? startOfDay(toDate(startParam, USER_TZ), USER_TZ)
     : startOfDay(new Date(), USER_TZ);
-  const end = add(
-    endParam ? toDate(endParam, USER_TZ) : endOfDay(new Date(), USER_TZ),
-    {
-      seconds: 60 * 60 * 24 - 1,
-    }
-  );
+  const end = endParam
+    ? endOfDay(toDate(endParam, USER_TZ), USER_TZ)
+    : endOfDay(new Date(), USER_TZ);
 
   switch (timeframe) {
     case "month":
@@ -100,12 +96,12 @@ export const getDateRange = (request: Request) => {
       return [
         [start, end],
         [
-          sub(start, { days: differenceInDays(end, start) }),
+          sub(start, { days: differenceInDays(end, start) + 1 }),
           sub(end, { days: differenceInDays(end, start) }),
         ],
         [
           add(start, { days: differenceInDays(end, start) }),
-          add(end, { days: differenceInDays(end, start) }),
+          add(end, { days: differenceInDays(end, start) + 1 }),
         ],
       ];
   }
@@ -124,8 +120,14 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
   const isAdmin = safeQuery(await supabase.rpc("is_admin"));
 
+  const [current] = getDateRange(new URL(request.url).searchParams);
+  const dateRange: [Date | null, Date | null] = [
+    fromTz(current[0], USER_TZ),
+    fromTz(startOfDay(current[1], USER_TZ), USER_TZ),
+  ];
+
   return json(
-    { isAdmin, accountId, accounts: accounts ?? [] },
+    { isAdmin, accountId, accounts: accounts ?? [], dateRange },
     { headers: response.headers }
   );
 };
@@ -162,7 +164,19 @@ function AccountSelect({
 }
 
 function AppHeader() {
-  const { isAdmin, accountId, accounts } = useLoaderData<typeof loader>();
+  const {
+    isAdmin,
+    accountId,
+    accounts,
+    dateRange: _defaultDateRange,
+  } = useLoaderData<typeof loader>();
+  const defaultDateRange: [Date, Date] = [
+    new Date(_defaultDateRange[0] as string),
+    new Date(_defaultDateRange[1] as string),
+  ];
+  useEffect(() => {
+    setDateRange(defaultDateRange);
+  }, _defaultDateRange);
   const { supabase } = useOutletContext<SupabaseOutletContext>();
 
   const logout = async () => {
@@ -182,69 +196,56 @@ function AppHeader() {
   const onTimeframeChange = async (timeframe: string) => {
     if (!timeframe) return;
     setTimeframeState(timeframe);
-    const range = getDefaultDateRange(timeframe, new Date());
-    setDateRange(range);
+    const [current] = getDateRange(
+      new URLSearchParams(location.search),
+      timeframe
+    );
     setSearchParams((p) => {
-      const {
-        start: _1,
-        end: _2,
-        ...otherParams
-      } = Object.fromEntries(p.entries());
+      const { start, end, ...other } = Object.fromEntries(p.entries());
       return {
-        ...otherParams,
+        ...other,
         timeframe,
         ...(timeframe === "custom"
           ? {
-              start: formatDate(range[0], USER_TZ, "yyyy-MM-dd"),
-              end: formatDate(range[1], USER_TZ, "yyyy-MM-dd"),
+              start: formatDate(current[0], USER_TZ, "yyyy-MM-dd"),
+              end: formatDate(current[1], USER_TZ, "yyyy-MM-dd"),
             }
           : {}),
       };
     });
   };
 
-  const getDefaultDateRange = (timeframe: string, date: Date): [Date, Date] => {
-    switch (timeframe) {
-      case "month":
-        return [startOfMonth(date, USER_TZ), endOfMonth(date, USER_TZ)];
-      case "week":
-        return [startOfWeek(date, USER_TZ), endOfWeek(date, USER_TZ)];
-      default:
-      case "28d":
-        return [
-          startOfDay(sub(date, { days: 27 }), USER_TZ),
-          endOfDay(date, USER_TZ),
-        ];
-    }
-  };
-
-  let defaultDateRange: [Date, Date];
-  if (searchParams.get("start") && searchParams.get("end")) {
-    defaultDateRange = [
-      new Date(searchParams.get("start") as string),
-      new Date(searchParams.get("end") as string),
-    ];
-  } else {
-    defaultDateRange = getDefaultDateRange(timeframe, new Date());
-  }
   const [dateRange, setDateRange] =
     useState<[Date | null, Date | null]>(defaultDateRange);
 
   const onDateRangeChange = (range: [Date | null, Date | null]) => {
-    setDateRange(range);
-    if (range[0] !== null && range[1] !== null) {
-      setTimeframeState("custom");
-      setSearchParams((p) => ({
-        ...Object.fromEntries(p.entries()),
-        timeframe: "custom",
-        ...(range[0] && range[1]
-          ? {
-              start: formatDate(range[0], USER_TZ, "yyyy-MM-dd"),
-              end: formatDate(range[1], USER_TZ, "yyyy-MM-dd"),
-            }
-          : {}),
-      }));
+    if (range[0] === null) return;
+    switch (timeframe) {
+      case "28d":
+        range[1] = add(range[0], { days: 28 });
+        break;
+      case "month":
+        range[1] = endOfMonth(range[0], USER_TZ);
+        break;
+      case "week":
+        range[1] = endOfWeek(range[0], USER_TZ);
+        break;
     }
+    setDateRange(range);
+    if (range[1] === null) return;
+    setSearchParams((p) => ({
+      ...Object.fromEntries(p.entries()),
+      ...(range[0]
+        ? {
+            start: formatDate(range[0], USER_TZ, "yyyy-MM-dd"),
+          }
+        : {}),
+      ...(range[1]
+        ? {
+            end: formatDate(range[1], USER_TZ, "yyyy-MM-dd"),
+          }
+        : {}),
+    }));
   };
 
   const accountSwitch = async (id: number) => {

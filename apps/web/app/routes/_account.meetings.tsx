@@ -56,7 +56,9 @@ const lengthFmt = (length: number, full: boolean = false) => {
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
-  const [current, previous, next] = getDateRange(request);
+  const [current, previous, next] = getDateRange(
+    new URL(request.url).searchParams
+  );
   const during = `[${current[0].toISOString()}, ${current[1].toISOString()})`;
   const previousDuring = `[${previous[0].toISOString()}, ${previous[1].toISOString()})`;
   const nextDuring = `[${next[0].toISOString()}, ${next[1].toISOString()})`;

@@ -9,15 +9,7 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import {
-  Card,
-  Text,
-  Box,
-  Space,
-  Grid,
-  Table,
-  LoadingOverlay,
-} from "@mantine/core";
+import { Paper, Text, Space, Grid, Table, LoadingOverlay } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import { getDateRange } from "./_account";
@@ -120,48 +112,46 @@ function MeetingStats({
   }[];
 }) {
   return (
-    <Card shadow="xs" padding="lg" radius="md" withBorder>
-      <Card.Section>
-        <Table>
-          <thead>
-            <tr>
-              <th>{title}</th>
-              <th>
-                <Text ta="right">🧮</Text>
-              </th>
-              <th>
-                <Text ta="right">⏳</Text>
-              </th>
-              <th>
-                <Text ta="right">💰</Text>
-              </th>
-            </tr>
-          </thead>
+    <Paper>
+      <Table>
+        <thead>
+          <tr>
+            <th>{title}</th>
+            <th>
+              <Text ta="right">🧮</Text>
+            </th>
+            <th>
+              <Text ta="right">⏳</Text>
+            </th>
+            <th>
+              <Text ta="right">💰</Text>
+            </th>
+          </tr>
+        </thead>
 
-          <tbody>
-            {data.length === 0 && (
-              <tr>
-                <td colSpan={4}>None</td>
-              </tr>
-            )}
-            {data.map((row) => (
-              <tr key={row.id}>
-                <td>{row.title}</td>
-                <td align="right">
-                  <code>{(row.meeting_count || 0).toLocaleString()}</code>
-                </td>
-                <td align="right">
-                  <code>{durationFmt(row.length_sum || 0, true)}</code>
-                </td>
-                <td align="right">
-                  <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card.Section>
-    </Card>
+        <tbody>
+          {data.length === 0 && (
+            <tr>
+              <td colSpan={4}>None</td>
+            </tr>
+          )}
+          {data.map((row) => (
+            <tr key={row.id}>
+              <td>{row.title}</td>
+              <td align="right">
+                <code>{(row.meeting_count || 0).toLocaleString()}</code>
+              </td>
+              <td align="right">
+                <code>{durationFmt(row.length_sum || 0, true)}</code>
+              </td>
+              <td align="right">
+                <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </Paper>
   );
 }
 
@@ -180,73 +170,71 @@ function MatchingMeetings({
   }[];
 }) {
   return (
-    <Card shadow="xs" padding="lg" radius="md" withBorder>
-      <Card.Section>
-        <Table sx={{ tableLayout: "fixed" }}>
-          <thead>
-            <tr>
-              <th css={{ width: "30em" }}>Meeting</th>
-              <th css={{ width: "10em" }}>
-                <Text ta="right">Length</Text>
-              </th>
-              <th css={{ width: "10em" }}>
-                <Text ta="right">Invitees</Text>
-              </th>
-              <th css={{ width: "10em" }}>
-                <Text ta="right">Attendees</Text>
-              </th>
-              <th css={{ width: "10em" }}>
-                <Text ta="right">🧮</Text>
-              </th>
-              <th css={{ width: "10em" }}>
-                <Text ta="right">⏳</Text>
-              </th>
-              <th css={{ width: "10em" }}>
-                <Text ta="right">💰</Text>
-              </th>
-              <th></th>
-            </tr>
-          </thead>
+    <Paper>
+      <Table sx={{ tableLayout: "fixed" }}>
+        <thead>
+          <tr>
+            <th css={{ width: "30em" }}>Meeting</th>
+            <th css={{ width: "10em" }}>
+              <Text ta="right">Length</Text>
+            </th>
+            <th css={{ width: "10em" }}>
+              <Text ta="right">Invitees</Text>
+            </th>
+            <th css={{ width: "10em" }}>
+              <Text ta="right">Attendees</Text>
+            </th>
+            <th css={{ width: "10em" }}>
+              <Text ta="right">🧮</Text>
+            </th>
+            <th css={{ width: "10em" }}>
+              <Text ta="right">⏳</Text>
+            </th>
+            <th css={{ width: "10em" }}>
+              <Text ta="right">💰</Text>
+            </th>
+            <th></th>
+          </tr>
+        </thead>
 
-          <tbody>
-            {events?.map((event) => (
-              <tr key={event.series}>
-                <td>{event.title}</td>
-                <td align="right">
-                  <code>{durationFmt(event.length_sum || 0)}</code>
-                </td>
-                <td align="right">
-                  <code>
-                    {event.invitee_count &&
-                      (
-                        Math.round(event.invitee_count * 10) / 10
-                      ).toLocaleString()}
-                  </code>
-                </td>
-                <td align="right">
-                  <code>
-                    {event.attendee_count &&
-                      (
-                        Math.round(event.attendee_count * 10) / 10
-                      ).toLocaleString()}
-                  </code>
-                </td>
-                <td align="right">
-                  <code>{event.meeting_count?.toLocaleString()}</code>
-                </td>
-                <td align="right">
-                  <code>{event.length_sum?.toLocaleString()}</code>
-                </td>
-                <td align="right">
-                  <code>{costFmt.format((event.cost * HOURLY_WAGE) / 60)}</code>
-                </td>
-                <td></td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card.Section>
-    </Card>
+        <tbody>
+          {events?.map((event) => (
+            <tr key={event.series}>
+              <td>{event.title}</td>
+              <td align="right">
+                <code>{durationFmt(event.length_sum || 0)}</code>
+              </td>
+              <td align="right">
+                <code>
+                  {event.invitee_count &&
+                    (
+                      Math.round(event.invitee_count * 10) / 10
+                    ).toLocaleString()}
+                </code>
+              </td>
+              <td align="right">
+                <code>
+                  {event.attendee_count &&
+                    (
+                      Math.round(event.attendee_count * 10) / 10
+                    ).toLocaleString()}
+                </code>
+              </td>
+              <td align="right">
+                <code>{event.meeting_count?.toLocaleString()}</code>
+              </td>
+              <td align="right">
+                <code>{event.length_sum?.toLocaleString()}</code>
+              </td>
+              <td align="right">
+                <code>{costFmt.format((event.cost * HOURLY_WAGE) / 60)}</code>
+              </td>
+              <td></td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
+    </Paper>
   );
 }
 
@@ -309,7 +297,7 @@ export default function Meetings() {
           />
         </Grid.Col>
       </Grid>
-      <Space h="md" />
+      <Space h="lg" />
       {events && <MatchingMeetings events={events} />}
     </>
   );

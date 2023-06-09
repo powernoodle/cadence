@@ -1,4 +1,3 @@
-/** @jsx jsx */
 /** @jsxfrag */
 import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";

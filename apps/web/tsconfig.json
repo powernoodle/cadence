@@ -4,7 +4,9 @@
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2021"],
     "paths": {
-      "~/*": ["./app/*"]
+      "~/*": ["./app/*"],
+      "@cadence/db": ["../../libs/db/dist"],
+      "@cadence/emotion-server": ["../../libs/emotion-server"]
     },
     "noEmit": true,
     "baseUrl": ".",

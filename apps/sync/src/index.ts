@@ -24,20 +24,23 @@ export interface Env {
   readonly QUEUE: Queue<SyncRequest>;
 }
 
+let Sentry: Toucan;
+
 export default {
   async fetch(
     request: Request,
     env: Env,
     context: ExecutionContext
   ): Promise<Response> {
-    const sentry = new Toucan({
+    Sentry = new Toucan({
       dsn: env.SENTRY_DSN,
+      environment: env.ENV,
       context,
       request,
     });
 
     try {
-      if (env.ENV !== "dev") {
+      if (env.ENV !== "development") {
         return new Response("Denied");
       }
       if (request.method !== "POST") return new Response("Ignored");
@@ -47,14 +50,15 @@ export default {
       await process(env, body as SyncRequest);
       return new Response("Success");
     } catch (e) {
-      sentry.captureException(e);
       console.error(e);
+      Sentry.captureException(e);
 
       let error: object = { message: "Unknown error" };
       if (e instanceof Error) {
         error = {
           message: e.message,
           stack: e.stack,
+          cause: e,
         };
       } else if (typeof e === "string" || e instanceof String) {
         error = {
@@ -113,7 +117,12 @@ async function process(env: Env, request: SyncRequest) {
 
   await store.syncEvents(
     sub(new Date(), { days: 60 }),
-    add(new Date(), { days: 30 })
+    add(new Date(), { days: 30 }),
+    "c012a8979ac271f5566a7f0f8886b5a73de5c906452b5ec9381c53794aeb4933@group.calendar.google.com",
+    (e) => {
+      Sentry?.captureException(e);
+      console.error(e);
+    }
   );
 
   const client = createClient(env.SUPABASE_URL, env.SUPABASE_KEY, {

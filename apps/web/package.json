@@ -6,9 +6,9 @@
   "scripts": {
     "build": "remix build",
     "dev:remix": "remix watch",
-    "dev:wrangler": "wrangler pages dev --compatibility-date 2023-05-12 --local ./public",
-    "dev": "NODE_ENV=development npm-run-all build --parallel \"dev:*\"",
-    "start": "NODE_ENV=production npm-run-all build --parallel \"dev:*\"",
+    "dev:wrangler": "wrangler pages dev --env $WORKER_ENV --compatibility-date 2023-05-12 --local ./public",
+    "dev": "WORKER_ENV=development npm-run-all build --parallel \"dev:*\"",
+    "start": "WORKER_ENV=production npm-run-all build --parallel \"dev:*\"",
     "typecheck": "tsc",
     "wrangler": "wrangler",
     "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name divvy"
@@ -30,6 +30,7 @@
     "@sentry/remix": "^7.53.1",
     "@supabase/auth-helpers-remix": "^0.2.0-next.3",
     "@supabase/supabase-js": "^2.21.0",
+    "@tabler/icons-react": "^2.22.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
     "dayjs": "^1.11.7",
@@ -38,7 +39,6 @@
     "react-dom": "^18.2.0",
     "react-social-login-buttons": "^3.9.1",
     "remix-utils": "^6.3.0",
-    "tabler-icons-react": "^1.56.0",
     "toucan-js": "^3.1.0"
   },
   "devDependencies": {

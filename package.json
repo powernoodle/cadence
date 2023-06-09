@@ -4,10 +4,11 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "bootstrap": "git config --local core.hooksPath .githooks && brew install aws/tap/aws-sam-cli",
+    "bootstrap": "git config --local core.hooksPath .githooks",
     "nx": "nx",
     "check": "pnpm install --frozen-lockfile",
     "build": "nx run-many -t build",
+    "watch": "nx watch -p @cadence/cal,@cadence/db,@cadence/cal-store -- nx run-many -t build -p @cadence/*",
     "dev": "nx run-many -t dev"
   },
   "license": "UNLICENSED",

@@ -114,6 +114,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.21.0
         version: 2.21.0
+      '@tabler/icons-react':
+        specifier: ^2.22.0
+        version: 2.22.0(react@18.2.0)
       date-fns:
         specifier: ^2.30.0
         version: 2.30.0
@@ -138,9 +141,6 @@ importers:
       remix-utils:
         specifier: ^6.3.0
         version: 6.3.0(@remix-run/react@1.16.1)(@remix-run/server-runtime@1.16.1)(react@18.2.0)(typescript@5.0.4)(zod@3.21.4)
-      tabler-icons-react:
-        specifier: ^1.56.0
-        version: 1.56.0(react@18.2.0)
       toucan-js:
         specifier: ^3.1.0
         version: 3.1.0
@@ -212,6 +212,10 @@ importers:
         version: 16.0.3
 
   libs/db:
+    dependencies:
+      '@supabase/supabase-js':
+        specifier: ^2.21.0
+        version: 2.21.0
     devDependencies:
       supabase:
         specifier: ^1.62.3
@@ -3488,6 +3492,20 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       defer-to-connect: 2.0.1
+
+  /@tabler/icons-react@2.22.0(react@18.2.0):
+    resolution: {integrity: sha512-9udRxrbsbWzUETur4jmbZQIZkH7jVA2GU7YnKYS7ZCUjdOHZZEhmsfJ/Gdbzz0gSRC3mU7SDMsKejun/IBjvpQ==}
+    peerDependencies:
+      react: ^16.5.1 || ^17.0.0 || ^18.0.0
+    dependencies:
+      '@tabler/icons': 2.22.0
+      prop-types: 15.8.1
+      react: 18.2.0
+    dev: false
+
+  /@tabler/icons@2.22.0:
+    resolution: {integrity: sha512-lOsGHqRPIKNARMWHHFkUUJH78C8ptQmUcDnumFBUI4YLRKFouKa7uAZL3ZfuH0HjDpOhsnWqUYZ7FhMCLcGpAQ==}
+    dev: false
 
   /@testing-library/dom@8.20.0:
     resolution: {integrity: sha512-d9ULIT+a4EXLX3UU8FBjauG9NnsZHkHztXoIcTsOKoOw030fyjheN9svkTULjJxtYag9DZz5Jz5qkWZDPxTFwA==}
@@ -9234,7 +9252,6 @@ packages:
       loose-envify: 1.4.0
       object-assign: 4.1.1
       react-is: 16.13.1
-    dev: true
 
   /property-information@6.2.0:
     resolution: {integrity: sha512-kma4U7AFCTwpqq5twzC1YVIDXSqg6qQK6JN0smOw8fgRy1OkMi0CYSzFmsy6dnqSenamAtj0CyXMUJ1Mf6oROg==}
@@ -10284,14 +10301,6 @@ packages:
 
   /tabbable@6.1.2:
     resolution: {integrity: sha512-qCN98uP7i9z0fIS4amQ5zbGBOq+OSigYeGvPy7NDk8Y9yncqDZ9pRPgfsc2PJIVM9RrJj7GIfuRgmjoUU9zTHQ==}
-    dev: false
-
-  /tabler-icons-react@1.56.0(react@18.2.0):
-    resolution: {integrity: sha512-FOme3w6PJIWDpeXqQ4xjArQqdxzrr9xNy7PSSgWpRzOUQ71RyZ7jt6WThsfyLBz5os78TPJRA8f/0NLjnKcx9A==}
-    peerDependencies:
-      react: '>= 16.8.0'
-    dependencies:
-      react: 18.2.0
     dev: false
 
   /tapable@2.2.1:

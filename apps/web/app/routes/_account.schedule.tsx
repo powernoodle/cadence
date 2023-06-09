@@ -1,4 +1,3 @@
-/** @jsx jsx */
 /** @jsxfrag */
 import React, { useEffect, PropsWithChildren } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";

@@ -4,7 +4,7 @@
   "main": "build/index.js",
   "scripts": {
     "build": "wrangler publish --dry-run --outdir build",
-    "dev": "wrangler dev --local -e dev",
+    "dev": "wrangler dev --local --env development",
     "deploy": "pnpm source-map && wrangler deploy",
     "tail-logs": "wrangler tail sync",
     "source-map": "pnpm build && sentry-cli sourcemaps inject build && sentry-cli sourcemaps upload build"

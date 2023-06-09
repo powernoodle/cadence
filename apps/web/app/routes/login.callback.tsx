@@ -4,6 +4,7 @@ import { redirect } from "@remix-run/cloudflare";
 import { createServerClient } from "@supabase/auth-helpers-remix";
 
 import { Sentry } from "../sentry";
+import { safeQuery } from "../util";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const response = new Response();
@@ -51,11 +52,13 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     // While the same email address can be registered with both Google and Outlook,
     // only one functions as the primary calendar. So we simply assume whiever
     // provider they are signing in with represents their primary calendar.
-    const { data: account } = await supabaseAdmin
-      .from("account")
-      .update({ provider, credentials })
-      .eq("email", email)
-      .select();
+    const account = safeQuery(
+      await supabaseAdmin
+        .from("account")
+        .update({ provider, credentials })
+        .eq("email", email)
+        .select()
+    );
 
     const accountId = account?.[0]?.id;
     if (accountId) {
@@ -63,7 +66,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       await context.SYNC_QUEUE.send({ accountId });
     }
 
-    return redirect("/", {
+    return redirect("/meetings", {
       status: 303,
       headers: response.headers,
     });

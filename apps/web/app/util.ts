@@ -1,8 +1,10 @@
-import { SupabaseClient, PostgrestError } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
 import type { AppLoadContext } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 import { createServerClient as createSupabaseClient } from "@supabase/auth-helpers-remix";
+
 import type { Database } from "@cadence/db";
+export { safeQuery } from "@cadence/db";
 
 export const APP_NAME = "Divvy";
 
@@ -23,21 +25,6 @@ export const createServerClient = (
   );
   return { response, supabase };
 };
-
-export function safeQuery<T>({
-  data,
-  error,
-}: {
-  data: T;
-  error: PostgrestError | null;
-}) {
-  if (error) {
-    console.error(error);
-    const exception = new Error(error.message);
-    throw exception;
-  }
-  return data;
-}
 
 export const getAccountId = async (
   request: Request,

@@ -13,7 +13,7 @@ import {
   GoogleLoginButton,
   MicrosoftLoginButton,
 } from "react-social-login-buttons";
-import { AlertCircle } from "tabler-icons-react";
+import { IconAlertCircle } from "@tabler/icons-react";
 
 export default function Login() {
   const { supabase } = useOutletContext<SupabaseOutletContext>();
@@ -64,7 +64,7 @@ export default function Login() {
       <Space h="md" />
       {params.has("error") && (
         <Alert
-          icon={<AlertCircle size="1rem" />}
+          icon={<IconAlertCircle size="1rem" />}
           title="Authorization failed"
           color="red"
         >

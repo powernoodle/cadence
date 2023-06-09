@@ -6,7 +6,6 @@
     "outDir": "dist",
     "baseUrl": "src",
     "rootDir": "src",
-    "target": "es2020",
     "preserveConstEnums": true,
     "sourceMap": true,
     "module": "es2020",

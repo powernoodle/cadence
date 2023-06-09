@@ -50,7 +50,7 @@ export type SupabaseOutletContext = {
   user: User;
 };
 
-const PublicRoutes = ["/login", "/terms", "/privacy"];
+const PublicRoutes = ["/", "/login", "/terms", "/privacy"];
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -68,10 +68,10 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
   const url = new URL(request.url);
   if (!user && !PublicRoutes.some((r) => url.pathname.startsWith(r))) {
-    return redirect("/login");
+    return url.pathname;
   }
   if (user && url.pathname === "/login") {
-    return redirect("/");
+    return redirect("/meetings");
   }
 
   return json(

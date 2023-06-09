@@ -1,6 +1,6 @@
 name = "sync"
 main = "src/index.ts"
-compatibility_date = "2023-05-20"
+compatibility_date = "2023-05-12"
 node_compat = true
 
 # Worker defines a binding, named "QUEUE", which gives it a capability
@@ -16,5 +16,5 @@ node_compat = true
   max_batch_timeout = 1 # Max seconds to wait before batch is full
   max_retries = 3       # Max retries per batch
 
-[env.dev]
-  vars = { ENV = "dev" }
+[env.development]
+  vars = { ENV = "development" }

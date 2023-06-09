@@ -19,7 +19,7 @@ import {
   isRouteErrorResponse,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { redirect, json } from "@remix-run/cloudflare";
+import { json } from "@remix-run/cloudflare";
 import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@cadence/db";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -50,8 +50,6 @@ export type SupabaseOutletContext = {
   user: User;
 };
 
-const PublicRoutes = ["/", "/login", "/terms", "/privacy"];
-
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const env = {
@@ -65,14 +63,6 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const url = new URL(request.url);
-  if (!user && !PublicRoutes.some((r) => url.pathname.startsWith(r))) {
-    return url.pathname;
-  }
-  if (user && url.pathname === "/login") {
-    return redirect("/meetings");
-  }
 
   return json(
     {

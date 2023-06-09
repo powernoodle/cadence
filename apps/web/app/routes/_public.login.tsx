@@ -1,19 +1,23 @@
 import { useOutletContext, useLocation } from "@remix-run/react";
+import { LoaderArgs, redirect } from "@remix-run/cloudflare";
 import { SupabaseOutletContext } from "../root";
-import {
-  Container,
-  Stack,
-  Card,
-  Title,
-  Text,
-  Space,
-  Alert,
-} from "@mantine/core";
+import { Container, Stack, Card, Text, Space, Alert } from "@mantine/core";
 import {
   GoogleLoginButton,
   MicrosoftLoginButton,
 } from "react-social-login-buttons";
 import { IconAlertCircle } from "@tabler/icons-react";
+
+import { createServerClient } from "../util";
+
+export const loader = async ({ context, request }: LoaderArgs) => {
+  const { supabase } = createServerClient(context, request);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) return redirect("/meetings");
+  return null;
+};
 
 export default function Login() {
   const { supabase } = useOutletContext<SupabaseOutletContext>();
@@ -53,8 +57,7 @@ export default function Login() {
     <Container size="xs" p="sm">
       <Space h="lg" />
       <Card>
-        <Title order={1}>Divvy</Title>
-        <Text>How will you invest your day?</Text>
+        <Text>Sign in to synchronize your calendar with Divvy.</Text>
         <Space h="md" />
         <Stack>
           <GoogleLoginButton onClick={signInWithGoogle} />

@@ -1,4 +1,4 @@
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import {
@@ -13,15 +13,10 @@ import { json } from "@remix-run/cloudflare";
 import {
   AppShell,
   Burger,
-  Button,
-  Flex,
-  Group,
-  Header,
   MediaQuery,
   Navbar,
   NavLink,
   Select,
-  Title,
   useMantineTheme,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
@@ -42,11 +37,9 @@ import {
   startOfWeek,
 } from "../tz";
 
-import type { Database } from "@cadence/db";
 import { SupabaseOutletContext } from "../root";
-import { APP_NAME, createServerClient, getAccountId, safeQuery } from "../util";
-
-type Account = Database["public"]["Tables"]["account"]["Row"];
+import { createServerClient, getAccountId, safeQuery } from "../util";
+import Header from "../components/header";
 
 // TODO: load this from the account
 export const USER_TZ = "America/New_York";
@@ -165,37 +158,6 @@ function AccountSelect() {
           : account.email,
       }))}
     />
-  );
-}
-
-function AppHeader({ menu }: { menu: ReactNode }) {
-  const { supabase } = useOutletContext<SupabaseOutletContext>();
-
-  const logout = async () => {
-    await supabase.auth.signOut();
-  };
-
-  return (
-    <Header height={60} p="xs">
-      <Flex
-        mih={50}
-        gap="md"
-        justify="space-between"
-        align="flex-start"
-        direction="row"
-        wrap="wrap"
-      >
-        <Group>
-          {menu}
-          <Title order={1} size="h2">
-            {APP_NAME}
-          </Title>
-        </Group>
-        <Group>
-          <Button onClick={logout}>Logout</Button>
-        </Group>
-      </Flex>
-    </Header>
   );
 }
 
@@ -340,7 +302,7 @@ export default function Index() {
       asideOffsetBreakpoint="sm"
       navbar={<AppNavbar opened={opened} />}
       header={
-        <AppHeader
+        <Header
           menu={
             <MediaQuery largerThan="sm" styles={{ display: "none" }}>
               <Burger

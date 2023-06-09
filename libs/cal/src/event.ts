@@ -135,3 +135,13 @@ export class Event {
     return this._isMeeting && this.isCancelled;
   }
 }
+
+export class EventError extends Error {
+  constructor(message: string, public event: any, cause?: any) {
+    if (cause && cause.message) {
+      message += `: ${cause.message}`;
+    }
+    super(message, { cause });
+    this.name = "EventError";
+  }
+}

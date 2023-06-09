@@ -41,6 +41,9 @@ importers:
 
   apps/sync:
     dependencies:
+      '@cadence/cal':
+        specifier: workspace:^
+        version: link:../../libs/cal
       '@cadence/cal-store':
         specifier: workspace:^
         version: link:../../libs/cal-store

@@ -10,6 +10,7 @@
     "source-map": "pnpm build && sentry-cli sourcemaps inject build && sentry-cli sourcemaps upload build"
   },
   "dependencies": {
+    "@cadence/cal": "workspace:^",
     "@cadence/cal-store": "workspace:^",
     "@supabase/supabase-js": "^2.21.0",
     "date-fns": "^2.30.0",

@@ -1,4 +1,4 @@
-import { Event } from "./event";
+import { Event, EventError } from "./event";
 
 export type Credentials = {
   access_token: string;
@@ -13,5 +13,5 @@ export abstract class CalendarClient {
     min: Date,
     max: Date,
     state: any
-  ): AsyncIterableIterator<{ event: Event; state: any }>;
+  ): AsyncIterableIterator<{ event?: Event; error?: EventError; state: any }>;
 }

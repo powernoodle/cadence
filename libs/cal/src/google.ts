@@ -2,7 +2,7 @@ import { jsonFetch as fetch } from "@worker-tools/json-fetch";
 
 import { calendar_v3 } from "google-schema";
 
-import { Response, Attendance, Event } from "./event";
+import { Response, Attendance, Event, EventError } from "./event";
 import { CalendarClient, UpdateCredentials } from "./client";
 
 type GoogleEvent = calendar_v3.Schema$Event;
@@ -53,15 +53,16 @@ export class GoogleClient extends CalendarClient {
       },
       body,
     });
-    if (response.ok) {
-      this.credentials = {
-        ...this.credentials,
-        ...response.json(),
-      };
-      await this.updateCredentials(this.credentials);
-    } else {
-      console.error(await response.text());
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(error);
+      throw new Error(error);
     }
+    this.credentials = {
+      ...this.credentials,
+      ...response.json(),
+    };
+    await this.updateCredentials(this.credentials);
   }
 
   private async api<T>(
@@ -73,9 +74,7 @@ export class GoogleClient extends CalendarClient {
       Authorization: `Bearer ${this.credentials.access_token}`,
       Accept: "application/json",
     };
-    const query = new URLSearchParams({
-      ...params,
-    });
+    const query = new URLSearchParams(params);
     let retry = true;
     while (true) {
       const response = await fetch(url + "?" + query.toString(), {
@@ -113,23 +112,18 @@ export class GoogleClient extends CalendarClient {
   }
 
   private transformEvent(googleEvent: GoogleEvent): Event | null {
-    if (
-      !googleEvent.iCalUID ||
-      !(googleEvent.start?.dateTime || googleEvent.start?.date) ||
-      !(googleEvent.end?.dateTime || googleEvent.end?.date) ||
-      googleEvent.eventType !== "default"
-    ) {
-      return null;
+    if (!googleEvent.iCalUID) {
+      throw new Error("Missing iCalUID");
     }
 
-    const start = new Date(
-      // @ts-ignore
-      googleEvent.start.dateTime || googleEvent.start.date
-    );
-    const end = new Date(
-      // @ts-ignore
-      googleEvent.end.dateTime || googleEvent.end.date
-    );
+    const start = googleEvent.start?.dateTime || googleEvent.start?.date;
+    if (!start) {
+      throw new Error("Missing start");
+    }
+    const end = googleEvent.end?.dateTime || googleEvent.end?.date;
+    if (!end) {
+      throw new Error("Missing end");
+    }
 
     let calId = googleEvent.iCalUID;
     if (googleEvent.originalStartTime) {
@@ -155,8 +149,8 @@ export class GoogleClient extends CalendarClient {
     const event = new Event({
       id: calId,
       series: googleEvent.iCalUID,
-      start,
-      end,
+      start: new Date(start),
+      end: new Date(end),
       title: googleEvent.summary || undefined,
       description: googleEvent.description || undefined,
       location: googleEvent.location || undefined,
@@ -178,7 +172,7 @@ export class GoogleClient extends CalendarClient {
     min: Date,
     max: Date,
     state: any
-  ): AsyncIterableIterator<{ event: Event; state: any }> {
+  ): AsyncIterableIterator<{ event?: Event; error?: EventError; state: any }> {
     let syncToken: string | null = state?.syncToken;
     let nextPageToken: string | null = null;
 
@@ -211,16 +205,18 @@ export class GoogleClient extends CalendarClient {
         };
         const events = data.items || [];
         for (const googleEvent of events) {
+          let event, error;
           try {
-            if (!googleEvent.id) return;
-
-            const event = this.transformEvent(googleEvent);
-            if (event) yield { event, state };
-          } catch (error) {
-            console.error(
-              `Failed to update event: ${JSON.stringify(googleEvent)}`
+            event = this.transformEvent(googleEvent);
+          } catch (caught) {
+            error = new EventError(
+              "Event transformation failed",
+              googleEvent,
+              caught
             );
-            console.error(error);
+          }
+          if (event || error) {
+            yield { event: event || undefined, error, state };
           }
         }
         nextPageToken = data.nextPageToken || null;

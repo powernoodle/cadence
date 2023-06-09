@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 import add from "date-fns/add";
 import sub from "date-fns/sub";
 
+import { EventError } from "@cadence/cal";
 import { CalendarStore } from "@cadence/cal-store";
 
 export type SyncRequest = {
@@ -45,8 +46,12 @@ export default {
       }
       if (request.method !== "POST") return new Response("Ignored");
       const body = await request.json();
-      if (!body || typeof (body as any).accountId !== "number")
+      const accountId = (body as any)?.accountId;
+      if (typeof accountId !== "number") {
         return new Response("Missing accountId");
+      }
+      Sentry.setUser({ id: accountId.toString() });
+
       await process(env, body as SyncRequest);
       return new Response("Success");
     } catch (e) {
@@ -118,10 +123,15 @@ async function process(env: Env, request: SyncRequest) {
   await store.syncEvents(
     sub(new Date(), { days: 60 }),
     add(new Date(), { days: 30 }),
-    "c012a8979ac271f5566a7f0f8886b5a73de5c906452b5ec9381c53794aeb4933@group.calendar.google.com",
+    "primary",
     (e) => {
-      Sentry?.captureException(e);
       console.error(e);
+      Sentry.withScope((scope) => {
+        if (e instanceof EventError) {
+          scope.setExtra("event", e.event);
+        }
+        Sentry?.captureException(e);
+      });
     }
   );
 

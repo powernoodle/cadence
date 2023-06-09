@@ -20,7 +20,7 @@ test.only("fetches events", async () => {
     {}
   )) {
     console.dir(event);
-    console.log(JSON.stringify(event.event.attendance));
+    console.log(JSON.stringify(event.event?.attendance));
     expect(event).toBeDefined();
   }
 });

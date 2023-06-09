@@ -231,18 +231,31 @@ export class CalendarStore {
     if (error) throw error;
   }
 
-  public async syncEvents(min: Date, max: Date) {
+  public async syncEvents(
+    min: Date,
+    max: Date,
+    calendar = "primary",
+    errorLogger?: (error: any) => void
+  ) {
     if (!this.calendar) throw Error("Calendar not initialized");
-    for await (const { event } of this.calendar.getEvents(
-      "primary",
+    for await (const { event, error } of this.calendar.getEvents(
+      calendar,
       min,
       max,
       {}
     )) {
       try {
-        await this.saveEvent(event);
+        if (error) {
+          if (errorLogger) {
+            errorLogger(error);
+          }
+        } else if (event) {
+          await this.saveEvent(event);
+        }
       } catch (e) {
-        console.error(e);
+        if (errorLogger) {
+          errorLogger(e);
+        }
       }
     }
   }

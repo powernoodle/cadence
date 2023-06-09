@@ -9,7 +9,7 @@ import {
 import * as MicrosoftGraph from "@microsoft/microsoft-graph-types";
 
 import { CalendarClient, UpdateCredentials } from "./client";
-import { Response, Attendance, Event } from "./event";
+import { Response, Attendance, Event, EventError } from "./event";
 
 type OutlookEvent = MicrosoftGraph.Event;
 
@@ -73,7 +73,9 @@ class Auth implements AuthenticationProvider {
     const data = await tokenResponse.json();
     if (!tokenResponse.ok) {
       console.error(data);
-      throw Error("Failed to refresh token");
+      console.error(data.error_description);
+      // @ts-ignore
+      throw new Error("Failed to refresh token", { cause: data });
     }
     this.credentials = data;
 
@@ -185,11 +187,11 @@ export class OutlookClient extends CalendarClient {
   }
 
   public async *getEvents(
-    calendarId: string,
+    _calendarId: string,
     min: Date,
     max: Date,
     state: any
-  ): AsyncIterableIterator<{ event: Event; state: any }> {
+  ): AsyncIterableIterator<{ event?: Event; error?: EventError; state: any }> {
     const calendar = await this.client.api("/me/calendar").get();
 
     const response = await this.client
@@ -235,9 +237,13 @@ export class OutlookClient extends CalendarClient {
           };
           if (event) yield { event, state };
         }
-      } catch (error) {
-        console.error(`Failed to process event ${outlookEvent.id}`);
-        console.error(error);
+      } catch (caught) {
+        const error = new EventError(
+          "Failed to process event",
+          outlookEvent,
+          caught
+        );
+        yield { error, state };
       }
       if (pageIterator.isComplete()) break;
       outlookEvent = undefined;

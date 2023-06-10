@@ -40,7 +40,7 @@ import { APP_NAME, createServerClient } from "./util";
 export const meta: V2_MetaFunction = () => [
   { charset: "utf-8" },
   { title: APP_NAME },
-  { viewport: "width=device-width,initial-scale=1" },
+  { name: "viewport", content: "width=device-width, initial-scale=1" },
 ];
 
 createEmotionCache({ key: "mantine" });

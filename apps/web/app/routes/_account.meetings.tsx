@@ -8,7 +8,15 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import { Paper, Text, Space, Grid, Table, LoadingOverlay } from "@mantine/core";
+import {
+  Paper,
+  Text,
+  Space,
+  Grid,
+  Table,
+  LoadingOverlay,
+  ScrollArea,
+} from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import { getDateRange } from "./_account";
@@ -116,14 +124,14 @@ function MeetingStats({
         <thead>
           <tr>
             <th>{title}</th>
-            <th>
-              <Text ta="right">🧮</Text>
+            <th css={{ width: "6em" }}>
+              <Text ta="right">Cuont</Text>
             </th>
-            <th>
-              <Text ta="right">⏳</Text>
+            <th css={{ width: "6em" }}>
+              <Text ta="right">Time</Text>
             </th>
-            <th>
-              <Text ta="right">💰</Text>
+            <th css={{ width: "6em" }}>
+              <Text ta="right">Cost</Text>
             </th>
           </tr>
         </thead>
@@ -170,69 +178,71 @@ function MatchingMeetings({
 }) {
   return (
     <Paper>
-      <Table sx={{ tableLayout: "fixed" }}>
-        <thead>
-          <tr>
-            <th css={{ width: "30em" }}>Meeting</th>
-            <th css={{ width: "10em" }}>
-              <Text ta="right">Length</Text>
-            </th>
-            <th css={{ width: "10em" }}>
-              <Text ta="right">Invitees</Text>
-            </th>
-            <th css={{ width: "10em" }}>
-              <Text ta="right">Attendees</Text>
-            </th>
-            <th css={{ width: "10em" }}>
-              <Text ta="right">🧮</Text>
-            </th>
-            <th css={{ width: "10em" }}>
-              <Text ta="right">⏳</Text>
-            </th>
-            <th css={{ width: "10em" }}>
-              <Text ta="right">💰</Text>
-            </th>
-            <th></th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {events?.map((event) => (
-            <tr key={event.series}>
-              <td>{event.title}</td>
-              <td align="right">
-                <code>{durationFmt(event.length_sum || 0)}</code>
-              </td>
-              <td align="right">
-                <code>
-                  {event.invitee_count &&
-                    (
-                      Math.round(event.invitee_count * 10) / 10
-                    ).toLocaleString()}
-                </code>
-              </td>
-              <td align="right">
-                <code>
-                  {event.attendee_count &&
-                    (
-                      Math.round(event.attendee_count * 10) / 10
-                    ).toLocaleString()}
-                </code>
-              </td>
-              <td align="right">
-                <code>{event.meeting_count?.toLocaleString()}</code>
-              </td>
-              <td align="right">
-                <code>{event.length_sum?.toLocaleString()}</code>
-              </td>
-              <td align="right">
-                <code>{costFmt.format((event.cost * HOURLY_WAGE) / 60)}</code>
-              </td>
-              <td></td>
+      <ScrollArea>
+        <Table sx={{}}>
+          <thead>
+            <tr>
+              <th css={{ minWidth: "12em" }}>Meeting</th>
+              <th css={{ width: "6em" }}>
+                <Text ta="right">Length</Text>
+              </th>
+              <th css={{ width: "6em" }}>
+                <Text ta="right">Invitees</Text>
+              </th>
+              <th css={{ width: "6em" }}>
+                <Text ta="right">Attendees</Text>
+              </th>
+              <th css={{ width: "6em" }}>
+                <Text ta="right">Count</Text>
+              </th>
+              <th css={{ width: "6em" }}>
+                <Text ta="right">Time</Text>
+              </th>
+              <th css={{ width: "6em" }}>
+                <Text ta="right">Cost</Text>
+              </th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+
+          <tbody>
+            {events?.map((event) => (
+              <tr key={event.series}>
+                <td>{event.title}</td>
+                <td align="right">
+                  <code>{durationFmt(event.length_sum || 0)}</code>
+                </td>
+                <td align="right">
+                  <code>
+                    {event.invitee_count &&
+                      (
+                        Math.round(event.invitee_count * 10) / 10
+                      ).toLocaleString()}
+                  </code>
+                </td>
+                <td align="right">
+                  <code>
+                    {event.attendee_count &&
+                      (
+                        Math.round(event.attendee_count * 10) / 10
+                      ).toLocaleString()}
+                  </code>
+                </td>
+                <td align="right">
+                  <code>{event.meeting_count?.toLocaleString()}</code>
+                </td>
+                <td align="right">
+                  <code>{event.length_sum?.toLocaleString()}</code>
+                </td>
+                <td align="right">
+                  <code>{costFmt.format((event.cost * HOURLY_WAGE) / 60)}</code>
+                </td>
+                <td></td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </ScrollArea>
     </Paper>
   );
 }

@@ -10,7 +10,7 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import { Paper, Text, Table, LoadingOverlay } from "@mantine/core";
+import { Paper, Text, Table, ScrollArea, LoadingOverlay } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import {
@@ -74,80 +74,84 @@ function Meetings({
   let last: Date | undefined;
   return (
     <Paper>
-      <Table>
-        <thead>
-          <tr>
-            <th>Time</th>
-            <th>Meeting</th>
-            <th>
-              <Text ta="right">Length</Text>
-            </th>
-            <th>
-              <Text ta="right">Invitees</Text>
-            </th>
-            <th>
-              <Text ta="right">Attendees</Text>
-            </th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {events.length === 0 && (
+      <ScrollArea>
+        <Table>
+          <thead>
             <tr>
-              <td colSpan={5}>None</td>
+              <th>Time</th>
+              <th>Meeting</th>
+              <th>
+                <Text ta="right">Length</Text>
+              </th>
+              <th>
+                <Text ta="right">Invitees</Text>
+              </th>
+              <th>
+                <Text ta="right">Attendees</Text>
+              </th>
             </tr>
-          )}
-          {events.map((row) => {
-            const dates = row.at.replaceAll(/["\[\]]/g, "").split(",");
-            const start = toDate(dates[0], USER_TZ);
-            const end = toDate(dates[1], USER_TZ);
-            const isNewDay = !last || !isSameDay(last, start, USER_TZ);
-            last = start;
-            const StyledText = ({ children }: PropsWithChildren<{}>) => (
-              <Text
-                fw={row.is_meeting ? 700 : 300}
-                c={row.is_meeting ? "blue" : ""}
-              >
-                {children}
-              </Text>
-            );
-            return (
-              <React.Fragment key={row.id}>
-                {isNewDay && (
+          </thead>
+
+          <tbody>
+            {events.length === 0 && (
+              <tr>
+                <td colSpan={5}>None</td>
+              </tr>
+            )}
+            {events.map((row) => {
+              const dates = row.at.replaceAll(/["\[\]]/g, "").split(",");
+              const start = toDate(dates[0], USER_TZ);
+              const end = toDate(dates[1], USER_TZ);
+              const isNewDay = !last || !isSameDay(last, start, USER_TZ);
+              last = start;
+              const StyledText = ({ children }: PropsWithChildren<{}>) => (
+                <Text
+                  fw={row.is_meeting ? 700 : 300}
+                  c={row.is_meeting ? "blue" : ""}
+                >
+                  {children}
+                </Text>
+              );
+              return (
+                <React.Fragment key={row.id}>
+                  {isNewDay && (
+                    <tr>
+                      <td colSpan={5}>
+                        <Text fs="italic">{fmtDate(start, end)}</Text>
+                      </td>
+                    </tr>
+                  )}
                   <tr>
-                    <td colSpan={5}>
-                      <Text fs="italic">{fmtDate(start, end)}</Text>
+                    <td css={{ minWidth: "7em" }}>
+                      <StyledText>{fmtTime(start, end)}</StyledText>
+                    </td>
+                    <td>
+                      <StyledText>{row.title}</StyledText>
+                    </td>
+                    <td align="right">
+                      <StyledText>
+                        <code>{durationFmt(row.length || 0)}</code>
+                      </StyledText>
+                    </td>
+                    <td align="right">
+                      <StyledText>
+                        <code>{(row.invitee_count || 0).toLocaleString()}</code>
+                      </StyledText>
+                    </td>
+                    <td align="right">
+                      <StyledText>
+                        <code>
+                          {(row.attendee_count || 0).toLocaleString()}
+                        </code>
+                      </StyledText>
                     </td>
                   </tr>
-                )}
-                <tr>
-                  <td>
-                    <StyledText>{fmtTime(start, end)}</StyledText>
-                  </td>
-                  <td>
-                    <StyledText>{row.title}</StyledText>
-                  </td>
-                  <td align="right">
-                    <StyledText>
-                      <code>{durationFmt(row.length || 0)}</code>
-                    </StyledText>
-                  </td>
-                  <td align="right">
-                    <StyledText>
-                      <code>{(row.invitee_count || 0).toLocaleString()}</code>
-                    </StyledText>
-                  </td>
-                  <td align="right">
-                    <StyledText>
-                      <code>{(row.attendee_count || 0).toLocaleString()}</code>
-                    </StyledText>
-                  </td>
-                </tr>
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-      </Table>
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </Table>
+      </ScrollArea>
     </Paper>
   );
 }

@@ -1,13 +1,22 @@
 import { useOutletContext, useLocation } from "@remix-run/react";
 import { LoaderArgs, redirect } from "@remix-run/cloudflare";
 import { SupabaseOutletContext } from "../root";
-import { Container, Stack, Card, Text, Space, Alert } from "@mantine/core";
+import {
+  Container,
+  Stack,
+  Card,
+  Text,
+  Space,
+  Alert,
+  Image,
+} from "@mantine/core";
 import {
   GoogleLoginButton,
   MicrosoftLoginButton,
 } from "react-social-login-buttons";
-import { IconAlertCircle } from "@tabler/icons-react";
+import { IconInfoCircle, IconAlertCircle } from "@tabler/icons-react";
 
+import googleImg from "../assets/google-warning.png";
 import { createServerClient } from "../util";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -56,25 +65,36 @@ export default function Login() {
   return (
     <Container size="xs" p="sm">
       <Space h="lg" />
-      <Card>
-        <Text>Sign in to synchronize your calendar with Divvy.</Text>
-        <Space h="md" />
-        <Stack>
-          <GoogleLoginButton onClick={signInWithGoogle} />
-          <MicrosoftLoginButton onClick={signInWithAzure} />
-        </Stack>
-      </Card>
-      <Space h="md" />
-      {params.has("error") && (
+      <Stack>
+        <Card>
+          <Stack>
+            <Text>Sign in to synchronize your calendar with Divvy.</Text>
+            <GoogleLoginButton onClick={signInWithGoogle} />
+            <MicrosoftLoginButton onClick={signInWithAzure} />
+          </Stack>
+        </Card>
+        {params.has("error") && (
+          <Alert
+            icon={<IconAlertCircle size="1rem" />}
+            title="Authorization failed"
+            color="red"
+          >
+            <Text>Divvy was not granted access to your calendar.</Text>
+            <Text mt="md">{params.get("error")}</Text>
+          </Alert>
+        )}
         <Alert
-          icon={<IconAlertCircle size="1rem" />}
-          title="Authorization failed"
-          color="red"
+          icon={<IconInfoCircle size="1rem" />}
+          title="Completing Google sign in"
         >
-          <Text>Divvy was not granted access to your calendar.</Text>
-          <Text mt="md">{params.get("error")}</Text>
+          <Text>
+            Google manually approves apps for access to calendars. Divvy is
+            currently awaiting approval. Until then, you will see the warning
+            below. Please follow the steps shown to complete your sign in.
+          </Text>
+          <Image src={googleImg} mt="md" />
         </Alert>
-      )}
+      </Stack>
     </Container>
   );
 }

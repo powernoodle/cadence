@@ -17,7 +17,7 @@ import {
 import { APP_NAME } from "../util";
 import { SupabaseOutletContext } from "../root";
 
-export default function Header({ menu }: { menu: ReactNode }) {
+export default function Header({ menu }: { menu?: ReactNode }) {
   const location = useLocation();
   const { supabase, user } = useOutletContext<SupabaseOutletContext>();
   const routes = useMatches();

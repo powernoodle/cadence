@@ -4,6 +4,7 @@ import type { Database } from "@cadence/db";
 
 import type { Attendance } from "@cadence/cal";
 import { Event } from "@cadence/cal";
+import { safeQuery } from "@cadence/db";
 
 import {
   CalendarClient,
@@ -76,11 +77,9 @@ export class CalendarStore {
   }
 
   private loadCredentials = async () => {
-    const { data, error } = await this.supabase
-      .from("account")
-      .select()
-      .eq("id", this.accountId);
-    if (error) throw error;
+    const data = safeQuery(
+      await this.supabase.from("account").select().eq("id", this.accountId)
+    );
     if (!data?.length) {
       throw Error(`Account ${this.accountId} not found`);
     }
@@ -108,53 +107,54 @@ export class CalendarStore {
   };
 
   private async saveCredentials(credentials: any) {
-    const { error } = await this.supabase.rpc("update_credentials", {
-      account_id: this.accountId,
-      new_credentials: credentials,
-    });
-    if (error) throw error;
+    safeQuery(
+      await this.supabase.rpc("update_credentials", {
+        account_id: this.accountId,
+        new_credentials: credentials,
+      })
+    );
   }
 
   private async linkExistingSeries(eventId: number) {
     // TODO: This could be optimized for performance
-    const { data: newEvent } = await this.supabase
+    const newEvent = safeQuery(await this.supabase
       .from("event_stats")
       .select("title, attendees")
-      .eq("id", eventId);
+      .eq("id", eventId));
     const title = newEvent?.[0]?.title;
     const attendees = newEvent?.[0]?.attendees;
     if (!title || !attendees) return;
 
-    const { data: existingMatches } = await this.supabase
+    const existingMatches = safeQuery(await this.supabase
       .from("event_stats")
       .select("id, series")
       .neq("id", eventId)
       .eq("account_id", this.accountId)
       .eq("title", title)
-      .eq("attendees", attendees);
+      .eq("attendees", attendees));
     if (!existingMatches || existingMatches.length === 0) return;
 
     let series = existingMatches?.[0]?.series;
     if (!series) {
       series = Math.random().toString(36).substring(2, 15);
-      await this.supabase
+      safeQuery(await this.supabase
         .from("event")
         .update({
           series,
         })
-        .eq("id", existingMatches?.[0]?.id);
+        .eq("id", existingMatches?.[0]?.id));
     }
-    await this.supabase
+    safeQuery(await this.supabase
       .from("event")
       .update({
         series,
       })
-      .eq("id", eventId);
+      .eq("id", eventId));
   }
 
   private async saveEvent(event: Event) {
     // Save event
-    const { data, error } = await this.supabase
+    const data = safeQuery(await this.supabase
       .from("event")
       .upsert(
         {
@@ -170,8 +170,7 @@ export class CalendarStore {
         },
         { onConflict: "account_id, cal_id" }
       )
-      .select();
-    if (error) throw error;
+      .select());
     const eventId = data?.[0]?.id;
     if (!eventId) throw Error("Failed to get event_id");
 
@@ -202,8 +201,8 @@ export class CalendarStore {
       // Re-order Last, First to First Last
       name = name.replace(/^([^, ]+),\s*(.+)/, "$2 $1");
     }
-    let data, error;
-    ({ data, error } = await this.supabase
+    let data;
+    data = safeQuery(await this.supabase
       .from("account")
       .upsert(
         {
@@ -213,10 +212,9 @@ export class CalendarStore {
         { onConflict: "email" }
       )
       .select());
-    if (error) throw error;
     const attendeeAccountId = data?.[0]?.id;
     if (!attendeeAccountId) throw Error("Account missing");
-    ({ error } = await this.supabase
+    safeQuery(await this.supabase
       .from("attendee")
       .upsert(
         {
@@ -227,8 +225,7 @@ export class CalendarStore {
         },
         { onConflict: "event_id, account_id" }
       )
-      .select());
-    if (error) throw error;
+      .select()));
   }
 
   public async syncEvents(

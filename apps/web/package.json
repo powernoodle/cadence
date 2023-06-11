@@ -1,5 +1,5 @@
 {
-  "name": "web",
+  "name": "@divvy/web",
   "private": true,
   "license": "UNLICENSED",
   "sideEffects": false,
@@ -14,8 +14,8 @@
     "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name divvy"
   },
   "dependencies": {
-    "@cadence/db": "workspace:*",
-    "@cadence/emotion-server": "workspace:^",
+    "@divvy/db": "workspace:*",
+    "@divvy/emotion-server": "workspace:^",
     "@emotion/react": "^11.11.0",
     "@emotion/server": "^11.11.0",
     "@mantine/core": "^6.0.11",

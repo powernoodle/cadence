@@ -1,5 +1,5 @@
 {
-  "name": "@cadence/cal",
+  "name": "@divvy/cal",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -15,8 +15,7 @@
     "@microsoft/microsoft-graph-client": "^3.0.5",
     "@worker-tools/json-fetch": "2.1.0-pre.6",
     "date-fns": "^2.30.0",
-    "googleapis": "^118.0.0",
-    "querystring": "^0.2.1"
+    "googleapis": "^118.0.0"
   },
   "devDependencies": {
     "dotenv": "^16.0.3",

@@ -1,8 +1,8 @@
 {
-  "name": "@cadence/db",
+  "name": "@divvy/db",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "start": "../../source-env.sh && supabase start",
     "stop": "../../source-env.sh && supabase stop",

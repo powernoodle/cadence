@@ -3,8 +3,8 @@ import type { AppLoadContext } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 import { createServerClient as createSupabaseClient } from "@supabase/auth-helpers-remix";
 
-import type { Database } from "@cadence/db";
-export { safeQuery } from "@cadence/db";
+import type { Database } from "@divvy/db";
+export { safeQuery } from "@divvy/db";
 
 export const APP_NAME = "Divvy";
 

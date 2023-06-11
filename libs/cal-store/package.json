@@ -1,5 +1,5 @@
 {
-  "name": "@cadence/cal-store",
+  "name": "@divvy/cal-store",
   "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
@@ -12,8 +12,8 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
-    "@cadence/cal": "workspace:^",
-    "@cadence/db": "workspace:*",
+    "@divvy/cal": "workspace:^",
+    "@divvy/db": "workspace:^",
     "@supabase/supabase-js": "^2.21.0"
   },
   "devDependencies": {

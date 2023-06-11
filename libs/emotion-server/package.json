@@ -1,5 +1,5 @@
 {
-  "name": "@cadence/emotion-server",
+  "name": "@divvy/emotion-server",
   "description": "https://github.com/emotion-js/emotion/issues/2446#issuecomment-1372440174",
   "main": "index.js",
   "sideEffects": false

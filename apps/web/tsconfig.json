@@ -5,8 +5,8 @@
     "lib": ["DOM", "DOM.Iterable", "ES2021"],
     "paths": {
       "~/*": ["./app/*"],
-      "@cadence/db": ["../../libs/db/dist"],
-      "@cadence/emotion-server": ["../../libs/emotion-server"]
+      "@divvy/db": ["../../libs/db/dist"],
+      "@divvy/emotion-server": ["../../libs/emotion-server"]
     },
     "noEmit": true,
     "baseUrl": ".",

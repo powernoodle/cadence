@@ -1,17 +1,17 @@
 {
-  "name": "sync",
+  "name": "@divvy/sync",
   "version": "0.0.0",
   "main": "build/index.js",
   "scripts": {
-    "build": "wrangler publish --dry-run --outdir build",
+    "build": "wrangler deploy --dry-run --outdir build",
     "dev": "wrangler dev --local --env development",
     "deploy": "pnpm source-map && wrangler deploy",
     "tail-logs": "wrangler tail sync",
     "source-map": "pnpm build && sentry-cli sourcemaps inject build && sentry-cli sourcemaps upload build"
   },
   "dependencies": {
-    "@cadence/cal": "workspace:^",
-    "@cadence/cal-store": "workspace:^",
+    "@divvy/cal": "workspace:^",
+    "@divvy/cal-store": "workspace:^",
     "@supabase/supabase-js": "^2.21.0",
     "date-fns": "^2.30.0",
     "toucan-js": "^3.1.0"
@@ -19,7 +19,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230511.0",
     "esbuild-plugin-ignore": "^1.1.1",
-    "wrangler": "^3.0.1"
+    "wrangler": "^3.1.0"
   },
   "private": true
 }

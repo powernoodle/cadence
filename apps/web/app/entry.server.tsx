@@ -3,7 +3,7 @@ import { RemixServer } from "@remix-run/react";
 import type { EntryContext } from "@remix-run/cloudflare";
 import { injectStyles } from "@mantine/remix";
 import { defaultMantineEmotionCache } from "@mantine/styles";
-import { createEmotionServer } from "@cadence/emotion-server";
+import { createEmotionServer } from "@divvy/emotion-server";
 import { SentrySeverInit } from "./sentry";
 
 SentrySeverInit();

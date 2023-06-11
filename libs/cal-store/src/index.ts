@@ -1,17 +1,17 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@cadence/db";
+import type { Database } from "@divvy/db";
 
-import type { Attendance } from "@cadence/cal";
-import { Event } from "@cadence/cal";
-import { safeQuery } from "@cadence/db";
+import type { Attendance } from "@divvy/cal";
+import { safeQuery } from "@divvy/db";
 
 import {
+  Event,
   CalendarClient,
   Credentials,
   GoogleClient,
   OutlookClient,
-} from "@cadence/cal";
+} from "@divvy/cal";
 
 export class CalendarStore {
   private supabase: SupabaseClient<Database>;
@@ -117,60 +117,70 @@ export class CalendarStore {
 
   private async linkExistingSeries(eventId: number) {
     // TODO: This could be optimized for performance
-    const newEvent = safeQuery(await this.supabase
-      .from("event_stats")
-      .select("title, attendees")
-      .eq("id", eventId));
+    const newEvent = safeQuery(
+      await this.supabase
+        .from("event_stats")
+        .select("title, attendees")
+        .eq("id", eventId)
+    );
     const title = newEvent?.[0]?.title;
     const attendees = newEvent?.[0]?.attendees;
     if (!title || !attendees) return;
 
-    const existingMatches = safeQuery(await this.supabase
-      .from("event_stats")
-      .select("id, series")
-      .neq("id", eventId)
-      .eq("account_id", this.accountId)
-      .eq("title", title)
-      .eq("attendees", attendees));
+    const existingMatches = safeQuery(
+      await this.supabase
+        .from("event_stats")
+        .select("id, series")
+        .neq("id", eventId)
+        .eq("account_id", this.accountId)
+        .eq("title", title)
+        .eq("attendees", attendees)
+    );
     if (!existingMatches || existingMatches.length === 0) return;
 
     let series = existingMatches?.[0]?.series;
     if (!series) {
       series = Math.random().toString(36).substring(2, 15);
-      safeQuery(await this.supabase
+      safeQuery(
+        await this.supabase
+          .from("event")
+          .update({
+            series,
+          })
+          .eq("id", existingMatches?.[0]?.id)
+      );
+    }
+    safeQuery(
+      await this.supabase
         .from("event")
         .update({
           series,
         })
-        .eq("id", existingMatches?.[0]?.id));
-    }
-    safeQuery(await this.supabase
-      .from("event")
-      .update({
-        series,
-      })
-      .eq("id", eventId));
+        .eq("id", eventId)
+    );
   }
 
   private async saveEvent(event: Event) {
     // Save event
-    const data = safeQuery(await this.supabase
-      .from("event")
-      .upsert(
-        {
-          account_id: this.accountId,
-          at: `[${event.start?.toISOString()},${event.end?.toISOString()})`,
-          title: event.title,
-          cal_id: event.id,
-          series: event.series,
-          is_meeting: event.isMeeting,
-          is_offsite: event.isOffsite,
-          is_online: event.isOnline,
-          is_onsite: event.isOnsite,
-        },
-        { onConflict: "account_id, cal_id" }
-      )
-      .select());
+    const data = safeQuery(
+      await this.supabase
+        .from("event")
+        .upsert(
+          {
+            account_id: this.accountId,
+            at: `[${event.start?.toISOString()},${event.end?.toISOString()})`,
+            title: event.title,
+            cal_id: event.id,
+            series: event.series,
+            is_meeting: event.isMeeting,
+            is_offsite: event.isOffsite,
+            is_online: event.isOnline,
+            is_onsite: event.isOnsite,
+          },
+          { onConflict: "account_id, cal_id" }
+        )
+        .select()
+    );
     const eventId = data?.[0]?.id;
     if (!eventId) throw Error("Failed to get event_id");
 
@@ -202,30 +212,34 @@ export class CalendarStore {
       name = name.replace(/^([^, ]+),\s*(.+)/, "$2 $1");
     }
     let data;
-    data = safeQuery(await this.supabase
-      .from("account")
-      .upsert(
-        {
-          email: attendee.email,
-          ...(name && { name }),
-        },
-        { onConflict: "email" }
-      )
-      .select());
+    data = safeQuery(
+      await this.supabase
+        .from("account")
+        .upsert(
+          {
+            email: attendee.email,
+            ...(name && { name }),
+          },
+          { onConflict: "email" }
+        )
+        .select()
+    );
     const attendeeAccountId = data?.[0]?.id;
     if (!attendeeAccountId) throw Error("Account missing");
-    safeQuery(await this.supabase
-      .from("attendee")
-      .upsert(
-        {
-          event_id: eventId,
-          account_id: attendeeAccountId,
-          response: attendee.response,
-          is_organizer: attendee.isOrganizer,
-        },
-        { onConflict: "event_id, account_id" }
-      )
-      .select()));
+    safeQuery(
+      await this.supabase
+        .from("attendee")
+        .upsert(
+          {
+            event_id: eventId,
+            account_id: attendeeAccountId,
+            response: attendee.response,
+            is_organizer: attendee.isOrganizer,
+          },
+          { onConflict: "event_id, account_id" }
+        )
+        .select()
+    );
   }
 
   public async syncEvents(

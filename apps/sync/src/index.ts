@@ -4,8 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 import add from "date-fns/add";
 import sub from "date-fns/sub";
 
-import { EventError } from "@cadence/cal";
-import { CalendarStore } from "@cadence/cal-store";
+import { EventError } from "@divvy/cal";
+import { CalendarStore } from "@divvy/cal-store";
 
 export type SyncRequest = {
   accountId: number;

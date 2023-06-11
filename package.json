@@ -1,14 +1,14 @@
 {
-  "name": "cadence",
+  "name": "@divvy/root",
   "private": true,
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "bootstrap": "git config --local core.hooksPath .githooks",
+    "pnpm:devPreinstall": "git config --local core.hooksPath .githooks",
     "nx": "nx",
     "check": "pnpm install --frozen-lockfile",
     "build": "nx run-many -t build",
-    "watch": "nx watch -p @cadence/cal,@cadence/db,@cadence/cal-store -- nx run-many -t build -p @cadence/*",
+    "watch": "nx watch -p @divvy/cal,@divvy/db,@divvy/cal-store -- nx run-many -t build -p @divvy/*",
     "dev": "nx run-many -t dev"
   },
   "license": "UNLICENSED",
@@ -21,7 +21,7 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4",
-    "wrangler": "^3.0.1"
+    "wrangler": "^3.1.0"
   },
   "optionalDependencies": {
     "@miniflare/tre": "3.0.0-next.13",

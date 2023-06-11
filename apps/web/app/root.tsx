@@ -21,7 +21,7 @@ import {
 import { useEffect, useState } from "react";
 import { json } from "@remix-run/cloudflare";
 import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
-import type { Database } from "@cadence/db";
+import type { Database } from "@divvy/db";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 import {

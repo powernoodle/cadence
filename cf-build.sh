@@ -11,7 +11,7 @@ pnpm i --store=node_modules/.pnpm-store || exit 1
 case $1 in
   web)
     echo === Building ===
-    pnpm nx run web:build || exit 1
+    pnpm nx run @divvy/web:build || exit 1
     ln -sfn apps/web/functions functions
     ;;
 

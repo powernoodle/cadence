@@ -125,7 +125,7 @@ function MeetingStats({
           <tr>
             <th>{title}</th>
             <th style={{ width: "6em" }}>
-              <Text ta="right">Cuont</Text>
+              <Text ta="right">Count</Text>
             </th>
             <th style={{ width: "6em" }}>
               <Text ta="right">Time</Text>

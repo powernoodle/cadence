@@ -7,8 +7,8 @@
     "build": "remix build",
     "dev:remix": "remix watch",
     "dev:wrangler": "wrangler pages dev --env $WORKER_ENV --compatibility-date 2023-05-12 --local ./public",
-    "dev": "WORKER_ENV=development npm-run-all build --parallel \"dev:*\"",
-    "start": "WORKER_ENV=production npm-run-all build --parallel \"dev:*\"",
+    "dev": "WORKER_ENV=development npm-run-all --parallel \"dev:*\"",
+    "start": "WORKER_ENV=production npm-run-all --parallel \"dev:*\"",
     "typecheck": "tsc",
     "wrangler": "wrangler",
     "tail-logs": "../../source-env.sh && wrangler pages deployment tail --project-name divvy"

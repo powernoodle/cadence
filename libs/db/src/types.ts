@@ -166,16 +166,25 @@ export interface Database {
       }
       raw_event: {
         Row: {
-          event_id: number
-          ical: Json | null
+          account_id: number | null
+          created_at: string | null
+          event_id: number | null
+          id: number
+          raw_event: Json
         }
         Insert: {
-          event_id: number
-          ical?: Json | null
+          account_id?: number | null
+          created_at?: string | null
+          event_id?: number | null
+          id?: number
+          raw_event: Json
         }
         Update: {
-          event_id?: number
-          ical?: Json | null
+          account_id?: number | null
+          created_at?: string | null
+          event_id?: number | null
+          id?: number
+          raw_event?: Json
         }
       }
     }
@@ -271,12 +280,6 @@ export interface Database {
           length_sum: number
           cost: number
         }[]
-      }
-      foo: {
-        Args: {
-          num: number
-        }
-        Returns: number
       }
       get_accounts_for_user: {
         Args: Record<PropertyKey, never>

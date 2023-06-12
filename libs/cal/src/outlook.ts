@@ -8,7 +8,7 @@ import {
 } from "@microsoft/microsoft-graph-client";
 import * as MicrosoftGraph from "@microsoft/microsoft-graph-types";
 
-import { CalendarClient, UpdateCredentials } from "./client";
+import { CalendarClient, UpdateCredentials, RawEvent } from "./client";
 import { Response, Attendance, Event, EventError } from "./event";
 
 type OutlookEvent = MicrosoftGraph.Event;
@@ -123,15 +123,14 @@ export class OutlookClient extends CalendarClient {
   private transformEvent(
     outlookEvent: OutlookEvent,
     ownerEmail?: string
-  ): Event | null {
-    if (!outlookEvent.id || outlookEvent.isCancelled) {
-      return null;
-    }
-
+  ): Event {
     const start = fromMsDate(outlookEvent.start);
+    if (!start) {
+      throw new Error("Missing start");
+    }
     const end = fromMsDate(outlookEvent.end);
-    if (!start || !end) {
-      return null;
+    if (!end) {
+      throw new Error("Missing end");
     }
 
     const attendance = [
@@ -164,7 +163,7 @@ export class OutlookClient extends CalendarClient {
         : []),
     ];
     const event = new Event({
-      id: outlookEvent.id,
+      id: outlookEvent.id as string,
       series: outlookEvent.seriesMasterId || undefined,
       start,
       end,
@@ -177,11 +176,12 @@ export class OutlookClient extends CalendarClient {
       isPrivate: outlookEvent.sensitivity
         ? outlookEvent.sensitivity !== "normal"
         : false,
-      notMeeting: outlookEvent.showAs
-        ? ["free", "oof", "workingElsewhere"].includes(outlookEvent.showAs)
-        : false,
+      notMeeting:
+        outlookEvent.isCancelled ||
+        (outlookEvent.showAs
+          ? ["free", "oof", "workingElsewhere"].includes(outlookEvent.showAs)
+          : false),
       attendance,
-      raw: outlookEvent,
     });
     return event;
   }
@@ -191,7 +191,10 @@ export class OutlookClient extends CalendarClient {
     min: Date,
     max: Date,
     state: any
-  ): AsyncIterableIterator<{ event?: Event; error?: EventError; state: any }> {
+  ): AsyncIterableIterator<{
+    rawEvent: RawEvent;
+    state: any;
+  }> {
     const calendar = await this.client.api("/me/calendar").get();
 
     const response = await this.client
@@ -210,44 +213,49 @@ export class OutlookClient extends CalendarClient {
 
     let pageIterator = new PageIterator(this.client, response, callback);
     await pageIterator.iterate();
-    while (true) {
-      if (!outlookEvent) break;
-      try {
-        if (outlookEvent.type === "seriesMaster") {
-          if (outlookEvent.id) {
-            this.seriesMasters[outlookEvent.id] = outlookEvent;
-          }
-        } else {
-          if (outlookEvent.seriesMasterId) {
-            if (!this.seriesMasters[outlookEvent.seriesMasterId]) {
-              throw Error(
-                `Missing series master ${outlookEvent.seriesMasterId}`
-              );
-            }
+    while (outlookEvent) {
+      if (!outlookEvent.id) {
+        // ignore
+      } else if (outlookEvent.type === "seriesMaster") {
+        this.seriesMasters[outlookEvent.id] = outlookEvent;
+      } else {
+        if (outlookEvent.seriesMasterId) {
+          if (this.seriesMasters[outlookEvent.seriesMasterId]) {
             outlookEvent = {
               ...this.seriesMasters[outlookEvent.seriesMasterId],
               ...outlookEvent,
             };
+          } else {
+            console.error(
+              `Missing series master ${outlookEvent.seriesMasterId}`
+            );
           }
-          const event = this.transformEvent(outlookEvent, ownerEmail);
-          const deltaLink = pageIterator.getDeltaLink();
-          state = {
-            ...(state || {}),
-            deltaLink,
-          };
-          if (event) yield { event, state };
         }
-      } catch (caught) {
-        const error = new EventError(
-          "Failed to process event",
-          outlookEvent,
-          caught
-        );
-        yield { error, state };
+        const rawEvent = {
+          provider: "azure",
+          metadata: {
+            ownerEmail,
+          },
+          data: outlookEvent,
+        };
+        const deltaLink = pageIterator.getDeltaLink();
+        state = {
+          ...(state || {}),
+          deltaLink,
+        };
+        yield { rawEvent, state };
       }
       if (pageIterator.isComplete()) break;
       outlookEvent = undefined;
       await pageIterator.resume();
+    }
+  }
+
+  public transform(rawEvent: RawEvent): Event {
+    try {
+      return this.transformEvent(rawEvent.data, rawEvent.metadata?.ownerEmail);
+    } catch (caught) {
+      throw new EventError("Event transformation failed", rawEvent, caught);
     }
   }
 }

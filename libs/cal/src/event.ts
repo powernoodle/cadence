@@ -30,8 +30,6 @@ export class Event {
   public readonly isOffsite: boolean = false;
   public readonly attendance: Attendance[] = [];
 
-  public readonly raw?: { [key: string]: any };
-
   private _title?: string;
   private _isMeeting: boolean = true;
 
@@ -49,7 +47,6 @@ export class Event {
     isOnsite?: boolean;
     isOffsite?: boolean;
     notMeeting?: boolean;
-    raw?: { [key: string]: any };
     attendance?: Attendance[];
   }) {
     this.id = args.id;
@@ -57,7 +54,6 @@ export class Event {
     this.end = args.end;
     this.series = args.series;
     this._title = args.title;
-    this.raw = args.raw;
     this.isCancelled = !!args.isCancelled;
     this.isPrivate = !!args.isPrivate;
     this.isOnline =

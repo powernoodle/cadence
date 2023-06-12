@@ -3,7 +3,7 @@ import { jsonFetch as fetch } from "@worker-tools/json-fetch";
 import { calendar_v3 } from "google-schema";
 
 import { Response, Attendance, Event, EventError } from "./event";
-import { CalendarClient, UpdateCredentials } from "./client";
+import { CalendarClient, UpdateCredentials, RawEvent } from "./client";
 
 type GoogleEvent = calendar_v3.Schema$Event;
 type GoogleEvents = calendar_v3.Schema$Events;
@@ -111,7 +111,7 @@ export class GoogleClient extends CalendarClient {
     }
   }
 
-  private transformEvent(googleEvent: GoogleEvent): Event | null {
+  private transformEvent(googleEvent: GoogleEvent): Event {
     if (!googleEvent.iCalUID) {
       throw new Error("Missing iCalUID");
     }
@@ -162,7 +162,6 @@ export class GoogleClient extends CalendarClient {
         googleEvent.transparency === "transparent" ||
         googleEvent.eventType !== "default",
       attendance,
-      raw: googleEvent,
     });
     return event;
   }
@@ -172,7 +171,10 @@ export class GoogleClient extends CalendarClient {
     min: Date,
     max: Date,
     state: any
-  ): AsyncIterableIterator<{ event?: Event; error?: EventError; state: any }> {
+  ): AsyncIterableIterator<{
+    rawEvent: RawEvent;
+    state: any;
+  }> {
     let syncToken: string | null = state?.syncToken;
     let nextPageToken: string | null = null;
 
@@ -205,19 +207,11 @@ export class GoogleClient extends CalendarClient {
         };
         const events = data.items || [];
         for (const googleEvent of events) {
-          let event, error;
-          try {
-            event = this.transformEvent(googleEvent);
-          } catch (caught) {
-            error = new EventError(
-              "Event transformation failed",
-              googleEvent,
-              caught
-            );
-          }
-          if (event || error) {
-            yield { event: event || undefined, error, state };
-          }
+          const rawEvent = {
+            provider: "google",
+            data: googleEvent,
+          };
+          yield { rawEvent, state };
         }
         nextPageToken = data.nextPageToken || null;
       } catch (error) {
@@ -225,5 +219,13 @@ export class GoogleClient extends CalendarClient {
         throw error;
       }
     } while (nextPageToken);
+  }
+
+  public transform(rawEvent: RawEvent): Event {
+    try {
+      return this.transformEvent(rawEvent.data);
+    } catch (caught) {
+      throw new EventError("Event transformation failed", rawEvent, caught);
+    }
   }
 }

@@ -7,6 +7,7 @@ import { safeQuery } from "@divvy/db";
 
 import {
   Event,
+  RawEvent,
   CalendarClient,
   Credentials,
   GoogleClient,
@@ -184,12 +185,6 @@ export class CalendarStore {
     const eventId = data?.[0]?.id;
     if (!eventId) throw Error("Failed to get event_id");
 
-    // Save raw event
-    await this.supabase.from("raw_event").upsert({
-      event_id: eventId,
-      ical: event.raw,
-    });
-
     // Save attendees
     for (const attendee of event.attendance) {
       try {
@@ -201,6 +196,18 @@ export class CalendarStore {
 
     // Link to existing series
     await this.linkExistingSeries(eventId);
+
+    return {
+      eventId,
+    };
+  }
+
+  private async saveRaw(rawEvent: RawEvent, eventId?: number) {
+    await this.supabase.from("raw_event").insert({
+      raw_event: rawEvent,
+      account_id: this.accountId,
+      event_id: eventId,
+    });
   }
 
   private async saveAttendee(eventId: number, attendee: Attendance) {
@@ -249,24 +256,23 @@ export class CalendarStore {
     errorLogger?: (error: any) => void
   ) {
     if (!this.calendar) throw Error("Calendar not initialized");
-    for await (const { event, error } of this.calendar.getEvents(
+    for await (const { rawEvent } of this.calendar.getEvents(
       calendar,
       min,
       max,
       {}
     )) {
+      let eventId = undefined;
       try {
-        if (error) {
-          if (errorLogger) {
-            errorLogger(error);
-          }
-        } else if (event) {
-          await this.saveEvent(event);
-        }
+        const event = this.calendar.transform(rawEvent);
+        ({ eventId } = await this.saveEvent(event));
       } catch (e) {
-        if (errorLogger) {
-          errorLogger(e);
-        }
+        errorLogger?.(e);
+      }
+      try {
+        await this.saveRaw(rawEvent, eventId);
+      } catch (e) {
+        errorLogger?.(e);
       }
     }
   }

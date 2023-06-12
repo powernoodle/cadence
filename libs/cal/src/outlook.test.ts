@@ -13,14 +13,15 @@ test.only("fetches events", async () => {
       console.dir("New creds", creds);
     }
   );
-  for await (const event of client.getEvents(
+  for await (const { rawEvent } of client.getEvents(
     "primary",
     new Date("2023-05-15"),
     new Date("2023-05-17"),
     {}
   )) {
+    const event = client.transform(rawEvent);
     console.dir(event);
-    console.log(JSON.stringify(event.event?.attendance));
+    console.log(JSON.stringify(event?.attendance));
     expect(event).toBeDefined();
   }
 });

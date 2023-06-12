@@ -246,6 +246,11 @@ function AppNavbar({ opened }: { opened: boolean }) {
       hidden={!opened}
       width={{ sm: 200, lg: 300 }}
     >
+      {isAdmin && (
+        <Navbar.Section mb="md">
+          <AccountSelect />
+        </Navbar.Section>
+      )}
       <Navbar.Section>
         <NavLink
           label="Insights"
@@ -277,7 +282,12 @@ function AppNavbar({ opened }: { opened: boolean }) {
       </Navbar.Section>
       {isAdmin && (
         <Navbar.Section>
-          <AccountSelect />
+          <NavLink
+            label="Admin"
+            component={Link}
+            to={`/admin`}
+            active={location.pathname === "/admin"}
+          />
         </Navbar.Section>
       )}
     </Navbar>

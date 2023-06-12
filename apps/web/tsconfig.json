@@ -4,9 +4,7 @@
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2021"],
     "paths": {
-      "~/*": ["./app/*"],
-      "@divvy/db": ["../../libs/db/dist"],
-      "@divvy/emotion-server": ["../../libs/emotion-server"]
+      "~/*": ["./app/*"]
     },
     "noEmit": true,
     "baseUrl": ".",

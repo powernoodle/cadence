@@ -122,7 +122,7 @@ function Meetings({
                     </tr>
                   )}
                   <tr>
-                    <td css={{ minWidth: "7em" }}>
+                    <td style={{ minWidth: "7em" }}>
                       <StyledText>{fmtTime(start, end)}</StyledText>
                     </td>
                     <td>

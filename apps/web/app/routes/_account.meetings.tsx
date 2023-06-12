@@ -124,13 +124,13 @@ function MeetingStats({
         <thead>
           <tr>
             <th>{title}</th>
-            <th css={{ width: "6em" }}>
+            <th style={{ width: "6em" }}>
               <Text ta="right">Cuont</Text>
             </th>
-            <th css={{ width: "6em" }}>
+            <th style={{ width: "6em" }}>
               <Text ta="right">Time</Text>
             </th>
-            <th css={{ width: "6em" }}>
+            <th style={{ width: "6em" }}>
               <Text ta="right">Cost</Text>
             </th>
           </tr>
@@ -182,23 +182,23 @@ function MatchingMeetings({
         <Table sx={{}}>
           <thead>
             <tr>
-              <th css={{ minWidth: "12em" }}>Meeting</th>
-              <th css={{ width: "6em" }}>
+              <th style={{ minWidth: "12em" }}>Meeting</th>
+              <th style={{ width: "6em" }}>
                 <Text ta="right">Length</Text>
               </th>
-              <th css={{ width: "6em" }}>
+              <th style={{ width: "6em" }}>
                 <Text ta="right">Invitees</Text>
               </th>
-              <th css={{ width: "6em" }}>
+              <th style={{ width: "6em" }}>
                 <Text ta="right">Attendees</Text>
               </th>
-              <th css={{ width: "6em" }}>
+              <th style={{ width: "6em" }}>
                 <Text ta="right">Count</Text>
               </th>
-              <th css={{ width: "6em" }}>
+              <th style={{ width: "6em" }}>
                 <Text ta="right">Time</Text>
               </th>
-              <th css={{ width: "6em" }}>
+              <th style={{ width: "6em" }}>
                 <Text ta="right">Cost</Text>
               </th>
               <th></th>

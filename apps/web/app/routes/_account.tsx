@@ -239,6 +239,25 @@ function AppNavbar({ opened }: { opened: boolean }) {
     }));
   };
 
+  const { supabase } = useOutletContext<SupabaseOutletContext>();
+  useEffect(() => {
+    const channel = supabase
+      .channel("table-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "account",
+        },
+        (payload) => console.log(payload)
+      )
+      .subscribe();
+    return () => {
+      channel.unsubscribe();
+    };
+  });
+
   return (
     <Navbar
       p="md"

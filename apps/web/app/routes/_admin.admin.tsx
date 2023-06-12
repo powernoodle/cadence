@@ -16,11 +16,20 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       .not("user_id", "is", null)
   );
 
-  return json({ accounts, headers: response.headers });
+  const eventCountResult = safeQuery(
+    await supabase.rpc("event_count_by_account")
+  );
+  const eventCounts = eventCountResult
+    ? Object.fromEntries(
+        eventCountResult.map((row) => [row.account_id, row.event_count])
+      )
+    : {};
+
+  return json({ accounts, eventCounts, headers: response.headers });
 };
 
 export default function Index() {
-  const { accounts } = useLoaderData<typeof loader>();
+  const { accounts, eventCounts } = useLoaderData<typeof loader>();
   return (
     <>
       <Title>Admin</Title>
@@ -28,12 +37,14 @@ export default function Index() {
         <thead>
           <tr>
             <th>Account</th>
+            <th>Events</th>
           </tr>
         </thead>
         <tbody>
           {accounts?.map((account) => (
             <tr key={account.id.toString()}>
               <td>{account.email}</td>
+              <td>{eventCounts?.[account.id]}</td>
             </tr>
           ))}
         </tbody>

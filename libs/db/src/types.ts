@@ -43,6 +43,8 @@ export interface Database {
           name: string | null
           organization_id: number | null
           provider: Database["public"]["Enums"]["provider"] | null
+          sync_progress: number | null
+          synced_at: string | null
           user_id: string | null
         }
         Insert: {
@@ -53,6 +55,8 @@ export interface Database {
           name?: string | null
           organization_id?: number | null
           provider?: Database["public"]["Enums"]["provider"] | null
+          sync_progress?: number | null
+          synced_at?: string | null
           user_id?: string | null
         }
         Update: {
@@ -63,6 +67,8 @@ export interface Database {
           name?: string | null
           organization_id?: number | null
           provider?: Database["public"]["Enums"]["provider"] | null
+          sync_progress?: number | null
+          synced_at?: string | null
           user_id?: string | null
         }
       }
@@ -240,6 +246,13 @@ export interface Database {
           meeting_count: number
           length_sum: number
           cost: number
+        }[]
+      }
+      event_count_by_account: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          account_id: number
+          event_count: number
         }[]
       }
       event_length: {

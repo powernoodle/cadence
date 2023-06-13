@@ -23,7 +23,6 @@ import {
   Select,
   useMantineTheme,
 } from "@mantine/core";
-import { useScrollLock } from "@mantine/hooks";
 import { DatePickerInput } from "@mantine/dates";
 
 import add from "date-fns/add";
@@ -314,13 +313,14 @@ function AppNavbar({ opened }: { opened: boolean }) {
 }
 
 export default function Index() {
-  const { syncProgress: syncProgressOrig } = useLoaderData<typeof loader>();
+  const { accountId, syncProgress: syncProgressOrig } =
+    useLoaderData<typeof loader>();
   const ctx = useOutletContext<SupabaseOutletContext>();
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
   const { supabase } = useOutletContext<SupabaseOutletContext>();
   const [syncProgress, setSyncProgress] = useState<number | null>(
-    syncProgressOrig || null
+    typeof syncProgressOrig === "undefined" ? null : syncProgressOrig
   );
   useEffect(() => {
     const channel = supabase
@@ -331,6 +331,7 @@ export default function Index() {
           event: "UPDATE",
           schema: "public",
           table: "account",
+          filter: `id=eq.${accountId}`,
         },
         (payload) => {
           setSyncProgress(payload.new?.sync_progress || null);
@@ -340,9 +341,7 @@ export default function Index() {
     return () => {
       channel.unsubscribe();
     };
-  });
-
-  useScrollLock(syncProgress !== null);
+  }, [supabase, accountId]);
 
   return (
     <AppShell

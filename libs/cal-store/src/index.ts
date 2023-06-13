@@ -221,7 +221,7 @@ export class CalendarStore {
       .update({
         sync_progress,
       })
-      .eq("account_id", this.accountId);
+      .eq("id", this.accountId);
   }
 
   private async saveAttendee(eventId: number, attendee: Attendance) {
@@ -269,6 +269,8 @@ export class CalendarStore {
     calendar = "primary",
     errorLogger?: (error: any) => void
   ) {
+    let successCount = 0;
+    let errorCount = 0;
     if (!this.calendar) throw Error("Calendar not initialized");
     for await (const { rawEvent, progress } of this.calendar.getEvents(
       calendar,
@@ -280,7 +282,9 @@ export class CalendarStore {
       try {
         const event = this.calendar.transform(rawEvent);
         ({ eventId } = await this.saveEvent(event));
+        successCount += 1;
       } catch (e) {
+        errorCount += 1;
         errorLogger?.(e);
       }
       try {
@@ -294,6 +298,14 @@ export class CalendarStore {
     }
     try {
       await this.saveProgress();
+      if (successCount > 0 || errorCount === 0) {
+        await this.supabase
+          .from("account")
+          .update({
+            synced_at: "now()",
+          })
+          .eq("id", this.accountId);
+      }
     } catch (e) {
       errorLogger?.(e);
     }

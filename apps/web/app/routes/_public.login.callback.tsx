@@ -58,10 +58,17 @@ export const loader = async ({ context, request }: LoaderArgs) => {
         .update({ provider, credentials })
         .eq("email", email)
         .select()
+        .single()
     );
 
-    const accountId = account?.[0]?.id;
-    if (accountId) {
+    const accountId = account?.id;
+    if (accountId && !account?.synced_at) {
+      await supabaseAdmin
+        .from("account")
+        .update({
+          sync_progress: 0,
+        })
+        .eq("id", accountId);
       // @ts-ignore
       await context.SYNC_QUEUE.send({ accountId });
     }

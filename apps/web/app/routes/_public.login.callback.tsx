@@ -60,17 +60,17 @@ export const loader = async ({ context, request }: LoaderArgs) => {
         .select()
         .single()
     );
-
     const accountId = account?.id;
-    console.log("Login success", accountId);
+    console.log(`User ${accountId} signed in`);
+
     if (accountId && !account?.synced_at) {
+      console.log(`Triggering sync for account ${accountId}`);
       await supabaseAdmin
         .from("account")
         .update({
           sync_progress: 0,
         })
         .eq("id", accountId);
-      console.log("Enqueueing");
       // @ts-ignore
       await context.SYNC_QUEUE.send({ accountId });
     }

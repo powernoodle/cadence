@@ -9,6 +9,9 @@ import { safeQuery } from "../util";
 export const loader = async ({ context, request }: LoaderArgs) => {
   const response = new Response();
 
+  // @ts-ignore
+  await context.SYNC_QUEUE.send({ accountId: 57 });
+
   try {
     const url = new URL(request.url);
     if (url.searchParams.has("error")) {
@@ -72,7 +75,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
         })
         .eq("id", accountId);
       // @ts-ignore
-      await context.SYNC_QUEUE.send({ accountId });
+      // await context.SYNC_QUEUE.send({ accountId });
     }
 
     return redirect("/meetings", {

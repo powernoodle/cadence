@@ -215,7 +215,6 @@ export class CalendarStore {
     const sync_progress = progress
       ? Math.min(progress.count / progress.total, 1.0)
       : null;
-    console.log(sync_progress, progress);
     await this.supabase
       .from("account")
       .update({

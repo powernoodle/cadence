@@ -319,10 +319,11 @@ export default function Index() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
   const { supabase } = useOutletContext<SupabaseOutletContext>();
-  const [syncProgress, setSyncProgress] = useState<number | null>(
-    typeof syncProgressOrig === "undefined" ? null : syncProgressOrig
-  );
+  const [syncProgress, setSyncProgress] = useState<number | null>(null);
   useEffect(() => {
+    setSyncProgress(
+      typeof syncProgressOrig === "undefined" ? null : syncProgressOrig
+    );
     const channel = supabase
       .channel("table-db-changes")
       .on(
@@ -341,7 +342,7 @@ export default function Index() {
     return () => {
       channel.unsubscribe();
     };
-  }, [supabase, accountId]);
+  }, [supabase, accountId, syncProgressOrig]);
 
   return (
     <AppShell

@@ -10,7 +10,7 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import { Paper, Text, Table, ScrollArea, LoadingOverlay } from "@mantine/core";
+import { Paper, Text, Table, ScrollArea } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import {
@@ -177,7 +177,6 @@ export default function Agenda() {
 
   return (
     <>
-      <LoadingOverlay visible={events === null} zIndex={99} />
       <Meetings
         // @ts-ignore
         events={events}

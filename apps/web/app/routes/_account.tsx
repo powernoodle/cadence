@@ -13,12 +13,17 @@ import { json } from "@remix-run/cloudflare";
 import {
   AppShell,
   Burger,
+  Text,
+  Container,
+  Paper,
+  Progress,
   MediaQuery,
   Navbar,
   NavLink,
   Select,
   useMantineTheme,
 } from "@mantine/core";
+import { useScrollLock } from "@mantine/hooks";
 import { DatePickerInput } from "@mantine/dates";
 
 import add from "date-fns/add";
@@ -126,8 +131,22 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     startOfDay(current[1], USER_TZ),
   ];
 
+  const syncProgress = safeQuery(
+    await supabase
+      .from("account")
+      .select("sync_progress")
+      .eq("id", accountId)
+      .single()
+  );
+
   return json(
-    { isAdmin, accountId, accounts: accounts ?? [], dateRange },
+    {
+      isAdmin,
+      accountId,
+      accounts: accounts ?? [],
+      dateRange,
+      syncProgress: syncProgress?.sync_progress,
+    },
     { headers: response.headers }
   );
 };
@@ -239,25 +258,6 @@ function AppNavbar({ opened }: { opened: boolean }) {
     }));
   };
 
-  const { supabase } = useOutletContext<SupabaseOutletContext>();
-  useEffect(() => {
-    const channel = supabase
-      .channel("table-db-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "account",
-        },
-        (payload) => console.log(payload)
-      )
-      .subscribe();
-    return () => {
-      channel.unsubscribe();
-    };
-  });
-
   return (
     <Navbar
       p="md"
@@ -314,9 +314,36 @@ function AppNavbar({ opened }: { opened: boolean }) {
 }
 
 export default function Index() {
+  const { syncProgress: syncProgressOrig } = useLoaderData<typeof loader>();
   const ctx = useOutletContext<SupabaseOutletContext>();
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
+  const { supabase } = useOutletContext<SupabaseOutletContext>();
+  const [syncProgress, setSyncProgress] = useState<number | null>(
+    syncProgressOrig || null
+  );
+  useEffect(() => {
+    const channel = supabase
+      .channel("table-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "account",
+        },
+        (payload) => {
+          setSyncProgress(payload.new?.sync_progress || null);
+        }
+      )
+      .subscribe();
+    return () => {
+      channel.unsubscribe();
+    };
+  });
+
+  useScrollLock(syncProgress !== null);
+
   return (
     <AppShell
       styles={{
@@ -346,7 +373,20 @@ export default function Index() {
         />
       }
     >
-      <Outlet context={ctx} />
+      {syncProgress !== null && (
+        <Container>
+          <Paper m="xl" p="xl">
+            <Text>Loading calendar</Text>
+            <Progress
+              size="xl"
+              value={syncProgress * 100}
+              animate
+              sx={{ position: "relative" }}
+            />
+          </Paper>
+        </Container>
+      )}
+      {syncProgress === null && <Outlet context={ctx} />}
     </AppShell>
   );
 }

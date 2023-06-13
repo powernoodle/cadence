@@ -7,6 +7,11 @@ export type Credentials = {
 
 export type UpdateCredentials = (credentials: Credentials) => Promise<void>;
 
+export type Progress = {
+  count: number;
+  total: number;
+};
+
 export type RawEvent = {
   provider: string;
   data: { [key: string]: any };
@@ -21,6 +26,7 @@ export abstract class CalendarClient {
     state: any
   ): AsyncIterableIterator<{
     rawEvent: RawEvent;
+    progress: Progress;
     state: any;
   }>;
 

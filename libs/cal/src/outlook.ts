@@ -8,7 +8,12 @@ import {
 } from "@microsoft/microsoft-graph-client";
 import * as MicrosoftGraph from "@microsoft/microsoft-graph-types";
 
-import { CalendarClient, UpdateCredentials, RawEvent } from "./client";
+import {
+  CalendarClient,
+  UpdateCredentials,
+  RawEvent,
+  Progress,
+} from "./client";
 import { Response, Attendance, Event, EventError } from "./event";
 
 type OutlookEvent = MicrosoftGraph.Event;
@@ -193,10 +198,18 @@ export class OutlookClient extends CalendarClient {
     state: any
   ): AsyncIterableIterator<{
     rawEvent: RawEvent;
+    progress: Progress;
     state: any;
   }> {
     const calendar = await this.client.api("/me/calendar").get();
 
+    const total = await this.client
+      .api(
+        state?.deltaLink ||
+          `/me/calendarview/$count?startDateTime=${min.toISOString()}&endDateTime=${max.toISOString()}`
+      )
+      .get();
+    let count = 0;
     const response = await this.client
       .api(
         state?.deltaLink ||
@@ -214,6 +227,7 @@ export class OutlookClient extends CalendarClient {
     let pageIterator = new PageIterator(this.client, response, callback);
     await pageIterator.iterate();
     while (outlookEvent) {
+      count += 1;
       if (!outlookEvent.id) {
         // ignore
       } else if (outlookEvent.type === "seriesMaster") {
@@ -243,7 +257,7 @@ export class OutlookClient extends CalendarClient {
           ...(state || {}),
           deltaLink,
         };
-        yield { rawEvent, state };
+        yield { rawEvent, progress: { count, total }, state };
       }
       if (pageIterator.isComplete()) break;
       outlookEvent = undefined;

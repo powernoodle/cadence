@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import { useOutletContext, Outlet, Link } from "@remix-run/react";
-import { json } from "@remix-run/cloudflare";
+import { redirect, json } from "@remix-run/cloudflare";
 import {
   AppShell,
   Burger,
@@ -22,7 +22,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const isAdmin = safeQuery(await supabase.rpc("is_admin"));
   if (!isAdmin) throw redirect("/login");
 
-  return json({ headers: response.headers });
+  return json({}, { headers: response.headers });
 };
 
 function AppNavbar({ opened }: { opened: boolean }) {

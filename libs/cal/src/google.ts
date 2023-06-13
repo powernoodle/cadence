@@ -3,7 +3,12 @@ import { jsonFetch as fetch } from "@worker-tools/json-fetch";
 import { calendar_v3 } from "google-schema";
 
 import { Response, Attendance, Event, EventError } from "./event";
-import { CalendarClient, UpdateCredentials, RawEvent } from "./client";
+import {
+  CalendarClient,
+  UpdateCredentials,
+  RawEvent,
+  Progress,
+} from "./client";
 
 type GoogleEvent = calendar_v3.Schema$Event;
 type GoogleEvents = calendar_v3.Schema$Events;
@@ -173,10 +178,13 @@ export class GoogleClient extends CalendarClient {
     state: any
   ): AsyncIterableIterator<{
     rawEvent: RawEvent;
+    progress: Progress;
     state: any;
   }> {
     let syncToken: string | null = state?.syncToken;
     let nextPageToken: string | null = null;
+    let total = 0;
+    let count = 0;
 
     do {
       try {
@@ -206,12 +214,17 @@ export class GoogleClient extends CalendarClient {
           syncToken,
         };
         const events = data.items || [];
+        // Since Google doesn't return a total count, we always assume the next
+        // page has the same count as the current, and that there's only one
+        // more page.
+        total += events.length + (data.nextPageToken ? events.length : 0);
         for (const googleEvent of events) {
+          count += 1;
           const rawEvent = {
             provider: "google",
             data: googleEvent,
           };
-          yield { rawEvent, state };
+          yield { rawEvent, progress: { count, total }, state };
         }
         nextPageToken = data.nextPageToken || null;
       } catch (error) {

@@ -8,15 +8,7 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import {
-  Paper,
-  Text,
-  Space,
-  Grid,
-  Table,
-  LoadingOverlay,
-  ScrollArea,
-} from "@mantine/core";
+import { Paper, Text, Space, Grid, Table, ScrollArea } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import { getDateRange } from "./_account";
@@ -271,7 +263,6 @@ export default function Meetings() {
 
   return (
     <>
-      <LoadingOverlay visible={events === null} zIndex={99} />
       <Grid columns={12}>
         <Grid.Col sm={12} md={6} lg={4}>
           <MeetingStats

@@ -1,4 +1,4 @@
-export type { Credentials, RawEvent } from "./client";
+export type { Credentials, RawEvent, Progress } from "./client";
 export type { Attendance } from "./event";
 export { Event, EventError } from "./event";
 export { CalendarClient } from "./client";

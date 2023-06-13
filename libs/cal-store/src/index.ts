@@ -8,6 +8,7 @@ import { safeQuery } from "@divvy/db";
 import {
   Event,
   RawEvent,
+  Progress,
   CalendarClient,
   Credentials,
   GoogleClient,
@@ -210,6 +211,19 @@ export class CalendarStore {
     });
   }
 
+  private async saveProgress(progress?: Progress) {
+    const sync_progress = progress
+      ? Math.min(progress.count / progress.total, 1.0)
+      : null;
+    console.log(sync_progress, progress);
+    await this.supabase
+      .from("account")
+      .update({
+        sync_progress,
+      })
+      .eq("account_id", this.accountId);
+  }
+
   private async saveAttendee(eventId: number, attendee: Attendance) {
     let name = attendee.name;
     if (name) {
@@ -256,7 +270,7 @@ export class CalendarStore {
     errorLogger?: (error: any) => void
   ) {
     if (!this.calendar) throw Error("Calendar not initialized");
-    for await (const { rawEvent } of this.calendar.getEvents(
+    for await (const { rawEvent, progress } of this.calendar.getEvents(
       calendar,
       min,
       max,
@@ -271,9 +285,17 @@ export class CalendarStore {
       }
       try {
         await this.saveRaw(rawEvent, eventId);
+        if (progress.count % 10 === 0) {
+          await this.saveProgress(progress);
+        }
       } catch (e) {
         errorLogger?.(e);
       }
+    }
+    try {
+      await this.saveProgress();
+    } catch (e) {
+      errorLogger?.(e);
     }
   }
 }

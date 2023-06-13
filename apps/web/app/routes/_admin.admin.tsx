@@ -25,7 +25,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       )
     : {};
 
-  return json({ accounts, eventCounts, headers: response.headers });
+  return json({ accounts, eventCounts }, { headers: response.headers });
 };
 
 export default function Index() {

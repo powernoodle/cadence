@@ -3,18 +3,22 @@ main = "src/index.ts"
 compatibility_date = "2023-05-12"
 node_compat = true
 
-# Worker defines a binding, named "QUEUE", which gives it a capability
-# to send messages to a Queue, named "my-queue".
+# In development, the worker serves an HTTP API that is a producer
 [[queues.producers]]
   queue = "sync"
   binding = "QUEUE"
 
-# Worker also receives messages from the Queue, named "my-queue".
 [[queues.consumers]]
   queue = "sync"
-  max_batch_size = 5    # Max messages per batch
-  max_batch_timeout = 1 # Max seconds to wait before batch is full
-  max_retries = 3       # Max retries per batch
+  max_batch_size = 1    # Max messages per batch
+  max_batch_timeout = 0 # Max seconds to wait before batch is full
+  max_retries = 0       # Max retries per batch
+
+[env.production]
+  vars = { ENV = "production" }
 
 [env.development]
   vars = { ENV = "development" }
+
+[placement]
+mode = "smart"

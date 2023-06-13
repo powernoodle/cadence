@@ -157,23 +157,17 @@ function Meetings({
 }
 
 export default function Agenda() {
-  const { accountId, events } = useLoaderData<typeof loader>();
+  const { events } = useLoaderData<typeof loader>();
 
-  const { supabase } = useOutletContext<SupabaseOutletContext>();
+  const { syncProgress } = useOutletContext<SupabaseOutletContext>();
 
   const revalidator = useRevalidator();
-
   useEffect(() => {
-    const channel = supabase.channel(`account:${accountId}`);
-    channel
-      .on("broadcast", { event: "sync" }, () => {
-        revalidator.revalidate();
-      })
-      .subscribe();
-    return () => {
-      channel.unsubscribe();
-    };
-  }, [supabase, accountId]);
+    // If syncProgress flips from in progress to done, revalidate
+    if (syncProgress === null) {
+      revalidator.revalidate();
+    }
+  }, [syncProgress]);
 
   return (
     <>

@@ -315,11 +315,14 @@ function AppNavbar({ opened }: { opened: boolean }) {
 export default function Index() {
   const { accountId, syncProgress: syncProgressOrig } =
     useLoaderData<typeof loader>();
-  const ctx = useOutletContext<SupabaseOutletContext>();
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
-  const { supabase } = useOutletContext<SupabaseOutletContext>();
   const [syncProgress, setSyncProgress] = useState<number | null>(null);
+  const ctx = {
+    ...useOutletContext<SupabaseOutletContext>(),
+    syncProgress,
+  };
+  const supabase = ctx.supabase;
   useEffect(() => {
     setSyncProgress(
       typeof syncProgressOrig === "undefined" ? null : syncProgressOrig

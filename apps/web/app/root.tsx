@@ -48,6 +48,7 @@ createEmotionCache({ key: "mantine" });
 export type SupabaseOutletContext = {
   supabase: SupabaseClient<Database>;
   user: User;
+  syncProgress: number | null;
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {

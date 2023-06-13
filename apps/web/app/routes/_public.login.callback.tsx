@@ -62,6 +62,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     );
 
     const accountId = account?.id;
+    console.log("Login success", accountId);
     if (accountId && !account?.synced_at) {
       await supabaseAdmin
         .from("account")
@@ -69,6 +70,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
           sync_progress: 0,
         })
         .eq("id", accountId);
+      console.log("Enqueueing");
       // @ts-ignore
       await context.SYNC_QUEUE.send({ accountId });
     }

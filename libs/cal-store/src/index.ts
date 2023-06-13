@@ -212,9 +212,10 @@ export class CalendarStore {
   }
 
   private async saveProgress(progress?: Progress) {
-    const sync_progress = progress
-      ? Math.min(progress.count / progress.total, 1.0)
-      : null;
+    const sync_progress =
+      progress === undefined
+        ? null
+        : Math.min(progress.count / progress.total, 1.0);
     await this.supabase
       .from("account")
       .update({

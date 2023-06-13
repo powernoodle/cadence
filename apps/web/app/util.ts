@@ -5,6 +5,7 @@ import { createServerClient as createSupabaseClient } from "@supabase/auth-helpe
 
 import type { Database } from "@divvy/db";
 export { safeQuery } from "@divvy/db";
+import { safeQuery } from "./util";
 
 export const APP_NAME = "Divvy";
 
@@ -33,6 +34,8 @@ export const getAccountId = async (
   const url = new URL(request.url);
   const accountParam = url.searchParams.get("account");
   if (accountParam) {
+    const isAdmin = safeQuery(await supabase.rpc("is_admin"));
+    if (!isAdmin) throw redirect("/login");
     return parseInt(accountParam);
   }
 

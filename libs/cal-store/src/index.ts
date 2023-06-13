@@ -117,48 +117,11 @@ export class CalendarStore {
     );
   }
 
-  private async linkExistingSeries(eventId: number) {
-    // TODO: This could be optimized for performance
-    const newEvent = safeQuery(
-      await this.supabase
-        .from("event_stats")
-        .select("title, attendees")
-        .eq("id", eventId)
-    );
-    const title = newEvent?.[0]?.title;
-    const attendees = newEvent?.[0]?.attendees;
-    if (!title || !attendees) return;
-
-    const existingMatches = safeQuery(
-      await this.supabase
-        .from("event_stats")
-        .select("id, series")
-        .neq("id", eventId)
-        .eq("account_id", this.accountId)
-        .eq("title", title)
-        .eq("attendees", attendees)
-    );
-    if (!existingMatches || existingMatches.length === 0) return;
-
-    let series = existingMatches?.[0]?.series;
-    if (!series) {
-      series = Math.random().toString(36).substring(2, 15);
-      safeQuery(
-        await this.supabase
-          .from("event")
-          .update({
-            series,
-          })
-          .eq("id", existingMatches?.[0]?.id)
-      );
-    }
+  private async linkSeries() {
     safeQuery(
-      await this.supabase
-        .from("event")
-        .update({
-          series,
-        })
-        .eq("id", eventId)
+      await this.supabase.rpc("link_series", {
+        account_id: this.accountId,
+      })
     );
   }
 
@@ -194,9 +157,6 @@ export class CalendarStore {
         console.error(e);
       }
     }
-
-    // Link to existing series
-    await this.linkExistingSeries(eventId);
 
     return {
       eventId,
@@ -297,6 +257,9 @@ export class CalendarStore {
       }
     }
     try {
+      // Link to existing series
+      await this.linkSeries();
+
       await this.saveProgress();
       if (successCount > 0 || errorCount === 0) {
         await this.supabase

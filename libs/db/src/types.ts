@@ -308,6 +308,12 @@ export interface Database {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
+      link_series: {
+        Args: {
+          account_id: number
+        }
+        Returns: undefined
+      }
       meeting_cost: {
         Args: {
           attendee_occurrences: number

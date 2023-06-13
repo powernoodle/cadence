@@ -20,7 +20,7 @@ export class Event {
   }
 
   public readonly id: string;
-  public readonly series?: string;
+  public readonly series: string;
   public readonly start: Date;
   public readonly end: Date;
   public readonly isCancelled: boolean = false;
@@ -52,7 +52,7 @@ export class Event {
     this.id = args.id;
     this.start = args.start;
     this.end = args.end;
-    this.series = args.series;
+    this.series = args.series || args.id;
     this._title = args.title;
     this.isCancelled = !!args.isCancelled;
     this.isPrivate = !!args.isPrivate;

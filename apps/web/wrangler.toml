@@ -1,5 +1,5 @@
 compatibility_date = "2023-04-19"
 
 [[queues.producers]]
- queue = "sync"
+ queue = "sync-queue"
  binding = "SYNC_QUEUE"

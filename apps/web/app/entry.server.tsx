@@ -1,10 +1,10 @@
 import { renderToString } from "react-dom/server";
 import { RemixServer } from "@remix-run/react";
-import type { EntryContext } from "@remix-run/cloudflare";
+import type { EntryContext, DataFunctionArgs } from "@remix-run/cloudflare";
 import { injectStyles } from "@mantine/remix";
 import { defaultMantineEmotionCache } from "@mantine/styles";
 import { createEmotionServer } from "@divvy/emotion-server";
-import { SentrySeverInit } from "./sentry";
+import { SentrySeverInit, Sentry } from "./sentry";
 
 SentrySeverInit();
 
@@ -29,4 +29,18 @@ export default function handleRequest(
     status: responseStatusCode,
     headers: responseHeaders,
   });
+}
+
+export function handleError(
+  error: unknown,
+  { request, params, context }: DataFunctionArgs
+): void {
+  if (error instanceof Error) {
+    Sentry().captureException(error);
+    console.error(error);
+  } else {
+    let unknownError = new Error("Unknown Server Error");
+    Sentry().captureException(unknownError);
+    console.error(unknownError);
+  }
 }

@@ -3,7 +3,7 @@ import type {
   LinksFunction,
   V2_MetaFunction,
 } from "@remix-run/cloudflare";
-import * as Sentry from "@sentry/remix";
+import { Sentry } from "./sentry";
 
 import { cssBundleHref } from "@remix-run/css-bundle";
 import {
@@ -79,7 +79,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  Sentry.captureException(error);
+  Sentry().captureException(error);
   let message;
   if (isRouteErrorResponse(error)) {
     message = `${error.status} ${error.statusText}`;

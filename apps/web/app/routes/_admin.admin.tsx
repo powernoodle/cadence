@@ -3,8 +3,10 @@ import type { LoaderArgs } from "@remix-run/cloudflare";
 import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import { Title, Table } from "@mantine/core";
+import { ClientOnly } from "remix-utils";
 
 import { createServerClient, safeQuery } from "../util";
+import formatDate from "date-fns/format";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -12,7 +14,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const accounts = safeQuery(
     await supabase
       .from("account")
-      .select("id, name, email")
+      .select("id, name, email, synced_at, sync_progress")
       .not("user_id", "is", null)
   );
 
@@ -37,13 +39,35 @@ export default function Index() {
         <thead>
           <tr>
             <th>Account</th>
+            <th>Status</th>
             <th>Events</th>
           </tr>
         </thead>
         <tbody>
           {accounts?.map((account) => (
             <tr key={account.id.toString()}>
-              <td>{account.email}</td>
+              <td>
+                {account.name} ({account.email})
+              </td>
+              <td>
+                <ClientOnly>
+                  {() => (
+                    <>
+                      {account.sync_progress !== null
+                        ? "Syncing " +
+                          Math.round(account.sync_progress * 100) +
+                          "%"
+                        : account.synced_at
+                        ? "Synced at " +
+                          formatDate(
+                            new Date(account.synced_at),
+                            "yyyy-MM-dd h:mm aaa"
+                          )
+                        : ""}
+                    </>
+                  )}
+                </ClientOnly>
+              </td>
               <td>{eventCounts?.[account.id]}</td>
             </tr>
           ))}

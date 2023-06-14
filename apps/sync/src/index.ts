@@ -13,9 +13,8 @@ export type SyncRequest = {
 export interface Env {
   readonly ENV?: string;
 
+  readonly DB_URL: string;
   readonly SENTRY_DSN: string;
-  readonly SUPABASE_URL: string;
-  readonly SUPABASE_KEY: string;
   readonly GOOGLE_CLIENT_ID: string;
   readonly GOOGLE_OAUTH_SECRET: string;
   readonly MICROSOFT_CLIENT_ID: string;
@@ -108,8 +107,7 @@ export default {
 
 async function process(env: Env, request: SyncRequest) {
   const store = await CalendarStore.Create(
-    env.SUPABASE_URL,
-    env.SUPABASE_KEY,
+    env.DB_URL,
     env.GOOGLE_CLIENT_ID,
     env.GOOGLE_OAUTH_SECRET,
     env.MICROSOFT_CLIENT_ID,
@@ -127,10 +125,14 @@ async function process(env: Env, request: SyncRequest) {
         if (e instanceof EventError) {
           scope.setExtra("event", e.event);
         }
+        if (e.cause?.detail) {
+          console.log(e.cause.detail);
+          scope.setExtra("detail", e.cause.detail);
+        }
         Sentry?.captureException(e);
       });
     }
   );
 
-  await new Promise((resolve) => setTimeout(resolve, 3000));
+  await store.close();
 }

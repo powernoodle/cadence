@@ -134,8 +134,16 @@ export class Event {
 
 export class EventError extends Error {
   constructor(message: string, public event: any, cause?: any) {
-    if (cause && cause.message) {
-      message += `: ${cause.message}`;
+    if (cause) {
+      if (cause.message) {
+        message += `: ${cause.message}`;
+      }
+      if (cause.detail) {
+        message += `\n${cause.detail}`;
+      }
+      if (cause.where) {
+        message += `\n${cause.where}`;
+      }
     }
     super(message, { cause });
     this.name = "EventError";

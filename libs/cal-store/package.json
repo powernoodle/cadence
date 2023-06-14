@@ -13,10 +13,10 @@
   "license": "UNLICENSED",
   "dependencies": {
     "@divvy/cal": "workspace:^",
-    "@divvy/db": "workspace:^",
-    "@supabase/supabase-js": "^2.21.0"
+    "pg": "^8.11.0"
   },
   "devDependencies": {
+    "@types/pg": "^8.10.2",
     "dotenv": "^16.0.3"
   }
 }

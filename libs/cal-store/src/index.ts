@@ -149,14 +149,7 @@ export class CalendarStore {
     const eventId = data?.[0]?.id;
     if (!eventId) throw Error("Failed to get event_id");
 
-    // Save attendees
-    for (const attendee of event.attendance) {
-      try {
-        await this.saveAttendee(eventId, attendee);
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    await this.saveAttendees(eventId, event.attendance);
 
     return {
       eventId,
@@ -184,42 +177,27 @@ export class CalendarStore {
       .eq("id", this.accountId);
   }
 
-  private async saveAttendee(eventId: number, attendee: Attendance) {
-    let name = attendee.name;
-    if (name) {
-      // Remove email address from name
-      name = name.replace(/<?[^ ]+@[^ ]+>?/, "").trim();
-      // Re-order Last, First to First Last
-      name = name.replace(/^([^, ]+),\s*(.+)/, "$2 $1");
-    }
-    let data;
-    data = safeQuery(
-      await this.supabase
-        .from("account")
-        .upsert(
-          {
-            email: attendee.email,
-            ...(name && { name }),
-          },
-          { onConflict: "email" }
-        )
-        .select()
-    );
-    const attendeeAccountId = data?.[0]?.id;
-    if (!attendeeAccountId) throw Error("Account missing");
+  private async saveAttendees(eventId: number, attendees: Attendance[]) {
     safeQuery(
-      await this.supabase
-        .from("attendee")
-        .upsert(
-          {
-            event_id: eventId,
-            account_id: attendeeAccountId,
+      await this.supabase.rpc("update_attendees", {
+        event_id: eventId,
+        // @ts-ignore
+        attendees: attendees.map((attendee) => {
+          let name = attendee.name;
+          if (name) {
+            // Remove email address from name
+            name = name.replace(/<?[^ ]+@[^ ]+>?/, "").trim();
+            // Re-order Last, First to First Last
+            name = name.replace(/^([^, ]+),\s*(.+)/, "$2 $1");
+          }
+          return {
+            email: attendee.email,
             response: attendee.response,
             is_organizer: attendee.isOrganizer,
-          },
-          { onConflict: "event_id, account_id" }
-        )
-        .select()
+            ...(name ? { name } : {}),
+          };
+        }),
+      })
     );
   }
 
@@ -257,9 +235,7 @@ export class CalendarStore {
       }
     }
     try {
-      // Link to existing series
       await this.linkSeries();
-
       await this.saveProgress();
       if (successCount > 0 || errorCount === 0) {
         await this.supabase

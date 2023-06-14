@@ -123,7 +123,7 @@ export interface Database {
           is_offsite: boolean
           is_online: boolean
           is_onsite: boolean
-          series: string | null
+          series: string
           title: string | null
         }
         Insert: {
@@ -136,7 +136,7 @@ export interface Database {
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
-          series?: string | null
+          series: string
           title?: string | null
         }
         Update: {
@@ -149,7 +149,7 @@ export interface Database {
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
-          series?: string | null
+          series?: string
           title?: string | null
         }
       }
@@ -327,6 +327,13 @@ export interface Database {
         }
         Returns: Database["public"]["Enums"]["provider"]
       }
+      update_attendees: {
+        Args: {
+          event_id: number
+          attendees: Database["public"]["CompositeTypes"]["raw_attendee"][]
+        }
+        Returns: undefined
+      }
       update_credentials: {
         Args: {
           account_id: number
@@ -340,7 +347,12 @@ export interface Database {
       provider: "google" | "azure"
     }
     CompositeTypes: {
-      [_ in never]: never
+      raw_attendee: {
+        email: string
+        name: string
+        response: Database["public"]["Enums"]["attendance"]
+        is_organizer: boolean
+      }
     }
   }
   storage: {

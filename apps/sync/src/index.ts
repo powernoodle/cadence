@@ -27,35 +27,26 @@ export interface Env {
 let Sentry: Toucan;
 
 export default {
-  async fetch(
-    request: Request,
-    env: Env,
-    context: ExecutionContext
-  ): Promise<Response> {
-    Sentry = new Toucan({
-      dsn: env.SENTRY_DSN,
-      environment: env.ENV,
-      context,
-      request,
-    });
-
+  async fetch(request: Request, env: Env): Promise<Response> {
     try {
-      if (env.ENV !== "development") {
-        return new Response("Denied");
-      }
+      // if (env.ENV !== "development") {
+      //   return new Response("Denied");
+      // }
       if (request.method !== "POST") return new Response("Ignored");
       const body = await request.json();
       const accountId = (body as any)?.accountId;
       if (typeof accountId !== "number") {
         return new Response("Missing accountId");
       }
-      Sentry.setUser({ id: accountId.toString() });
-
-      await process(env, body as SyncRequest);
+      const sync = (body as any)?.sync;
+      if (sync) {
+        await process(env, body as SyncRequest);
+      } else {
+        await env.QUEUE.send({ accountId });
+      }
       return new Response("Success");
     } catch (e) {
       console.error(e);
-      Sentry.captureException(e);
 
       let error: object = { message: "Unknown error" };
       if (e instanceof Error) {
@@ -80,25 +71,38 @@ export default {
 
   // Invoked when the Worker receives a batch of messages.
   async queue(batch: MessageBatch<SyncRequest>, env: Env) {
-    await Promise.all(
-      batch.messages.map(async (msg) => {
-        try {
-          if (typeof msg.body.accountId === "number") {
-            console.log(`Sync starting (${msg.body.accountId})`);
-            await process(env, msg.body);
-            console.log(`Sync complete (${msg.body.accountId})`);
-          } else {
-            console.error("No accountId");
-            console.log(msg.body);
+    Sentry = new Toucan({
+      dsn: env.SENTRY_DSN,
+      environment: env.ENV,
+    });
+    try {
+      await Promise.all(
+        batch.messages.map(async (msg) => {
+          try {
+            if (typeof msg.body.accountId === "number") {
+              console.log(`Sync starting (${msg.body.accountId})`);
+              Sentry?.setUser({ id: msg.body.accountId.toString() });
+              await process(env, msg.body);
+              console.log(`Sync complete (${msg.body.accountId})`);
+            } else {
+              console.error("No accountId");
+              console.log(msg.body);
+              throw new Error("No accountId");
+            }
+            msg.ack();
+          } catch (e) {
+            console.error(`Sync failed (${msg.body.accountId})`);
+            console.error(e);
+            Sentry?.captureException(e);
+            msg.ack();
           }
-          msg.ack();
-        } catch (e) {
-          console.error(`Sync failed (${msg.body.accountId})`);
-          console.error(e);
-          msg.retry();
-        }
-      })
-    );
+        })
+      );
+    } catch (e) {
+      console.error(e);
+      Sentry?.captureException(e);
+      batch.retryAll();
+    }
   },
 };
 
@@ -119,7 +123,7 @@ async function process(env: Env, request: SyncRequest) {
     "primary",
     (e) => {
       console.error(e);
-      Sentry.withScope((scope) => {
+      Sentry?.withScope((scope) => {
         if (e instanceof EventError) {
           scope.setExtra("event", e.event);
         }

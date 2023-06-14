@@ -180,7 +180,7 @@ export class CalendarStore {
   private async saveAttendees(eventId: number, attendees: Attendance[]) {
     safeQuery(
       await this.supabase.rpc("update_attendees", {
-        event_id: eventId,
+        this_event_id: eventId,
         // @ts-ignore
         attendees: attendees.map((attendee) => {
           let name = attendee.name;
@@ -193,7 +193,7 @@ export class CalendarStore {
           return {
             email: attendee.email,
             response: attendee.response,
-            is_organizer: attendee.isOrganizer,
+            is_organizer: !!attendee.isOrganizer,
             ...(name ? { name } : {}),
           };
         }),

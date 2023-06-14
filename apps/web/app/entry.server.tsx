@@ -1,5 +1,5 @@
 import { renderToString } from "react-dom/server";
-import { RemixServer } from "@remix-run/react";
+import { RemixServer, isRouteErrorResponse } from "@remix-run/react";
 import type { EntryContext, DataFunctionArgs } from "@remix-run/cloudflare";
 import { injectStyles } from "@mantine/remix";
 import { defaultMantineEmotionCache } from "@mantine/styles";
@@ -38,6 +38,8 @@ export function handleError(
   if (error instanceof Error) {
     Sentry().captureException(error);
     console.error(error);
+  } else if (isRouteErrorResponse(error)) {
+    console.error(`${error.status} ${error.statusText}`);
   } else {
     let unknownError = new Error("Unknown Server Error");
     Sentry().captureException(unknownError);

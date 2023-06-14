@@ -17,6 +17,7 @@
   },
   "devDependencies": {
     "@types/pg": "^8.10.2",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "knex": "^2.4.2"
   }
 }

@@ -1,5 +1,5 @@
-compatibility_date = "2023-04-19"
+compatibility_date = "2023-05-12"
 
-[[queues.producers]]
+[[env.production.queues.producers]]
  queue = "sync-queue"
  binding = "SYNC_QUEUE"

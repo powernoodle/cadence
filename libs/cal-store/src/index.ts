@@ -1,4 +1,5 @@
 import { Client } from "pg";
+import { format as pgFormat } from "@scaleleap/pg-format";
 
 import type { Attendance } from "@divvy/cal";
 import { EventError } from "@divvy/cal";
@@ -177,41 +178,113 @@ export class CalendarStore {
     ]);
   }
 
+  private formatName(name: string | null | undefined) {
+    if (!name) return null;
+    // Remove email address from name
+    name = name.replace(/<?[^ ]+@[^ ]+>?/, "").trim();
+    // Re-order Last, First to First Last
+    name = name.replace(/^([^, ]+),\s*(.+)/, "$2 $1");
+    return name;
+  }
+
+  private accountIds: { [email: string]: number } = {};
+  private newNames: { [id: number]: string } = {};
+  private missingNames: { [id: number]: boolean } = {};
   private async saveAttendees(eventId: number, attendees: Attendance[]) {
+    // populate cache with missing IDs
+    const missingAccounts: [string, string | null][] = [];
     for (const attendee of attendees) {
-      let name = attendee.name;
-      if (name) {
-        // Remove email address from name
-        name = name.replace(/<?[^ ]+@[^ ]+>?/, "").trim();
-        // Re-order Last, First to First Last
-        name = name.replace(/^([^, ]+),\s*(.+)/, "$2 $1");
+      if (attendee.email in this.accountIds) {
+        const id = this.accountIds[attendee.email];
+        if (this.missingNames[id]) {
+          const name = this.formatName(attendee.name);
+          if (name) {
+            this.newNames[this.accountIds[attendee.email]] = name;
+            delete this.missingNames[id];
+          }
+        }
+      } else {
+        const name = this.formatName(attendee.name);
+        missingAccounts.push([attendee.email, name]);
       }
-      const dbAttendee = {
-        email: attendee.email,
-        response: attendee.response || null,
-        is_organizer: !!attendee.isOrganizer,
-        name: name || null,
-      };
-      const data = await this.query(
-        `
-        INSERT INTO account (email, name)
-        VALUES ($1, $2)
-        ON CONFLICT (email) DO
-            UPDATE SET name = COALESCE(account.name, excluded.name)
-        RETURNING id
-      `,
-        [dbAttendee.email, dbAttendee.name]
-      );
-      await this.query(
-        `
-       INSERT INTO attendee (event_id, account_id, response, is_organizer)
-        VALUES ($1, $2, $3, $4)
-        ON CONFLICT (event_id, account_id) DO
-            UPDATE SET response = excluded.response, is_organizer = excluded.is_organizer
-      `,
-        [eventId, data[0].id, dbAttendee.response, dbAttendee.is_organizer]
-      );
     }
+
+    if (missingAccounts.length) {
+      const data = await this.query(
+        pgFormat(
+          `
+            WITH input_rows(email, name) AS (
+              VALUES %L
+            ),
+            ins AS (
+              INSERT INTO account (email, name)
+              SELECT * FROM input_rows
+              ON CONFLICT (email) DO NOTHING
+              RETURNING id, email, name
+            )
+            SELECT 'i' AS source                           -- 'i' for 'inserted'
+                , id, email, name
+            FROM   ins
+            UNION  ALL
+            SELECT 's' AS source                           -- 's' for 'selected'
+                , a.id, a.email, a.name
+            FROM   input_rows
+            JOIN   account a USING (email);           -- columns of unique index
+          `,
+          missingAccounts
+        )
+      );
+      for (const account of data) {
+        this.accountIds[account.email] = account.id;
+        if (!account.name) {
+          const name = missingAccounts.find((a) => account.email === a[0])?.[1];
+          if (name) {
+            this.newNames[account.id] = name;
+          } else {
+            this.missingNames[account.id] = true;
+          }
+        }
+      }
+    }
+
+    // bulk write attendees
+    const dbAttendees = attendees.map((attendee) => {
+      return [
+        eventId,
+        this.accountIds[attendee.email],
+        attendee.response || null,
+        !!attendee.isOrganizer,
+      ];
+    });
+    await this.query(
+      pgFormat(
+        `
+          INSERT INTO attendee (event_id, account_id, response, is_organizer)
+          VALUES %L
+          ON CONFLICT (event_id, account_id) DO
+              UPDATE SET response = excluded.response, is_organizer = excluded.is_organizer
+        `,
+        dbAttendees
+      )
+    );
+  }
+
+  private async saveNames() {
+    //    INSERT INTO attendee (event_id, account_id, response, is_organizer)
+    //     VALUES ($1, $2, $3, $4)
+    //     ON CONFLICT (event_id, account_id) DO
+    //         UPDATE SET response = excluded.response, is_organizer = excluded.is_organizer
+    //   `,
+    //     [eventId, data[0].id, dbAttendee.response, dbAttendee.is_organizer]
+    //   );
+    // for (const attendee of attendees) {
+    //   const dbAttendee = {
+    //     email: attendee.email,
+    //     response: attendee.response || null,
+    //     is_organizer: !!attendee.isOrganizer,
+    //     name: name || null,
+    //   };
+    // }
   }
 
   public async syncEvents(
@@ -251,6 +324,7 @@ export class CalendarStore {
     }
     try {
       await this.linkSeries();
+      await this.saveNames();
       await this.saveProgress();
       if (successCount > 0 || errorCount === 0) {
         await this.query("UPDATE account SET synced_at = $1 WHERE id = $2", [

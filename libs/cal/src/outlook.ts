@@ -138,10 +138,14 @@ export class OutlookClient extends CalendarClient {
       throw new Error("Missing end");
     }
 
-    const attendance = [
-      ...(outlookEvent.attendees?.reduce?.((ret, attendee) => {
+    const organizerEmail =
+      outlookEvent.organizer?.emailAddress?.address?.toLowerCase();
+    let organizerFound = false;
+    const attendance =
+      outlookEvent.attendees?.reduce?.((ret, attendee) => {
         const email = attendee.emailAddress?.address?.toLowerCase();
         if (!email) return ret;
+        if (email === organizerEmail) organizerFound = true;
         const response = this.transformResponse(attendee.status?.response);
         return [
           ...ret,
@@ -152,21 +156,16 @@ export class OutlookClient extends CalendarClient {
             isSelf: email === ownerEmail,
           } as Attendance,
         ];
-      }, [] as Attendance[]) || []),
-      ...(outlookEvent.organizer?.emailAddress?.address
-        ? [
-            {
-              email: outlookEvent.organizer.emailAddress.address.toLowerCase(),
-              name: outlookEvent.organizer.emailAddress.name || undefined,
-              response: "accepted" as Response,
-              isOrganizer: true,
-              isSelf:
-                outlookEvent.organizer.emailAddress.address.toLowerCase() ===
-                ownerEmail,
-            },
-          ]
-        : []),
-    ];
+      }, [] as Attendance[]) || [];
+    if (!organizerFound && organizerEmail) {
+      attendance.push({
+        email: organizerEmail,
+        name: outlookEvent.organizer?.emailAddress?.name || undefined,
+        response: "accepted" as Response,
+        isOrganizer: true,
+        isSelf: organizerEmail === ownerEmail,
+      });
+    }
     const event = new Event({
       id: outlookEvent.id as string,
       series: outlookEvent.seriesMasterId || undefined,

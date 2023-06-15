@@ -1,10 +1,16 @@
+import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { useLoaderData } from "@remix-run/react";
+import {
+  useLoaderData,
+  useOutletContext,
+  useRevalidator,
+} from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import { Title, Table } from "@mantine/core";
 import { ClientOnly } from "remix-utils";
 
+import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery } from "../util";
 import formatDate from "date-fns/format";
 
@@ -32,6 +38,27 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
 export default function Index() {
   const { accounts, eventCounts } = useLoaderData<typeof loader>();
+  const { supabase } = useOutletContext<SupabaseOutletContext>();
+  const { revalidate } = useRevalidator();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("table-db-changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "account",
+        },
+        (_) => revalidate()
+      )
+      .subscribe();
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [supabase, revalidate]);
+
   return (
     <>
       <Title>Admin</Title>

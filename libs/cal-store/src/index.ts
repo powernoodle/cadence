@@ -320,7 +320,15 @@ export class CalendarStore {
     }
     try {
       await this.linkSeries();
+    } catch (e) {
+      errorLogger?.(e);
+    }
+    try {
       await this.saveNames();
+    } catch (e) {
+      errorLogger?.(e);
+    }
+    try {
       await this.saveProgress();
       if (successCount > 0 || errorCount === 0) {
         await this.query("UPDATE account SET synced_at = $1 WHERE id = $2", [

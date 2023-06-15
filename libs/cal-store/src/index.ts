@@ -235,7 +235,7 @@ export class CalendarStore {
         )
       );
       for (const account of data) {
-        this.accountIds[account.email] = account.id;
+        this.accountIds[account.email] = parseInt(account.id);
         if (!account.name) {
           const name = missingAccounts.find((a) => account.email === a[0])?.[1];
           if (name) {
@@ -289,10 +289,16 @@ export class CalendarStore {
     calendar = "primary",
     errorLogger?: (error: any) => void
   ) {
-    let now = new Date();
-
     let successCount = 0;
     let errorCount = 0;
+    try {
+      await this.query(
+        "UPDATE account SET sync_started_at = $1 WHERE id = $2",
+        [new Date(), this.accountId]
+      );
+    } catch (e) {
+      console.error(e);
+    }
     if (!this.calendar) throw Error("Calendar not initialized");
     for await (const { rawEvent, progress } of this.calendar.getEvents(
       calendar,
@@ -332,7 +338,7 @@ export class CalendarStore {
       await this.saveProgress();
       if (successCount > 0 || errorCount === 0) {
         await this.query("UPDATE account SET synced_at = $1 WHERE id = $2", [
-          now,
+          new Date(),
           this.accountId,
         ]);
       }

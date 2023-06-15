@@ -43,7 +43,9 @@ export interface Database {
           name: string | null
           organization_id: number | null
           provider: Database["public"]["Enums"]["provider"] | null
+          sync_error: string | null
           sync_progress: number | null
+          sync_started_at: string | null
           synced_at: string | null
           user_id: string | null
         }
@@ -55,7 +57,9 @@ export interface Database {
           name?: string | null
           organization_id?: number | null
           provider?: Database["public"]["Enums"]["provider"] | null
+          sync_error?: string | null
           sync_progress?: number | null
+          sync_started_at?: string | null
           synced_at?: string | null
           user_id?: string | null
         }
@@ -67,7 +71,9 @@ export interface Database {
           name?: string | null
           organization_id?: number | null
           provider?: Database["public"]["Enums"]["provider"] | null
+          sync_error?: string | null
           sync_progress?: number | null
+          sync_started_at?: string | null
           synced_at?: string | null
           user_id?: string | null
         }
@@ -326,13 +332,6 @@ export interface Database {
           p_text_value: string
         }
         Returns: Database["public"]["Enums"]["provider"]
-      }
-      update_attendees: {
-        Args: {
-          event_id: number
-          attendees: Database["public"]["CompositeTypes"]["raw_attendee"][]
-        }
-        Returns: undefined
       }
       update_credentials: {
         Args: {

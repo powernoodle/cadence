@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "main": "build/index.js",
   "scripts": {
-    "build": "wrangler deploy --env production --dry-run --outdir build",
+    "build": "wrangler deploy --env production --dry-run --outdir build --node-compat true",
     "dev": "wrangler dev --local --env development",
-    "deploy": "pnpm build && pnpm source-map && wrangler deploy --no-bundle build/index.js",
-    "tail-logs": "wrangler tail sync",
+    "deploy": "pnpm build && pnpm source-map && wrangler deploy --env production --no-bundle --node-compat false build/index.js",
+    "tail-logs": "wrangler tail sync-production",
     "source-map": "sentry-cli sourcemaps inject build && sentry-cli sourcemaps upload build"
   },
   "dependencies": {

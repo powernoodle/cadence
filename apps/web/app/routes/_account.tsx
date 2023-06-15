@@ -120,6 +120,8 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       .from("account")
       .select("id, name, email")
       .not("user_id", "is", null)
+      .order("name")
+      .order("email")
   );
 
   const isAdmin = safeQuery(await supabase.rpc("is_admin"));

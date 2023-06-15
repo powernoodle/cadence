@@ -13,6 +13,7 @@ import { ClientOnly } from "remix-utils";
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery } from "../util";
 import formatDate from "date-fns/format";
+import differenceInSeconds from "date-fns/differenceInSeconds";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -20,8 +21,12 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const accounts = safeQuery(
     await supabase
       .from("account")
-      .select("id, name, email, synced_at, sync_progress")
+      .select(
+        "id, name, email, synced_at, sync_progress, sync_started_at, synced_at"
+      )
       .not("user_id", "is", null)
+      .order("name")
+      .order("email")
   );
 
   const eventCountResult = safeQuery(
@@ -67,6 +72,7 @@ export default function Index() {
           <tr>
             <th>Account</th>
             <th>Status</th>
+            <th>Sync Time</th>
             <th>Events</th>
           </tr>
         </thead>
@@ -94,6 +100,16 @@ export default function Index() {
                     </>
                   )}
                 </ClientOnly>
+              </td>
+              <td>
+                {account.sync_started_at !== null
+                  ? differenceInSeconds(
+                      new Date(account.sync_started_at),
+                      account.synced_at
+                        ? new Date(account.synced_at)
+                        : new Date()
+                    ) + "s"
+                  : ""}
               </td>
               <td>{eventCounts?.[account.id]}</td>
             </tr>

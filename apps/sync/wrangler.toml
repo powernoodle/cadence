@@ -4,24 +4,35 @@ compatibility_date = "2023-05-12"
 node_compat = true
 logpush = true
 
+[env.production]
+  vars = { ENV = "production" }
+
 # Worker defines a binding, named "QUEUE", which gives it a capability
 # to send messages to a Queue, named "my-queue".
-[[queues.producers]]
+[[env.production.queues.producers]]
   queue = "sync-queue"
   binding = "QUEUE"
 
 # Worker also receives messages from the Queue, named "my-queue".
-[[queues.consumers]]
+[[env.production.queues.consumers]]
   queue = "sync-queue"
   max_batch_size = 1    # Max messages per batch
   max_batch_timeout = 1 # Max seconds to wait before batch is full
   max_retries = 3       # Max retries per batch
 
-[env.production]
-  vars = { ENV = "production" }
-
 [env.development]
   vars = { ENV = "development" }
-#
-# [placement]
-#   mode = "smart"
+
+[[env.development.queues.producers]]
+  queue = "sync-queue"
+  binding = "QUEUE"
+
+# Worker also receives messages from the Queue, named "my-queue".
+[[env.development.queues.consumers]]
+  queue = "sync-queue"
+  max_batch_size = 1    # Max messages per batch
+  max_batch_timeout = 1 # Max seconds to wait before batch is full
+  max_retries = 3       # Max retries per batch
+
+[placement]
+  mode = "smart"

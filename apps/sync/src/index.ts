@@ -106,6 +106,16 @@ export default {
 };
 
 async function process(env: Env, request: SyncRequest) {
+  const missing = [
+    "DB_URL",
+    "GOOGLE_CLIENT_ID",
+    "GOOGLE_OAUTH_SECRET",
+    "MICROSOFT_CLIENT_ID",
+    "MICROSOFT_OAUTH_SECRET",
+  ].filter((e) => !(e in env));
+  if (missing.length) {
+    throw new Error("Missing env vars: " + missing.join(", "));
+  }
   const store = await CalendarStore.Create(
     env.DB_URL,
     env.GOOGLE_CLIENT_ID,

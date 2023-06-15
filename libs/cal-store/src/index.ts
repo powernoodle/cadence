@@ -188,7 +188,7 @@ export class CalendarStore {
   }
 
   private accountIds: { [email: string]: number } = {};
-  private newNames: { [id: number]: string } = {};
+  private newNames: [number, string][] = [];
   private missingNames: { [id: number]: boolean } = {};
   private async saveAttendees(eventId: number, attendees: Attendance[]) {
     // populate cache with missing IDs
@@ -199,7 +199,7 @@ export class CalendarStore {
         if (this.missingNames[id]) {
           const name = this.formatName(attendee.name);
           if (name) {
-            this.newNames[this.accountIds[attendee.email]] = name;
+            this.newNames.push([this.accountIds[attendee.email], name]);
             delete this.missingNames[id];
           }
         }
@@ -239,7 +239,7 @@ export class CalendarStore {
         if (!account.name) {
           const name = missingAccounts.find((a) => account.email === a[0])?.[1];
           if (name) {
-            this.newNames[account.id] = name;
+            this.newNames.push([parseInt(account.id), name]);
           } else {
             this.missingNames[account.id] = true;
           }
@@ -270,21 +270,17 @@ export class CalendarStore {
   }
 
   private async saveNames() {
-    //    INSERT INTO attendee (event_id, account_id, response, is_organizer)
-    //     VALUES ($1, $2, $3, $4)
-    //     ON CONFLICT (event_id, account_id) DO
-    //         UPDATE SET response = excluded.response, is_organizer = excluded.is_organizer
-    //   `,
-    //     [eventId, data[0].id, dbAttendee.response, dbAttendee.is_organizer]
-    //   );
-    // for (const attendee of attendees) {
-    //   const dbAttendee = {
-    //     email: attendee.email,
-    //     response: attendee.response || null,
-    //     is_organizer: !!attendee.isOrganizer,
-    //     name: name || null,
-    //   };
-    // }
+    if (this.newNames.length === 0) return;
+    const query = pgFormat(
+      `
+          UPDATE account AS a
+          SET name = n.name
+          FROM ( VALUES %L ) AS n(id, name)
+          WHERE a.id = n.id
+        `,
+      this.newNames
+    );
+    await this.query(query);
   }
 
   public async syncEvents(

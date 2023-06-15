@@ -4,7 +4,9 @@
   "license": "UNLICENSED",
   "sideEffects": false,
   "scripts": {
-    "build": "remix build",
+    "build": "remix build --sourcemap && pnpm upload-source-map && pnpm delete-source-map",
+    "upload-source-map": "sentry-cli sourcemaps inject public/build && sentry-cli sourcemaps upload public/build",
+    "delete-source-map": "find ./public/build -type f -name \"*.map\" -delete",
     "dev:remix": "remix watch",
     "dev:wrangler": "wrangler pages dev --env $WORKER_ENV --compatibility-date 2023-05-12 --local ./public",
     "dev": "WORKER_ENV=development npm-run-all --parallel \"dev:*\"",

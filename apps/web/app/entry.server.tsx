@@ -35,11 +35,11 @@ export function handleError(
   error: unknown,
   { request, params, context }: DataFunctionArgs
 ): void {
-  if (error instanceof Error) {
+  if (isRouteErrorResponse(error)) {
+    console.error(`${error.status} ${error.statusText}`);
+  } else if (error instanceof Error) {
     Sentry().captureException(error);
     console.error(error);
-  } else if (isRouteErrorResponse(error)) {
-    console.error(`${error.status} ${error.statusText}`);
   } else {
     let unknownError = new Error("Unknown Server Error");
     Sentry().captureException(unknownError);

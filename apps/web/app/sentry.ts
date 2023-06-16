@@ -4,23 +4,27 @@ import { useEffect } from "react";
 
 import { Toucan } from "toucan-js";
 
+import { VERSION } from "./version";
+
 export const SENTRY_DSN: string | undefined =
   "https://5d95ce1a49ab4eb1956c0d5a15f55960@o4505134083997696.ingest.sentry.io/4505134085832704";
 
 // Only defined on the server after calling ServerInit()
 let ServerSentry: any;
 
-export const SentrySeverInit = () => {
+export const SentrySeverInit = (release?: string) => {
   ServerSentry = new Toucan({
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV,
+    release: VERSION,
   });
 };
 
-export const SentryClientInit = () => {
+export const SentryClientInit = (release?: string) => {
   ClientSentry.init({
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV,
+    release: VERSION,
     integrations: [
       new ClientSentry.BrowserTracing({
         // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled

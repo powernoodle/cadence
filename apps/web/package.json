@@ -4,8 +4,9 @@
   "license": "UNLICENSED",
   "sideEffects": false,
   "scripts": {
-    "build": "remix build --sourcemap && pnpm upload-source-map && pnpm delete-source-map",
-    "upload-source-map": "sentry-cli sourcemaps inject public/build && sentry-cli sourcemaps upload public/build",
+    "version": "echo export const VERSION = \\\"$CF_PAGES_COMMIT_SHA\\\" > app/version.ts",
+    "build": "remix build --sourcemap && pnpm upload-source-map && pnpm delete-source-map && echo export const VERSION = '$CF_PAGES_COMMIT_SHA' > app/version.ts",
+    "upload-source-map": "SENTRY_RELEASE=$CF_PAGES_COMMIT_SHA sentry-cli sourcemaps inject public/build && sentry-cli sourcemaps upload public/build",
     "delete-source-map": "find ./public/build -type f -name \"*.map\" -delete",
     "dev:remix": "remix watch",
     "dev:wrangler": "wrangler pages dev --env $WORKER_ENV --compatibility-date 2023-05-12 --local ./public",

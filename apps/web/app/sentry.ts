@@ -24,6 +24,7 @@ export const SentrySeverInit = () => {
       new RewriteFrames({
         iteratee: (frame) => {
           frame.abs_path = "https://divvy.day/[[path]].js";
+          frame.filename = "[[path]].js";
           return frame;
         },
       }),

@@ -26,6 +26,7 @@ export const SentrySeverInit = () => {
           return {
             ...frame,
             abs_path: "[[path]].js",
+            filename: "[[path]].js",
           };
         },
       }),

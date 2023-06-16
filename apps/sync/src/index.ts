@@ -13,6 +13,7 @@ export type SyncRequest = {
 export interface Env {
   readonly ENV?: string;
 
+  readonly RELEASE?: string;
   readonly DB_URL: string;
   readonly SENTRY_DSN: string;
   readonly GOOGLE_CLIENT_ID: string;
@@ -73,6 +74,8 @@ export default {
     Sentry = new Toucan({
       dsn: env.SENTRY_DSN,
       environment: env.ENV,
+      release: env.RELEASE,
+      dist: "sync",
     });
     try {
       await Promise.all(

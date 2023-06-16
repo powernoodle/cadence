@@ -6,6 +6,7 @@ import {
   useOutletContext,
   useRevalidator,
   Form,
+  Link,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import { Title, Table, Button } from "@mantine/core";
@@ -94,7 +95,9 @@ export default function Index() {
             {accounts?.map((account) => (
               <tr key={account.id.toString()}>
                 <td>
-                  {account.name} ({account.email})
+                  <Link to={`/meetings?account=${account.id}`}>
+                    {account.name} ({account.email})
+                  </Link>
                 </td>
                 <td>
                   <ClientOnly>

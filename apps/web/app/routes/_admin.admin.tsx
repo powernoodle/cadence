@@ -22,7 +22,7 @@ export async function action({ context, request }: ActionArgs) {
   const accountId = body.get("resync");
   if (accountId) {
     // @ts-ignore
-    await context.SYNC_QUEUE.send({ accountId });
+    await context.SYNC_QUEUE.send({ accountId: parseInt(accountId) });
   }
   return json("OK");
 }

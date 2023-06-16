@@ -26,6 +26,7 @@ export const SentrySeverInit = () => {
           if (!frame.filename) return frame;
           frame.abs_path = "https://divvy.day/index.js";
           frame.filename = "index.js";
+          if (frame.lineno) frame.lineno -= 1;
           return frame;
         },
       }),

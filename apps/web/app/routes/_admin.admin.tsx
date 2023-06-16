@@ -58,6 +58,7 @@ export default function Index() {
   const { accounts, eventCounts } = useLoaderData<typeof loader>();
   const { supabase } = useOutletContext<SupabaseOutletContext>();
   const { revalidate } = useRevalidator();
+  const now = new Date();
 
   useEffect(() => {
     const channel = supabase
@@ -101,32 +102,34 @@ export default function Index() {
                 </td>
                 <td>
                   <ClientOnly>
-                    {() => (
-                      <>
-                        {account.sync_progress !== null
-                          ? "Syncing " +
-                            Math.round(account.sync_progress * 100) +
-                            "%"
-                          : account.synced_at
-                          ? "Synced at " +
-                            formatDate(
-                              new Date(account.synced_at),
-                              "yyyy-MM-dd h:mm aaa"
-                            )
-                          : ""}
-                      </>
-                    )}
+                    {() =>
+                      account.sync_progress !== null
+                        ? "Syncing " +
+                          Math.round(account.sync_progress * 100) +
+                          "%"
+                        : account.synced_at
+                        ? "Synced at " +
+                          formatDate(
+                            new Date(account.synced_at),
+                            "yyyy-MM-dd h:mm aaa"
+                          )
+                        : ""
+                    }
                   </ClientOnly>
                 </td>
                 <td>
-                  {account.sync_started_at !== null
-                    ? differenceInSeconds(
-                        account.synced_at
-                          ? new Date(account.synced_at)
-                          : new Date(),
-                        new Date(account.sync_started_at)
-                      ) + "s"
-                    : ""}
+                  <ClientOnly>
+                    {() =>
+                      account.sync_started_at !== null
+                        ? differenceInSeconds(
+                            account.synced_at
+                              ? new Date(account.synced_at)
+                              : now,
+                            new Date(account.sync_started_at)
+                          ) + "s"
+                        : ""
+                    }
+                  </ClientOnly>
                 </td>
                 <td>{eventCounts?.[account.id]}</td>
                 <td>

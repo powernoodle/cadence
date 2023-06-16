@@ -13,7 +13,7 @@ export const SENTRY_DSN: string | undefined =
 // Only defined on the server after calling ServerInit()
 let ServerSentry: any;
 
-export const SentrySeverInit = (release?: string) => {
+export const SentrySeverInit = () => {
   ServerSentry = new Toucan({
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV,
@@ -22,16 +22,19 @@ export const SentrySeverInit = (release?: string) => {
     integrations: [
       // @ts-ignore
       new RewriteFrames({
-        iteratee: (frame) => ({
-          ...frame,
-          abs_path: "/[[path]].js",
-        }),
+        iteratee: (frame) => {
+          console.log(JSON.stringify(frame));
+          return {
+            ...frame,
+            abs_path: "/[[path]].js",
+          };
+        },
       }),
     ],
   });
 };
 
-export const SentryClientInit = (release?: string) => {
+export const SentryClientInit = () => {
   ClientSentry.init({
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV,

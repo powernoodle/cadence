@@ -23,10 +23,8 @@ export const SentrySeverInit = () => {
       // @ts-ignore
       new RewriteFrames({
         iteratee: (frame) => {
-          return {
-            ...frame,
-            abs_path: "[[path]].js",
-          };
+          frame.abs_path = "[[path]].js";
+          return frame;
         },
       }),
     ],

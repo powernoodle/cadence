@@ -145,7 +145,8 @@ export class OutlookClient extends CalendarClient {
       outlookEvent.attendees?.reduce?.((ret, attendee) => {
         const email = attendee.emailAddress?.address?.toLowerCase();
         if (!email) return ret;
-        if (email === organizerEmail) organizerFound = true;
+        const isOrganizer = email === organizerEmail;
+        if (isOrganizer) organizerFound = true;
         const response = this.transformResponse(attendee.status?.response);
         return [
           ...ret,
@@ -154,6 +155,7 @@ export class OutlookClient extends CalendarClient {
             name: attendee.emailAddress?.name,
             response,
             isSelf: email === ownerEmail,
+            isOrganizer,
           } as Attendance,
         ];
       }, [] as Attendance[]) || [];

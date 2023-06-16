@@ -4,8 +4,8 @@
   "license": "UNLICENSED",
   "sideEffects": false,
   "scripts": {
-    "version": "echo export const VERSION = \\\"$CF_PAGES_COMMIT_SHA\\\" > app/version.ts",
-    "build": "remix build --sourcemap && pnpm upload-source-map && pnpm delete-source-map && echo export const VERSION = '$CF_PAGES_COMMIT_SHA' > app/version.ts",
+    "set-version": "echo export const VERSION = \\\"$CF_PAGES_COMMIT_SHA\\\" > app/version.ts",
+    "build": "pnpm set-version && remix build --sourcemap && pnpm upload-source-map && pnpm delete-source-map",
     "upload-source-map": "SENTRY_RELEASE=$CF_PAGES_COMMIT_SHA sentry-cli sourcemaps inject public/build && sentry-cli sourcemaps upload public/build",
     "delete-source-map": "find ./public/build -type f -name \"*.map\" -delete",
     "dev:remix": "remix watch",

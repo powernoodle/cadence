@@ -5,9 +5,10 @@
   "sideEffects": false,
   "scripts": {
     "set-version": "echo export const VERSION = \\\"$CF_PAGES_COMMIT_SHA\\\" > app/version.ts",
-    "build": "pnpm set-version && remix build --sourcemap && pnpm upload-source-map && pnpm delete-source-map",
-    "upload-source-map": "sentry-cli sourcemaps inject public/build && SENTRY_RELEASE=$CF_PAGES_COMMIT_SHA sentry-cli sourcemaps upload public/build",
-    "delete-source-map": "find ./public/build -type f -name \"*.map\" -delete",
+    "build": "pnpm set-version && remix build --sourcemap && pnpm upload-source-map-server && pnpm upload-source-map-browser && pnpm delete-source-map",
+    "upload-source-map-server": "sentry-cli sourcemaps inject functions && sentry-cli sourcemaps upload --release=$CF_PAGES_COMMIT_SHA --dist=server functions",
+    "upload-source-map-browser": "sentry-cli sourcemaps inject public/build && sentry-cli sourcemaps upload --release=$CF_PAGES_COMMIT_SHA --dist=browser public/build",
+    "delete-source-map": "find ./functions ./public/build -type f -name \"*.map\" -delete",
     "dev:remix": "remix watch",
     "dev:wrangler": "wrangler pages dev --env $WORKER_ENV --compatibility-date 2023-05-12 --local ./public",
     "dev": "WORKER_ENV=development npm-run-all --parallel \"dev:*\"",

@@ -17,6 +17,7 @@ export const SentrySeverInit = (release?: string) => {
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV,
     release: VERSION,
+    dist: "server",
   });
 };
 
@@ -25,6 +26,7 @@ export const SentryClientInit = (release?: string) => {
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV,
     release: VERSION,
+    dist: "browser",
     integrations: [
       new ClientSentry.BrowserTracing({
         // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled

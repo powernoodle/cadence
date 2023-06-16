@@ -1,0 +1,13 @@
+diff --git a/dist/compiler/server/write.js b/dist/compiler/server/write.js
+index f7dc813f1618eca47e3e8304db596c352af1a519..70e252f6a873338c41a378f096414b53eb7b38ae 100644
+--- a/dist/compiler/server/write.js
++++ b/dist/compiler/server/write.js
+@@ -42,7 +42,7 @@ async function write(config, outputFiles) {
+     if (file.path.endsWith(".js") || file.path.endsWith(".mjs")) {
+       // fix sourceMappingURL to be relative to current path instead of /build
+       let filename = file.path.substring(file.path.lastIndexOf(path__namespace.sep) + 1);
+-      let escapedFilename = filename.replace(/\./g, "\\.");
++      let escapedFilename = filename.replace(/([.\[\]])/g, '\\$1');
+       let pattern = `(//# sourceMappingURL=)(.*)${escapedFilename}`;
+       let contents = Buffer.from(file.contents).toString("utf-8");
+       contents = contents.replace(new RegExp(pattern), `$1${filename}`);

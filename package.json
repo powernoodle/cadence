@@ -27,5 +27,10 @@
   "optionalDependencies": {
     "@miniflare/tre": "3.0.0-next.13",
     "miniflare": "^3.0.1"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "@remix-run/dev@1.17.0": "patches/@remix-run__dev@1.17.0.patch"
+    }
   }
 }

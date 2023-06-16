@@ -3,6 +3,7 @@ import { useLocation, useMatches } from "@remix-run/react";
 import { useEffect } from "react";
 
 import { Toucan } from "toucan-js";
+import { RewriteFrames } from "@sentry/integrations";
 
 import { VERSION } from "./version";
 
@@ -18,6 +19,15 @@ export const SentrySeverInit = (release?: string) => {
     environment: process.env.NODE_ENV,
     release: VERSION,
     dist: "server",
+    integrations: [
+      // @ts-ignore
+      new RewriteFrames({
+        iteratee: (frame) => ({
+          ...frame,
+          abs_path: "/[[path]].js",
+        }),
+      }),
+    ],
   });
 };
 

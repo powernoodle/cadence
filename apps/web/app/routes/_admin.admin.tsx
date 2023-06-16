@@ -122,7 +122,7 @@ export default function Index() {
                     {() =>
                       account.sync_started_at !== null
                         ? differenceInSeconds(
-                            account.synced_at
+                            account.synced_at && !account.sync_progress
                               ? new Date(account.synced_at)
                               : now,
                             new Date(account.sync_started_at)

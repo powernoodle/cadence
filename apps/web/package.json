@@ -6,7 +6,7 @@
   "scripts": {
     "set-version": "echo export const VERSION = \\\"$CF_PAGES_COMMIT_SHA\\\" > app/version.ts",
     "build": "pnpm set-version && remix build --sourcemap && pnpm upload-source-map-server && pnpm upload-source-map-browser && pnpm delete-source-map",
-    "upload-source-map-server": "sentry-cli sourcemaps inject functions && sentry-cli sourcemaps upload --release=$CF_PAGES_COMMIT_SHA --dist=server functions",
+    "upload-source-map-server": "wrangler pages functions build --outdir bundled-functions --sourcemap && sentry-cli sourcemaps inject bundled-functions && sentry-cli sourcemaps upload --release=$CF_PAGES_COMMIT_SHA --dist=server bundled-functions",
     "upload-source-map-browser": "sentry-cli sourcemaps inject public && sentry-cli sourcemaps upload --release=$CF_PAGES_COMMIT_SHA --dist=browser public",
     "delete-source-map": "find ./functions ./public/build -type f -name \"*.map\" -delete",
     "dev:remix": "remix watch",

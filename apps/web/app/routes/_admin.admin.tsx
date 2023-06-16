@@ -1,19 +1,31 @@
 import { useEffect } from "react";
-import type { LoaderArgs } from "@remix-run/cloudflare";
+import type { LoaderArgs, ActionArgs } from "@remix-run/cloudflare";
 
 import {
   useLoaderData,
   useOutletContext,
   useRevalidator,
+  Form,
 } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
-import { Title, Table } from "@mantine/core";
+import { Title, Table, Button } from "@mantine/core";
 import { ClientOnly } from "remix-utils";
+import { IconRefresh } from "@tabler/icons-react";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery } from "../util";
 import formatDate from "date-fns/format";
 import differenceInSeconds from "date-fns/differenceInSeconds";
+
+export async function action({ context, request }: ActionArgs) {
+  const body = await request.formData();
+  const accountId = body.get("resync");
+  if (accountId) {
+    // @ts-ignore
+    await context.SYNC_QUEUE.send({ accountId });
+  }
+  return json("OK");
+}
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -67,55 +79,69 @@ export default function Index() {
   return (
     <>
       <Title>Admin</Title>
-      <Table>
-        <thead>
-          <tr>
-            <th>Account</th>
-            <th>Status</th>
-            <th>Sync Time</th>
-            <th>Events</th>
-          </tr>
-        </thead>
-        <tbody>
-          {accounts?.map((account) => (
-            <tr key={account.id.toString()}>
-              <td>
-                {account.name} ({account.email})
-              </td>
-              <td>
-                <ClientOnly>
-                  {() => (
-                    <>
-                      {account.sync_progress !== null
-                        ? "Syncing " +
-                          Math.round(account.sync_progress * 100) +
-                          "%"
-                        : account.synced_at
-                        ? "Synced at " +
-                          formatDate(
-                            new Date(account.synced_at),
-                            "yyyy-MM-dd h:mm aaa"
-                          )
-                        : ""}
-                    </>
-                  )}
-                </ClientOnly>
-              </td>
-              <td>
-                {account.sync_started_at !== null
-                  ? differenceInSeconds(
-                      account.synced_at
-                        ? new Date(account.synced_at)
-                        : new Date(),
-                      new Date(account.sync_started_at)
-                    ) + "s"
-                  : ""}
-              </td>
-              <td>{eventCounts?.[account.id]}</td>
+      <Form method="post">
+        <Table>
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Status</th>
+              <th>Sync Time</th>
+              <th>Events</th>
+              <th>Resync</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
+          </thead>
+          <tbody>
+            {accounts?.map((account) => (
+              <tr key={account.id.toString()}>
+                <td>
+                  {account.name} ({account.email})
+                </td>
+                <td>
+                  <ClientOnly>
+                    {() => (
+                      <>
+                        {account.sync_progress !== null
+                          ? "Syncing " +
+                            Math.round(account.sync_progress * 100) +
+                            "%"
+                          : account.synced_at
+                          ? "Synced at " +
+                            formatDate(
+                              new Date(account.synced_at),
+                              "yyyy-MM-dd h:mm aaa"
+                            )
+                          : ""}
+                      </>
+                    )}
+                  </ClientOnly>
+                </td>
+                <td>
+                  {account.sync_started_at !== null
+                    ? differenceInSeconds(
+                        account.synced_at
+                          ? new Date(account.synced_at)
+                          : new Date(),
+                        new Date(account.sync_started_at)
+                      ) + "s"
+                    : ""}
+                </td>
+                <td>{eventCounts?.[account.id]}</td>
+                <td>
+                  <Button
+                    variant="outline"
+                    compact
+                    type="submit"
+                    name="resync"
+                    value={account.id}
+                  >
+                    <IconRefresh />
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Form>
     </>
   );
 }

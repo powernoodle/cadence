@@ -79,7 +79,9 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
 export function ErrorBoundary() {
   const error = useRouteError();
-  Sentry().captureException(error);
+  if (!isRouteErrorResponse(error)) {
+    Sentry().captureException(error);
+  }
   let message;
   if (isRouteErrorResponse(error)) {
     message = `${error.status} ${error.statusText}`;

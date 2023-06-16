@@ -104,10 +104,10 @@ export default function Index() {
               <td>
                 {account.sync_started_at !== null
                   ? differenceInSeconds(
-                      new Date(account.sync_started_at),
                       account.synced_at
                         ? new Date(account.synced_at)
-                        : new Date()
+                        : new Date(),
+                      new Date(account.sync_started_at)
                     ) + "s"
                   : ""}
               </td>

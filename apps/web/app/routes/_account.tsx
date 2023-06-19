@@ -135,8 +135,6 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     );
     syncedAt = data?.synced_at;
   }
-  console.log(request.url);
-  console.log(syncedAt);
   if (!syncedAt) {
     if (isAdmin && !url.pathname.startsWith("/admin")) {
       return redirect(`/admin`, {
@@ -317,16 +315,20 @@ function AppNavbar({ opened }: { opened: boolean }) {
           allowSingleDateInRange
         />
       </Navbar.Section>
-      {isAdmin && (
-        <Navbar.Section>
-          <NavLink
-            label="Admin"
-            component={Link}
-            to={`/admin`}
-            active={location.pathname === "/admin"}
-          />
-        </Navbar.Section>
-      )}
+      <Navbar.Section>
+        <NavLink
+          label="Admin"
+          component={Link}
+          to={`/admin`}
+          active={location.pathname === "/admin"}
+        />
+        <NavLink
+          label="Settings"
+          component={Link}
+          to={"/sync"}
+          active={location.pathname === "/sync"}
+        />
+      </Navbar.Section>
     </Navbar>
   );
 }

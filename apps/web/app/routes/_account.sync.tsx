@@ -9,6 +9,7 @@ import { LoaderArgs, json } from "@remix-run/cloudflare";
 import { SupabaseOutletContext } from "../root";
 import {
   Alert,
+  Button,
   Card,
   Container,
   Image,
@@ -24,6 +25,7 @@ import {
   MicrosoftLoginButton,
 } from "react-social-login-buttons";
 import { IconInfoCircle, IconAlertCircle } from "@tabler/icons-react";
+import formatDate from "date-fns/format";
 
 import googleImg from "../assets/google-warning.png";
 
@@ -34,18 +36,24 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
 
-  const syncProgress = safeQuery(
-    await supabase
-      .from("account")
-      .select("sync_progress")
-      .eq("id", accountId)
-      .single()
-  );
+  let syncedAt, syncProgress;
+  {
+    const data = safeQuery(
+      await supabase
+        .from("account")
+        .select("synced_at, sync_progress")
+        .eq("id", accountId)
+        .single()
+    );
+    syncedAt = data?.synced_at;
+    syncProgress = data?.sync_progress || null;
+  }
 
   return json(
     {
       accountId,
-      syncProgress: syncProgress?.sync_progress,
+      syncProgress,
+      syncedAt,
     },
     { headers: response.headers }
   );
@@ -67,9 +75,14 @@ export default function Login() {
     ]);
   };
 
-  const { accountId, syncProgress: syncProgressOrig } =
-    useLoaderData<typeof loader>();
-  const [syncProgress, setSyncProgress] = useState<number | null>(null);
+  const {
+    accountId,
+    syncProgress: syncProgressOrig,
+    syncedAt,
+  } = useLoaderData<typeof loader>();
+  const [syncProgress, setSyncProgress] = useState<number | null>(
+    syncProgressOrig
+  );
   const revalidator = useRevalidator();
   useEffect(() => {
     setSyncProgress(
@@ -99,69 +112,88 @@ export default function Login() {
     };
   }, [supabase, accountId, syncProgressOrig]);
 
+  const [reauth, setReauth] = useState(false);
+
   return (
     <Container size="xs" p="sm">
       <Space h="lg" />
-      {syncProgress === null && (
-        <Stack>
+      <Stack>
+        {syncedAt && syncProgress === null && (
           <Card>
             <Stack>
-              <Title size="h2">Add your work calendar</Title>
               <Text>
-                Divvy will analyze your calendar to help you understand and
-                control your meeting load.
+                Calendar {user.email} synced at{" "}
+                {formatDate(new Date(syncedAt), "yyyy-MM-dd h:mm aaa")}.
               </Text>
-              {provider === "google" && (
-                <GoogleLoginButton onClick={googleLogin}>
-                  Sign in with Google
-                </GoogleLoginButton>
-              )}
-              {provider === "azure" && (
-                <MicrosoftLoginButton onClick={azureLogin}>
-                  Sign in with Microsoft
-                </MicrosoftLoginButton>
+
+              {!reauth && (
+                <Button onClick={() => setReauth(true)}>Re-authorize</Button>
               )}
             </Stack>
           </Card>
-          {params.has("error") && (
-            <Alert
-              icon={<IconAlertCircle size="1rem" />}
-              title="Authorization failed"
-              color="red"
-            >
-              <Text>Divvy was not granted access to your calendar.</Text>
-              <Text mt="md">{params.get("error")}</Text>
-            </Alert>
-          )}
-          {provider === "false" && (
-            <Alert
-              icon={<IconInfoCircle size="1rem" />}
-              title="Completing Google sign in"
-            >
-              <Text>
-                Google manually approves apps for access to calendars. Divvy is
-                currently awaiting approval. Until then, you will see the
-                warning below. Please follow the steps shown to complete your
-                sign in.
-              </Text>
-              <Image src={googleImg} mt="md" />
-            </Alert>
-          )}
-        </Stack>
-      )}
-      {syncProgress !== null && (
-        <Container>
-          <Paper m="xl" p="xl">
-            <Text>Analyzing your calendar</Text>
+        )}
+        {(reauth || (!syncedAt && syncProgress === null)) && (
+          <>
+            <Card>
+              <Stack>
+                <Title size="h2">Add your work calendar</Title>
+                <Text>
+                  Divvy will analyze your calendar to help you understand and
+                  control your meeting load.
+                </Text>
+                {provider === "google" && (
+                  <GoogleLoginButton onClick={googleLogin}>
+                    Sign in with Google
+                  </GoogleLoginButton>
+                )}
+                {provider === "azure" && (
+                  <MicrosoftLoginButton onClick={azureLogin}>
+                    Sign in with Microsoft
+                  </MicrosoftLoginButton>
+                )}
+              </Stack>
+            </Card>
+            {params.has("error") && (
+              <Alert
+                icon={<IconAlertCircle size="1rem" />}
+                title="Authorization failed"
+                color="red"
+              >
+                <Text>Divvy was not granted access to your calendar.</Text>
+                <Text mt="md">{params.get("error")}</Text>
+              </Alert>
+            )}
+            {provider === "false" && (
+              <Alert
+                icon={<IconInfoCircle size="1rem" />}
+                title="Completing Google sign in"
+              >
+                <Text>
+                  Google manually approves apps for access to calendars. Divvy
+                  is currently awaiting approval. Until then, you will see the
+                  warning below. Please follow the steps shown to complete your
+                  sign in.
+                </Text>
+                <Image src={googleImg} mt="md" />
+              </Alert>
+            )}
+          </>
+        )}
+        {syncProgress !== null && (
+          <Card>
+            <Title size="h2" mb="md">
+              Analyzing your calendar
+            </Title>
             <Progress
               size="xl"
               value={syncProgress * 100}
               animate
               sx={{ position: "relative" }}
             />
-          </Paper>
-        </Container>
-      )}
+            <Text mt="md">This may take several minutes.</Text>
+          </Card>
+        )}
+      </Stack>
     </Container>
   );
 }

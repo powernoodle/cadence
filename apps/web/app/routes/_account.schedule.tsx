@@ -1,18 +1,13 @@
 /** @jsxfrag */
-import React, { useEffect, PropsWithChildren } from "react";
+import React, { PropsWithChildren } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
 import { isSameDay, toDate, formatDate } from "../tz";
 
-import {
-  useLoaderData,
-  useOutletContext,
-  useRevalidator,
-} from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import { Paper, Text, Table, ScrollArea } from "@mantine/core";
 
-import { SupabaseOutletContext } from "../root";
 import {
   createServerClient,
   safeQuery,
@@ -158,16 +153,6 @@ function Meetings({
 
 export default function Agenda() {
   const { events } = useLoaderData<typeof loader>();
-
-  const { syncProgress } = useOutletContext<SupabaseOutletContext>();
-
-  const revalidator = useRevalidator();
-  useEffect(() => {
-    // If syncProgress flips from in progress to done, revalidate
-    if (syncProgress === null) {
-      revalidator.revalidate();
-    }
-  }, [syncProgress]);
 
   return (
     <>

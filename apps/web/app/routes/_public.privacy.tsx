@@ -4,12 +4,15 @@ export default function Terms() {
   return (
     <Container>
       <Title order={1}>Privacy Policy</Title>
+      <Text mb="md">
+        <i>Last updated: June 19, 2023</i>
+      </Text>
       <Text>
         This Privacy Policy explains how Collide Solutions Inc. ("we," "us," or
         "our") collects, uses, and protects the personally identifiable
         information ("PII") and non-personally identifiable information
-        ("non-PII") of users ("you" or "your") in connection with the Divvy.day
-        software as a service solutions ("Service"). By using the Service, you
+        ("non-PII") of users ("you" or "your") in connection with Divvy.day
+        software-as-a-service solutions ("Service"). By using the Service, you
         consent to the collection, use, and disclosure of your PII and non-PII
         as described in this Privacy Policy.
       </Text>
@@ -128,7 +131,7 @@ export default function Terms() {
       <Text>
         10.1 If you have any questions or concerns about this Privacy Policy or
         our privacy practices, please contact us at{" "}
-        <a href="mailto:privacy@letscollide.io">support@letscollide.io</a>.
+        <a href="mailto:team@divvy.day">team@divvy.day</a>.
       </Text>
     </Container>
   );

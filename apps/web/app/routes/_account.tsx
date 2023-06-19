@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
+import { redirect } from "@remix-run/cloudflare";
 
 import {
   useLoaderData,
@@ -13,10 +14,6 @@ import { json } from "@remix-run/cloudflare";
 import {
   AppShell,
   Burger,
-  Text,
-  Container,
-  Paper,
-  Progress,
   MediaQuery,
   Navbar,
   NavLink,
@@ -125,20 +122,40 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   );
 
   const isAdmin = safeQuery(await supabase.rpc("is_admin"));
+  const url = new URL(request.url);
 
-  const [current] = getDateRange(new URL(request.url).searchParams);
+  let syncedAt;
+  {
+    const data = safeQuery(
+      await supabase
+        .from("account")
+        .select("synced_at")
+        .eq("id", accountId)
+        .single()
+    );
+    syncedAt = data?.synced_at;
+  }
+  console.log(request.url);
+  console.log(syncedAt);
+  if (!syncedAt) {
+    if (isAdmin && !url.pathname.startsWith("/admin")) {
+      return redirect(`/admin`, {
+        status: 303,
+        headers: response.headers,
+      });
+    } else if (!isAdmin && !url.pathname.startsWith("/sync")) {
+      return redirect(`/sync`, {
+        status: 303,
+        headers: response.headers,
+      });
+    }
+  }
+
+  const [current] = getDateRange(url.searchParams);
   const dateRange: [Date | null, Date | null] = [
     current[0],
     startOfDay(current[1], USER_TZ),
   ];
-
-  const syncProgress = safeQuery(
-    await supabase
-      .from("account")
-      .select("sync_progress")
-      .eq("id", accountId)
-      .single()
-  );
 
   return json(
     {
@@ -146,7 +163,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       accountId,
       accounts: accounts ?? [],
       dateRange,
-      syncProgress: syncProgress?.sync_progress,
+      syncedAt,
     },
     { headers: response.headers }
   );
@@ -315,39 +332,10 @@ function AppNavbar({ opened }: { opened: boolean }) {
 }
 
 export default function Index() {
-  const { accountId, syncProgress: syncProgressOrig } =
-    useLoaderData<typeof loader>();
+  const { syncedAt } = useLoaderData<typeof loader>();
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
-  const [syncProgress, setSyncProgress] = useState<number | null>(null);
-  const ctx = {
-    ...useOutletContext<SupabaseOutletContext>(),
-    syncProgress,
-  };
-  const supabase = ctx.supabase;
-  useEffect(() => {
-    setSyncProgress(
-      typeof syncProgressOrig === "undefined" ? null : syncProgressOrig
-    );
-    const channel = supabase
-      .channel("table-db-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "UPDATE",
-          schema: "public",
-          table: "account",
-          filter: `id=eq.${accountId}`,
-        },
-        (payload) => {
-          setSyncProgress(payload.new?.sync_progress || null);
-        }
-      )
-      .subscribe();
-    return () => {
-      channel.unsubscribe();
-    };
-  }, [supabase, accountId, syncProgressOrig]);
+  const ctx = useOutletContext<SupabaseOutletContext>();
 
   return (
     <AppShell
@@ -361,7 +349,7 @@ export default function Index() {
       }}
       navbarOffsetBreakpoint="sm"
       asideOffsetBreakpoint="sm"
-      navbar={<AppNavbar opened={opened} />}
+      navbar={syncedAt ? <AppNavbar opened={opened} /> : undefined}
       header={
         <Header
           menu={
@@ -378,20 +366,7 @@ export default function Index() {
         />
       }
     >
-      {syncProgress !== null && (
-        <Container>
-          <Paper m="xl" p="xl">
-            <Text>Loading calendar</Text>
-            <Progress
-              size="xl"
-              value={syncProgress * 100}
-              animate
-              sx={{ position: "relative" }}
-            />
-          </Paper>
-        </Container>
-      )}
-      {syncProgress === null && <Outlet context={ctx} />}
+      <Outlet context={ctx} />
     </AppShell>
   );
 }

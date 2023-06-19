@@ -1,16 +1,10 @@
 /** @jsxfrag */
-import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import {
-  useLoaderData,
-  useOutletContext,
-  useRevalidator,
-} from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import { Paper, Text, Space, Grid, Table, ScrollArea } from "@mantine/core";
 
-import { SupabaseOutletContext } from "../root";
 import { getDateRange } from "./_account";
 import {
   createServerClient,
@@ -242,16 +236,6 @@ function MatchingMeetings({
 export default function Meetings() {
   const { totals, organizers, lengths, events } =
     useLoaderData<typeof loader>();
-
-  const { syncProgress } = useOutletContext<SupabaseOutletContext>();
-
-  const revalidator = useRevalidator();
-  useEffect(() => {
-    // If syncProgress flips from in progress to done, revalidate
-    if (syncProgress === null) {
-      revalidator.revalidate();
-    }
-  }, [syncProgress]);
 
   const totalTitles = ["Current", "Previous", "Next"];
 

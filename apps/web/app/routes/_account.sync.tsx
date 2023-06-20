@@ -6,14 +6,13 @@ import {
   useRevalidator,
 } from "@remix-run/react";
 import { LoaderArgs, json } from "@remix-run/cloudflare";
-import { SupabaseOutletContext } from "../root";
+import { ClientOnly } from "remix-utils";
 import {
   Alert,
   Button,
   Card,
   Container,
   Image,
-  Paper,
   Progress,
   Space,
   Stack,
@@ -27,10 +26,11 @@ import {
 import { IconInfoCircle, IconAlertCircle } from "@tabler/icons-react";
 import formatDate from "date-fns/format";
 
-import googleImg from "../assets/google-warning.png";
-
+import { SupabaseOutletContext } from "../root";
 import { signInWithAzure, signInWithGoogle } from "../auth";
 import { createServerClient, getAccountId, safeQuery } from "../util";
+
+import googleImg from "../assets/google-warning.png";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -121,10 +121,14 @@ export default function Login() {
         {syncedAt && syncProgress === null && (
           <Card>
             <Stack>
-              <Text>
-                Calendar {user.email} synced at{" "}
-                {formatDate(new Date(syncedAt), "yyyy-MM-dd h:mm aaa")}.
-              </Text>
+              <ClientOnly>
+                {() => (
+                  <Text>
+                    Calendar {user.email} synced at{" "}
+                    {formatDate(new Date(syncedAt), "yyyy-MM-dd h:mm aaa")}.
+                  </Text>
+                )}
+              </ClientOnly>
 
               {!reauth && (
                 <Button onClick={() => setReauth(true)}>Re-authorize</Button>

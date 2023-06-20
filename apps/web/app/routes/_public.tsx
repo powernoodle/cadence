@@ -5,16 +5,27 @@ import { SupabaseOutletContext } from "../root";
 
 function AppFooter() {
   return (
-    <Footer height={60} p="md">
-      <Flex gap="md" justify="space-between" direction="row">
-        <MediaQuery smallerThan="sm" styles={{ display: "none" }}>
-          <Group>
-            <Text>Collide Solutions Inc.</Text>
-          </Group>
-        </MediaQuery>
+    <Footer
+      height={60}
+      p="md"
+      sx={(theme) => ({
+        [`@media (max-width: ${theme.breakpoints.sm})`]: {
+          position: "relative",
+        },
+      })}
+    >
+      <Flex
+        gap="md"
+        justify="space-between"
+        direction={{ base: "column", sm: "row" }}
+      >
         <Group>
           <Link to={`/terms`}>Terms of Service</Link>
           <Link to={`/privacy`}>Privacy Policy</Link>
+        </Group>
+        <Group>
+          <Text>Collide Solutions Inc.</Text>
+          <a href="mailto:team@divvy.day">Contact Us</a>
         </Group>
       </Flex>
     </Footer>

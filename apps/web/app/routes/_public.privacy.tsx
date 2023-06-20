@@ -68,10 +68,11 @@ export default function Terms() {
         in the process.
       </Text>
       <Text>
-        2.3 Consultations: When you explicitly engage us in a consultation and
-        share your calendar data, we may access your calendar data within the
-        Service. We may use secure, third-party analysis tools (such as Excel)
-        to produce reports that are shared with you.
+        2.3 Consultations: When you engage us in a consultation, we will ask you
+        for explicit consent to share your calendar data with the person or
+        people conducting the consultation. Only the individuals performing the
+        consultation will access your calendar data, and only after you have
+        granted this consent.
       </Text>
       <Text>
         2.4 Access to Data: Employees of Collide Solutions Inc. and other humans

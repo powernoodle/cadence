@@ -283,6 +283,14 @@ export class CalendarStore {
     await this.query(query);
   }
 
+  private async processRawEvent(rawEvent: RawEvent) {
+    if (!this.calendar) throw Error("Calendar not initialized");
+    const event = this.calendar.transform(rawEvent);
+    let eventId = undefined;
+    ({ eventId } = await this.saveEvent(event));
+    return eventId;
+  }
+
   public async syncEvents(
     min: Date,
     max: Date,
@@ -306,10 +314,9 @@ export class CalendarStore {
       max,
       {}
     )) {
-      let eventId = undefined;
+      let eventId;
       try {
-        const event = this.calendar.transform(rawEvent);
-        ({ eventId } = await this.saveEvent(event));
+        eventId = await this.processRawEvent(rawEvent);
         successCount += 1;
       } catch (e) {
         errorCount += 1;
@@ -324,6 +331,21 @@ export class CalendarStore {
         errorLogger?.(e);
       }
     }
+    await this.finalizeProcessing();
+    try {
+      await this.saveProgress();
+      if (successCount > 0 || errorCount === 0) {
+        await this.query("UPDATE account SET synced_at = $1 WHERE id = $2", [
+          new Date(),
+          this.accountId,
+        ]);
+      }
+    } catch (e) {
+      errorLogger?.(e);
+    }
+  }
+
+  private async finalizeProcessing(errorLogger?: (error: any) => void) {
     try {
       await this.linkSeries();
     } catch (e) {
@@ -334,14 +356,45 @@ export class CalendarStore {
     } catch (e) {
       errorLogger?.(e);
     }
+  }
+
+  public async reprocessEvents(errorLogger?: (error: any) => void) {
     try {
-      await this.saveProgress();
-      if (successCount > 0 || errorCount === 0) {
-        await this.query("UPDATE account SET synced_at = $1 WHERE id = $2", [
-          new Date(),
-          this.accountId,
-        ]);
+      const account = await this.query(
+        "SELECT sync_started_at from account WHERE id = $1",
+        [this.accountId]
+      );
+      if (!account?.length) {
+        throw Error(`Account ${this.accountId} not found`);
       }
+      const sync_start = account[0].sync_started_at;
+      if (!sync_start) {
+        throw Error(`Account ${this.accountId} has no previous sync`);
+      }
+      const data = await this.query(
+        "SELECT * from raw_event WHERE account_id = $1 AND created_at >= $2",
+        [this.accountId, sync_start]
+      );
+
+      for (const row of data) {
+        let rawEvent = row.raw_event;
+        // There was a bug where the whole row was written into the raw_event
+        // field
+        if (rawEvent.raw_event) rawEvent = rawEvent.raw_event;
+        let eventId;
+        try {
+          eventId = await this.processRawEvent(rawEvent);
+        } catch (e) {
+          errorLogger?.(new EventError("Error saving event", rawEvent, e));
+        }
+        try {
+          await this.saveRaw(rawEvent, eventId);
+        } catch (e) {
+          errorLogger?.(e);
+        }
+      }
+
+      await this.finalizeProcessing();
     } catch (e) {
       errorLogger?.(e);
     }

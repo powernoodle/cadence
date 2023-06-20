@@ -45,11 +45,12 @@ export const getAccountId = async (
     .from("account")
     .select()
     .eq("user_id", userId);
-  if (data) {
-    return data[0]?.id;
+  const id = data?.[0]?.id;
+  if (!id) {
+    console.error(`No account found for ${userId}`);
+    throw redirect("/login");
   }
-  console.error(`No account found for ${userId}`);
-  throw redirect("/login");
+  return id;
 };
 
 export const costFmt = new Intl.NumberFormat("en-US", {

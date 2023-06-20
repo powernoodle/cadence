@@ -8,6 +8,7 @@ import { CalendarStore } from "@divvy/cal-store";
 
 export type SyncRequest = {
   accountId: number;
+  reprocess?: boolean;
 };
 
 export interface Env {
@@ -39,8 +40,9 @@ export default {
         return new Response("Missing accountId");
       }
       const sync = (body as any)?.sync;
+      const reprocess = !!(body as any)?.reprocess;
       if (sync) {
-        await process(env, body as SyncRequest);
+        await process(env, { accountId, reprocess });
       } else {
         await env.QUEUE.send({ accountId });
       }
@@ -108,6 +110,22 @@ export default {
   },
 };
 
+function handleError(e: Error) {
+  console.error(e);
+  Sentry?.withScope((scope) => {
+    if (e instanceof EventError) {
+      scope.setExtra("event", e.event);
+    }
+    // @ts-ignore
+    const detail = e.cause?.detail;
+    if (detail) {
+      console.log(detail);
+      scope.setExtra("detail", detail);
+    }
+    Sentry?.captureException(e);
+  });
+}
+
 async function process(env: Env, request: SyncRequest) {
   const missing = [
     "DB_URL",
@@ -128,24 +146,16 @@ async function process(env: Env, request: SyncRequest) {
     request.accountId
   );
 
-  await store.syncEvents(
-    sub(new Date(), { days: 60 }),
-    add(new Date(), { days: 30 }),
-    "primary",
-    (e) => {
-      console.error(e);
-      Sentry?.withScope((scope) => {
-        if (e instanceof EventError) {
-          scope.setExtra("event", e.event);
-        }
-        if (e.cause?.detail) {
-          console.log(e.cause.detail);
-          scope.setExtra("detail", e.cause.detail);
-        }
-        Sentry?.captureException(e);
-      });
-    }
-  );
+  if (request.reprocess) {
+    await store.reprocessEvents(handleError);
+  } else {
+    await store.syncEvents(
+      sub(new Date(), { days: 60 }),
+      add(new Date(), { days: 30 }),
+      "primary",
+      handleError
+    );
+  }
 
   await store.close();
 }

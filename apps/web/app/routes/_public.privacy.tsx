@@ -24,7 +24,7 @@ export default function Terms() {
       <List>
         <List.Item>
           Email Address: We collect your email address for the purpose of
-          providing the Services and communicating with you.
+          providing the Service and communicating with you.
         </List.Item>
         <List.Item>
           Job Title: We may collect your job title to better understand the
@@ -57,9 +57,8 @@ export default function Terms() {
       <Title order={2}>2. Use of Information</Title>
       <Text>
         2.1 Service Provision: We use the collected PII, including your email
-        address, job title, company name, and manager information, to provide
-        you with access to the Service and to communicate with you regarding the
-        Service.
+        address, job title, company name, and calendar data, to provide you with
+        access to the Service and to communicate with you regarding the Service.
       </Text>
       <Text>
         2.2 Analytics and Improvements: We use the non-PII collected, including
@@ -67,6 +66,26 @@ export default function Terms() {
         improve the Service. This information is used in an aggregated and
         anonymized form, and no personally identifiable information is disclosed
         in the process.
+      </Text>
+      <Text>
+        2.3 Consultations: When you explicitly engage us in a consultation and
+        share your calendar data, we may access your calendar data within the
+        Service. We may use secure, third-party analysis tools (such as Excel)
+        to produce reports that are shared with you.
+      </Text>
+      <Text>
+        2.4 Access to Data: Employees of Collide Solutions Inc. and other humans
+        will not access your calendar data except when you explicitly share it
+        for consultation or support.
+      </Text>
+      <Text>
+        2.5 Limited Use: We do not transfer your PII or non-PII data except for
+        the uses described in 2.1, 2.2, and 2.3. Our use and transfer to any
+        other app of information received from Google APIs will adhere to{" "}
+        <a href="https://developers.google.com/terms/api-services-user-data-policy">
+          Google API Services User Data Policy
+        </a>
+        , including the Limited Use requirements.”
       </Text>
       <Title order={2}>3. Data Retention</Title>
       <Text>
@@ -116,18 +135,18 @@ export default function Terms() {
       </Text>
       <Title order={2}>8. International Data Transfer</Title>
       <Text>
-        8.1 Data Transfer to the United States: By using the Service, you
-        understand and consent to the transfer of your PII and non-PII to the
-        United States, where our servers are located. The United States may have
-        different data protection laws than your country of residence.
+        8.1 Data Transfer to Canada: By using the Service, you understand and
+        consent to the transfer of your PII and non-PII to the Canada, where our
+        servers are located. Canada may have different data protection laws than
+        your country of residence.
       </Text>
-      <Title order={2}>9. Changes to the Privacy Policy</Title>
+      <Title order={2}>10. Changes to the Privacy Policy</Title>
       <Text>
         9.1 We may update this Privacy Policy from time to time to reflect
         changes in our practices or legal obligations. We encourage you to
         review this Privacy Policy periodically for any changes.
       </Text>
-      <Title order={2}>10. Contact Us</Title>
+      <Title order={2}>11. Contact Us</Title>
       <Text>
         10.1 If you have any questions or concerns about this Privacy Policy or
         our privacy practices, please contact us at{" "}

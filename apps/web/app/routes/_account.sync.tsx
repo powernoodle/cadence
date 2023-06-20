@@ -46,7 +46,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
         .single()
     );
     syncedAt = data?.synced_at;
-    syncProgress = data?.sync_progress || null;
+    syncProgress = data?.sync_progress ?? null;
   }
 
   return json(
@@ -99,7 +99,7 @@ export default function Login() {
           filter: `id=eq.${accountId}`,
         },
         (payload) => {
-          const newSyncProgress = payload.new?.sync_progress || null;
+          const newSyncProgress = payload.new?.sync_progress ?? null;
           setSyncProgress(newSyncProgress);
           if (syncProgressOrig && !newSyncProgress) {
             revalidator.revalidate();

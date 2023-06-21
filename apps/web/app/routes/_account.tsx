@@ -288,6 +288,12 @@ function AppNavbar({ opened }: { opened: boolean }) {
       )}
       <Navbar.Section>
         <NavLink
+          label="Meeting Load"
+          component={Link}
+          to={`/meetings${location.search}`}
+          active={location.pathname === "/load"}
+        />
+        <NavLink
           label="Insights"
           component={Link}
           to={`/meetings${location.search}`}

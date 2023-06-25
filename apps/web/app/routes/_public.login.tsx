@@ -9,6 +9,7 @@ import {
 import { IconAlertCircle } from "@tabler/icons-react";
 
 import { createServerClient } from "../util";
+import { DEFAULT_PATH } from "../config";
 
 import { signInWithAzure, signInWithGoogle } from "../auth";
 
@@ -17,7 +18,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) return redirect("/meetings");
+  if (user) return redirect(DEFAULT_PATH);
   return null;
 };
 

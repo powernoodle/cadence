@@ -14,6 +14,7 @@ import {
   Title,
 } from "@mantine/core";
 
+import { DEFAULT_PATH } from "../config";
 import { APP_NAME } from "../util";
 import { SupabaseOutletContext } from "../root";
 
@@ -47,8 +48,8 @@ export default function Header({ menu }: { menu?: ReactNode }) {
         </Group>
         <Group>
           {user && isPublic && (
-            <Button component={Link} to="/meetings">
-              View Dashboard
+            <Button component={Link} to={DEFAULT_PATH}>
+              Go to app
             </Button>
           )}
           {user && !isPublic && <Button onClick={logout}>Logout</Button>}

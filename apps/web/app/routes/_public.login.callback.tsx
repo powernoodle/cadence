@@ -4,6 +4,7 @@ import { createServerClient } from "@supabase/auth-helpers-remix";
 
 import { Sentry } from "../sentry";
 import { getSession } from "../auth";
+import { DEFAULT_PATH } from "../config";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const response = new Response();
@@ -22,7 +23,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     if (!email) {
       throw new Error("Missing email");
     }
-    return redirect("/meetings", {
+    return redirect(DEFAULT_PATH, {
       status: 303,
       headers: response.headers,
     });

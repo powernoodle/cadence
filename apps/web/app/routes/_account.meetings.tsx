@@ -135,7 +135,7 @@ function MeetingStats({
                 <code>{(row.meeting_count || 0).toLocaleString()}</code>
               </td>
               <td align="right">
-                <code>{durationFmt(row.length_sum || 0, true)}</code>
+                <code>{durationFmt(row.length_sum || 0)}</code>
               </td>
               <td align="right">
                 <code>{costFmt.format((row.cost * HOURLY_WAGE) / 60)}</code>

@@ -1,3 +1,4 @@
+// foo
 export type { Credentials, RawEvent, Progress } from "./client";
 export type { Attendance } from "./event";
 export { Event, EventError } from "./event";

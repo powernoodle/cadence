@@ -20,6 +20,7 @@
   "dependencies": {
     "@divvy/db": "workspace:*",
     "@divvy/emotion-server": "workspace:^",
+    "@divvy/tz": "workspace:^",
     "@emotion/react": "^11.11.1",
     "@emotion/server": "^11.11.0",
     "@mantine/core": "^6.0.13",

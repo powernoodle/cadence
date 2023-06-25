@@ -1,3 +1,4 @@
+// foo
 import { Event } from "./event";
 
 export type Credentials = {
@@ -30,5 +31,5 @@ export abstract class CalendarClient {
     state: any;
   }>;
 
-  public abstract transform(rawEvent: RawEvent): Event;
+  public abstract transform(rawEvent: RawEvent): Event[];
 }

@@ -1,3 +1,4 @@
+// foo
 import isAfter from "date-fns/isAfter";
 import { jsonFetch as fetch } from "@worker-tools/json-fetch";
 
@@ -93,6 +94,7 @@ export class OutlookClient extends CalendarClient {
   private seriesMasters: { [id: string]: OutlookEvent } = {};
 
   public constructor(
+    public accountEmail: string,
     clientId: string,
     clientSecret: string,
     credentials: any,
@@ -128,7 +130,7 @@ export class OutlookClient extends CalendarClient {
   private transformEvent(
     outlookEvent: OutlookEvent,
     ownerEmail?: string
-  ): Event {
+  ): Event[] {
     const start = fromMsDate(outlookEvent.start);
     if (!start) {
       throw new Error("Missing start");
@@ -168,28 +170,36 @@ export class OutlookClient extends CalendarClient {
         isSelf: organizerEmail === ownerEmail,
       });
     }
-    const event = new Event({
-      id: outlookEvent.id as string,
-      series: outlookEvent.seriesMasterId || undefined,
-      start,
-      end,
-      title: outlookEvent.subject || undefined,
-      description: outlookEvent.bodyPreview || undefined,
-      location: outlookEvent.location?.displayName || undefined,
-      isOnline: outlookEvent.isOnlineMeeting || undefined,
-      isOnsite: outlookEvent.location?.locationType === "conferenceRoom",
-      isCancelled: outlookEvent.isCancelled || undefined,
-      isPrivate: outlookEvent.sensitivity
-        ? outlookEvent.sensitivity !== "normal"
-        : false,
-      notMeeting:
-        outlookEvent.isCancelled ||
-        (outlookEvent.showAs
-          ? ["free", "oof", "workingElsewhere"].includes(outlookEvent.showAs)
-          : false),
-      attendance,
-    });
-    return event;
+    const days = Event.SplitDays(start, end);
+    return days.map(
+      (day) =>
+        new Event({
+          id: outlookEvent.id as string,
+          accountEmail: this.accountEmail,
+          series: outlookEvent.seriesMasterId || undefined,
+          start: day.start,
+          end: day.end,
+          title: outlookEvent.subject || undefined,
+          description: outlookEvent.bodyPreview || undefined,
+          location: outlookEvent.location?.displayName || undefined,
+          isOnline: outlookEvent.isOnlineMeeting || undefined,
+          isOnsite: outlookEvent.location?.locationType === "conferenceRoom",
+          isCancelled: outlookEvent.isCancelled || undefined,
+          isPrivate: outlookEvent.sensitivity
+            ? outlookEvent.sensitivity !== "normal"
+            : false,
+          notMeeting:
+            outlookEvent.isAllDay ||
+            days.length > 1 ||
+            outlookEvent.isCancelled ||
+            (outlookEvent.showAs
+              ? ["free", "oof", "workingElsewhere"].includes(
+                  outlookEvent.showAs
+                )
+              : false),
+          attendance,
+        })
+    );
   }
 
   public async *getEvents(
@@ -266,7 +276,7 @@ export class OutlookClient extends CalendarClient {
     }
   }
 
-  public transform(rawEvent: RawEvent): Event {
+  public transform(rawEvent: RawEvent): Event[] {
     try {
       return this.transformEvent(rawEvent.data, rawEvent.metadata?.ownerEmail);
     } catch (caught) {

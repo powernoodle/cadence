@@ -17,6 +17,7 @@ import { SupabaseOutletContext } from "../root";
 import { createServerClient, safeQuery } from "../util";
 import formatDate from "date-fns/format";
 import differenceInSeconds from "date-fns/differenceInSeconds";
+import { DEFAULT_PATH } from "~/config";
 
 export async function action({ context, request }: ActionArgs) {
   const body = await request.formData();
@@ -96,7 +97,7 @@ export default function Index() {
             {accounts?.map((account) => (
               <tr key={account.id.toString()}>
                 <td>
-                  <Link to={`/meetings?account=${account.id}`}>
+                  <Link to={`${DEFAULT_PATH}?account=${account.id}`}>
                     {account.name} ({account.email})
                   </Link>
                 </td>

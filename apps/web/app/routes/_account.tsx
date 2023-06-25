@@ -36,14 +36,12 @@ import {
   startOfDay,
   startOfMonth,
   startOfWeek,
-} from "../tz";
+} from "@divvy/tz";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, getAccountId, safeQuery } from "../util";
+import { USER_TZ } from "../config";
 import Header from "../components/header";
-
-// TODO: load this from the account
-export const USER_TZ = "America/New_York";
 
 export const getDateRange = (params: URLSearchParams, timeframe?: string) => {
   const startParam = params.get("start");
@@ -288,23 +286,19 @@ function AppNavbar({ opened }: { opened: boolean }) {
       )}
       <Navbar.Section>
         <NavLink
-          label="Meeting Load"
+          label="Your Time"
           component={Link}
-          to={`/meetings${location.search}`}
-          active={location.pathname === "/load"}
+          to={`/time${location.search}`}
+          active={location.pathname === "/time"}
         />
-        <NavLink
-          label="Insights"
-          component={Link}
-          to={`/meetings${location.search}`}
-          active={location.pathname === "/meetings"}
-        />
-        <NavLink
-          label="Schedule"
-          component={Link}
-          to={`/schedule${location.search}`}
-          active={location.pathname === "/schedule"}
-        />
+        {isAdmin && (
+          <NavLink
+            label="Schedule"
+            component={Link}
+            to={`/schedule${location.search}`}
+            active={location.pathname === "/schedule"}
+          />
+        )}
       </Navbar.Section>
       <Navbar.Section mt="md" grow>
         <Select
@@ -322,12 +316,14 @@ function AppNavbar({ opened }: { opened: boolean }) {
         />
       </Navbar.Section>
       <Navbar.Section>
-        <NavLink
-          label="Admin"
-          component={Link}
-          to={`/admin`}
-          active={location.pathname === "/admin"}
-        />
+        {isAdmin && (
+          <NavLink
+            label="Admin"
+            component={Link}
+            to={`/admin`}
+            active={location.pathname === "/admin"}
+          />
+        )}
         <NavLink
           label="Settings"
           component={Link}

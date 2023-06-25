@@ -1,3 +1,4 @@
+// foo
 import { jsonFetch as fetch } from "@worker-tools/json-fetch";
 
 import { calendar_v3 } from "google-schema";
@@ -35,6 +36,7 @@ function toGoogleDate(d: Date) {
 
 export class GoogleClient extends CalendarClient {
   public constructor(
+    public accountEmail: string,
     private clientId: string,
     private clientSecret: string,
     private credentials: any,
@@ -116,24 +118,21 @@ export class GoogleClient extends CalendarClient {
     }
   }
 
-  private transformEvent(googleEvent: GoogleEvent): Event {
-    if (!googleEvent.iCalUID) {
-      throw new Error("Missing iCalUID");
+  private transformEvent(googleEvent: GoogleEvent): Event[] {
+    const id = googleEvent.id;
+    if (!id) {
+      throw new Error("Missing ID");
     }
 
-    const start = googleEvent.start?.dateTime || googleEvent.start?.date;
-    if (!start) {
+    const startString = googleEvent.start?.dateTime || googleEvent.start?.date;
+    if (!startString) {
       throw new Error("Missing start");
     }
-    const end = googleEvent.end?.dateTime || googleEvent.end?.date;
-    if (!end) {
+    const endString = googleEvent.end?.dateTime || googleEvent.end?.date;
+    if (!endString) {
       throw new Error("Missing end");
     }
 
-    let calId = googleEvent.iCalUID;
-    if (googleEvent.originalStartTime) {
-      calId += `:${googleEvent.originalStartTime?.dateTime?.toString()}`;
-    }
     const isOnline = !!googleEvent.conferenceData;
     const isOnsite = !!googleEvent.attendees?.some((a) => a.resource);
     const organizerEmail = googleEvent.organizer?.email?.toLowerCase();
@@ -151,24 +150,31 @@ export class GoogleClient extends CalendarClient {
           } as Attendance,
         ];
       }, [] as Attendance[]) || [];
-    const event = new Event({
-      id: calId,
-      series: googleEvent.iCalUID,
-      start: new Date(start),
-      end: new Date(end),
-      title: googleEvent.summary || undefined,
-      description: googleEvent.description || undefined,
-      location: googleEvent.location || undefined,
-      isOnline,
-      isOnsite,
-      isCancelled: googleEvent.status === "cancelled",
-      isPrivate: googleEvent.visibility === "private",
-      notMeeting:
-        googleEvent.transparency === "transparent" ||
-        googleEvent.eventType !== "default",
-      attendance,
-    });
-    return event;
+    const start = new Date(startString);
+    const end = new Date(endString);
+    const days = Event.SplitDays(start, end);
+    return days.map(
+      (day) =>
+        new Event({
+          id,
+          accountEmail: this.accountEmail,
+          series: googleEvent.recurringEventId || undefined,
+          start: day.start,
+          end: day.end,
+          title: googleEvent.summary || undefined,
+          description: googleEvent.description || undefined,
+          location: googleEvent.location || undefined,
+          isOnline,
+          isOnsite,
+          isCancelled: googleEvent.status === "cancelled",
+          isPrivate: googleEvent.visibility === "private",
+          notMeeting:
+            days.length > 1 ||
+            googleEvent.transparency === "transparent" ||
+            googleEvent.eventType !== "default",
+          attendance,
+        })
+    );
   }
 
   public async *getEvents(
@@ -234,7 +240,7 @@ export class GoogleClient extends CalendarClient {
     } while (nextPageToken);
   }
 
-  public transform(rawEvent: RawEvent): Event {
+  public transform(rawEvent: RawEvent): Event[] {
     try {
       return this.transformEvent(rawEvent.data);
     } catch (caught) {

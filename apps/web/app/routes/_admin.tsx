@@ -13,6 +13,7 @@ import {
 } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
+import { DEFAULT_PATH } from "../config";
 import { createServerClient, safeQuery } from "../util";
 import Header from "../components/header";
 
@@ -34,7 +35,7 @@ function AppNavbar({ opened }: { opened: boolean }) {
       width={{ sm: 200, lg: 300 }}
     >
       <Navbar.Section>
-        <NavLink label="Back to Dashboard" component={Link} to={`/meetings`} />
+        <NavLink label="Back to Dashboard" component={Link} to={DEFAULT_PATH} />
       </Navbar.Section>
     </Navbar>
   );

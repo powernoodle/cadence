@@ -98,6 +98,32 @@ export interface Database {
           response?: Database["public"]["Enums"]["attendance"] | null
         }
       }
+      day: {
+        Row: {
+          account_id: number
+          day: string
+          focus_blocks: number
+          focus_minutes: number
+          slack_blocks: number
+          slack_minutes: number
+        }
+        Insert: {
+          account_id: number
+          day: string
+          focus_blocks?: number
+          focus_minutes?: number
+          slack_blocks?: number
+          slack_minutes?: number
+        }
+        Update: {
+          account_id?: number
+          day?: string
+          focus_blocks?: number
+          focus_minutes?: number
+          slack_blocks?: number
+          slack_minutes?: number
+        }
+      }
       domain: {
         Row: {
           created_at: string | null
@@ -122,41 +148,53 @@ export interface Database {
         Row: {
           account_id: number
           at: unknown | null
+          attended_length: number
           cal_id: string
           created_at: string | null
+          day: string | null
           id: number
-          is_meeting: boolean
+          is_cancelled: boolean
           is_offsite: boolean
           is_online: boolean
           is_onsite: boolean
+          response: Database["public"]["Enums"]["attendance"] | null
           series: string
           title: string | null
+          type: Database["public"]["Enums"]["event_type"] | null
         }
         Insert: {
           account_id: number
           at?: unknown | null
+          attended_length?: number
           cal_id: string
           created_at?: string | null
+          day?: string | null
           id?: number
-          is_meeting?: boolean
+          is_cancelled?: boolean
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
+          response?: Database["public"]["Enums"]["attendance"] | null
           series: string
           title?: string | null
+          type?: Database["public"]["Enums"]["event_type"] | null
         }
         Update: {
           account_id?: number
           at?: unknown | null
+          attended_length?: number
           cal_id?: string
           created_at?: string | null
+          day?: string | null
           id?: number
-          is_meeting?: boolean
+          is_cancelled?: boolean
           is_offsite?: boolean
           is_online?: boolean
           is_onsite?: boolean
+          response?: Database["public"]["Enums"]["attendance"] | null
           series?: string
           title?: string | null
+          type?: Database["public"]["Enums"]["event_type"] | null
         }
       }
       organization: {
@@ -205,38 +243,47 @@ export interface Database {
         Row: {
           account_id: number | null
           at: unknown | null
+          attended_length: number | null
           attendee_count: number | null
-          attendees: string | null
           cal_id: string | null
           created_at: string | null
           id: number | null
           invitee_count: number | null
-          is_meeting: boolean | null
+          invitees: string | null
+          is_cancelled: boolean | null
           is_offsite: boolean | null
           is_online: boolean | null
           is_onsite: boolean | null
           length: number | null
+          response: Database["public"]["Enums"]["attendance"] | null
           series: string | null
           title: string | null
+          type: Database["public"]["Enums"]["event_type"] | null
         }
       }
     }
     Functions: {
+      calculate_day: {
+        Args: {
+          _account_id: number
+          _day: string
+        }
+        Returns: undefined
+      }
       current_account_id: {
         Args: Record<PropertyKey, never>
         Returns: number
       }
-      event_by_length: {
+      day_stats: {
         Args: {
-          event_account_id: number
+          _account_id: number
           during: unknown
         }
         Returns: {
           account_id: number
-          length: number
-          meeting_count: number
-          length_sum: number
-          cost: number
+          type: string
+          minutes: number
+          num: number
         }[]
       }
       event_by_organizer: {
@@ -261,13 +308,6 @@ export interface Database {
           event_count: number
         }[]
       }
-      event_length: {
-        Args: {
-          at: unknown
-          during?: unknown
-        }
-        Returns: number
-      }
       event_series: {
         Args: {
           event_account_id: number
@@ -277,15 +317,15 @@ export interface Database {
           account_id: number
           series: string
           title: string
-          is_meeting: boolean
+          type: Database["public"]["Enums"]["event_type"]
           is_online: boolean
           is_onsite: boolean
           is_offsite: boolean
           meeting_count: number
-          length_sum: number
-          cost: number
-          attendee_count: number
           length: number
+          length_sum: number
+          attended_length: number
+          attendee_count: number
           invitee_count: number
         }[]
       }
@@ -320,18 +360,17 @@ export interface Database {
         }
         Returns: undefined
       }
-      meeting_cost: {
-        Args: {
-          attendee_occurrences: number
-          attendee_minutes: number
-        }
-        Returns: number
-      }
       parse_provider: {
         Args: {
           p_text_value: string
         }
         Returns: Database["public"]["Enums"]["provider"]
+      }
+      response_priority: {
+        Args: {
+          response: Database["public"]["Enums"]["attendance"]
+        }
+        Returns: number
       }
       update_credentials: {
         Args: {
@@ -343,6 +382,7 @@ export interface Database {
     }
     Enums: {
       attendance: "accepted" | "declined" | "tentative"
+      event_type: "internal" | "external" | "personal" | "focus" | "growth"
       provider: "google" | "azure"
     }
     CompositeTypes: {

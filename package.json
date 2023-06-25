@@ -9,7 +9,7 @@
     "check": "pnpm install --frozen-lockfile",
     "build": "nx run-many -t build",
     "build:pages": "nx run @divvy/web:build && ln -sfn apps/web/functions functions",
-    "watch": "nx watch -p @divvy/cal,@divvy/db,@divvy/cal-store -- nx run-many -t build -p @divvy/cal,@divvy/db,@divvy/cal-store",
+    "watch": "nx watch -p @divvy/cal,@divvy/db,@divvy/cal-store,@divvy/tz -- nx run-many -t build -p @divvy/cal,@divvy/db,@divvy/cal-store,@divvy/tz",
     "dev": "nx run-many -t dev"
   },
   "license": "UNLICENSED",

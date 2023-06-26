@@ -114,10 +114,20 @@ export default function Login() {
 
   const [reauth, setReauth] = useState(false);
 
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <Container size="xs" p="sm">
       <Space h="lg" />
       <Stack>
+        <Card>
+          Signed in as {user.email}.{" "}
+          <Button variant="subtle" onClick={logout}>
+            Logout
+          </Button>
+        </Card>
         {syncedAt && syncProgress === null && (
           <Card>
             <Stack>

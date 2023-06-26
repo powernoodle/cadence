@@ -25,8 +25,6 @@ import {
   IconZoomCheck,
   IconZoomQuestion,
   IconZoomCancel,
-  IconTrendingUp,
-  IconTrendingDown,
 } from "@tabler/icons-react";
 
 import type { Database } from "@divvy/db";
@@ -107,7 +105,7 @@ function StatCard({
   scheduledMinutes: number;
   projectedMinutes: number;
   targetMinutes?: number;
-  trend: number;
+  trend?: number;
   description: string;
   color: string;
   maximize?: boolean;
@@ -124,14 +122,16 @@ function StatCard({
           scheduledMinutes={scheduledMinutes}
           projectedMinutes={projectedMinutes}
           color={color}
+          trend={trend}
+          maximize={maximize}
         />
         <TargetGuage
           projectedMinutes={projectedMinutes}
           targetMinutes={targetMinutes}
           maximize={maximize}
         />
-        {links.map((link: any) => (
-          <Anchor href="#" color={link.color} pl={15}>
+        {links.map((link: any, i: number) => (
+          <Anchor key={i.toString()} href="#" color={link.color} pl={15}>
             <Group>
               {link.icon}
               <Text>{link.label}</Text>
@@ -200,7 +200,7 @@ export default function MeetingLoad() {
             scheduledMinutes={4 * 60}
             projectedMinutes={14 * 60}
             targetMinutes={10 * 60}
-            trend={data.internal.minutes - previousData.internal.minutes}
+            trend={7}
             description={`You attend ${
               data.internal.count
             } meetings totalling ${
@@ -240,7 +240,7 @@ export default function MeetingLoad() {
             scheduledMinutes={1.5 * 60}
             projectedMinutes={3.5 * 60}
             targetMinutes={3 * 60}
-            trend={data.external.minutes - previousData.external.minutes}
+            trend={10}
             maximize={true}
             description={`You had ${data.external.count} external meetings.`}
             color="yellow"
@@ -277,6 +277,7 @@ export default function MeetingLoad() {
             targetMinutes={22 * 60}
             trend={data.focus.minutes - previousData.focus.minutes}
             maximize={true}
+            trend={5}
             description={`You have ${
               data.focus.minutes
             } minutes of focus time each week, with an average length of ${Math.round(

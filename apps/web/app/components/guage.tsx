@@ -67,14 +67,18 @@ export function ProjectionGuage({
     },
     {
       label: "Scheduled",
-      value: diff >= 0 ? scheduledMinutes : scheduledMinutes + diff,
+      value: scheduledMinutes,
       color: `${color}.4`,
     },
-    {
-      label: diff >= 0 ? "Projected" : "Scheduled but projected to miss",
-      value: diff >= 0 ? diff : Math.abs(diff),
-      color: diff >= 0 ? `${color}.2` : "red.4",
-    },
+    ...(diff >= 0
+      ? [
+          {
+            label: "Projected",
+            value: diff,
+            color: `${color}.2`,
+          },
+        ]
+      : []),
   ];
   return (
     <Guage

@@ -27,6 +27,7 @@ import {
   durationFmt,
 } from "../util";
 import { SupabaseClient } from "@supabase/supabase-js";
+import { ProjectionGuage, TargetGuage } from "../components/guage";
 
 type DayStats = {
   minutes: number;
@@ -80,43 +81,43 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
 function StatCard({
   title,
-  minutes,
+  pastMinutes,
+  scheduledMinutes,
+  projectedMinutes,
+  targetMinutes,
   trend,
   description,
   color,
   maximize,
 }: {
   title: string;
-  minutes: number;
+  pastMinutes: number;
+  scheduledMinutes: number;
+  projectedMinutes: number;
+  targetMinutes?: number;
   trend: number;
   description: string;
   color: string;
   maximize?: boolean;
 }) {
-  const goodTrend = !!maximize === trend > 0;
   return (
     <Card>
-      <Card.Section>
-        <Box h="0.5em" w="100%" bg={color} />
-      </Card.Section>
-      <Title order={2} size="h4" fw={500} mt="md" color={color}>
+      <Title order={2} size="h4" fw={500} color={color + ".4"}>
         {title}
       </Title>
       <Group>
-        <Center>
-          <Text fz={32} fw={700} p="lg" ta="center">
-            {durationFmt(minutes)}
-          </Text>
-          {trend !== 0 && (
-            <Stack spacing={0}>
-              {trend > 0 && <IconTrendingUp />}
-              {trend < 0 && <IconTrendingDown />}
-              <Text c={goodTrend ? "green.4" : "red.4"}>{trend}</Text>
-            </Stack>
-          )}
-        </Center>
+        <ProjectionGuage
+          pastMinutes={pastMinutes}
+          scheduledMinutes={scheduledMinutes}
+          projectedMinutes={projectedMinutes}
+          color={color}
+        />
+        <TargetGuage
+          projectedMinutes={projectedMinutes}
+          targetMinutes={targetMinutes}
+          maximize={maximize}
+        />
       </Group>
-      <Text>{description}</Text>
     </Card>
   );
 }
@@ -132,6 +133,7 @@ const HOURS_PER_WEEK = 40;
 export default function MeetingLoad() {
   const { data, previousData } = useLoaderData<typeof loader>();
   const theme = useMantineTheme();
+  console.log(theme.colors);
   const colors = [
     theme.colors.orange[4],
     theme.colors.yellow[4],
@@ -179,26 +181,13 @@ export default function MeetingLoad() {
         Weekly working hours
       </Title>
       <Grid columns={12}>
-        <Grid.Col sm={12} md={6} lg={2}>
-          <AspectRatio ratio={5 / 8}>
-            <ResponsiveWaffle
-              colors={colors}
-              data={chartData}
-              isInteractive={false}
-              fillDirection="bottom"
-              total={HOURS_PER_WEEK}
-              rows={8}
-              columns={5}
-              padding={2}
-              borderRadius={0}
-              motionStagger={2}
-            />
-          </AspectRatio>
-        </Grid.Col>
-        <Grid.Col sm={12} md={6} lg={2}>
+        <Grid.Col sm={12} md={6} lg={6}>
           <StatCard
             title={"Work Meetings"}
-            minutes={data.internal.minutes}
+            pastMinutes={9 * 60}
+            scheduledMinutes={4 * 60}
+            projectedMinutes={14 * 60}
+            targetMinutes={10 * 60}
             trend={data.internal.minutes - previousData.internal.minutes}
             description={`You attend ${
               data.internal.count
@@ -207,23 +196,29 @@ export default function MeetingLoad() {
             } minutes each week. That's ${Math.round(
               weeklyMinutesToAnnualWeeks(data.internal.minutes)
             )} weeks annually.`}
-            color="orange.4"
+            color="orange"
           />
         </Grid.Col>
-        <Grid.Col sm={12} md={6} lg={2}>
+        <Grid.Col sm={12} md={6} lg={6}>
           <StatCard
             title={"Customer Meetings"}
-            minutes={data.external.minutes}
+            pastMinutes={2 * 60}
+            scheduledMinutes={1.5 * 60}
+            projectedMinutes={3.5 * 60}
+            targetMinutes={3 * 60}
             trend={data.external.minutes - previousData.external.minutes}
             maximize={true}
             description={`You had ${data.external.count} external meetings.`}
-            color="yellow.4"
+            color="yellow"
           />
         </Grid.Col>
-        <Grid.Col sm={12} md={6} lg={2}>
+        <Grid.Col sm={12} md={6} lg={6}>
           <StatCard
             title={"Deep Work"}
-            minutes={data.focus.minutes}
+            pastMinutes={11 * 60}
+            scheduledMinutes={9 * 60}
+            projectedMinutes={18 * 60}
+            targetMinutes={22 * 60}
             trend={data.focus.minutes - previousData.focus.minutes}
             maximize={true}
             description={`You have ${
@@ -231,16 +226,18 @@ export default function MeetingLoad() {
             } minutes of focus time each week, with an average length of ${Math.round(
               data.focus.minutes / data.focus.count
             )} minutes.`}
-            color="blue.4"
+            color="blue"
           />
         </Grid.Col>
-        <Grid.Col sm={12} md={6} lg={2}>
+        <Grid.Col sm={12} md={6} lg={6}>
           <StatCard
             title={"Health, Growth & Giving"}
-            minutes={data.growth.minutes}
+            pastMinutes={30}
+            scheduledMinutes={0}
+            projectedMinutes={30}
             trend={data.growth.minutes - previousData.growth.minutes}
             description={`.`}
-            color="teal.4"
+            color="cyan"
           />
         </Grid.Col>
       </Grid>

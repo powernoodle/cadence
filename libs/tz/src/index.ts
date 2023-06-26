@@ -106,3 +106,14 @@ export function eachDayOfInterval(
 export function isSameDay(d1: Date, d2: Date, tz: string) {
   return zoned2(d1, d2, tz, _isSameDay);
 }
+
+export function formatWeek(date: Date, tz: string) {
+  const start = startOfWeek(date, tz);
+  const end = endOfWeek(date, tz);
+  let ret = `${formatDate(start, tz, "MMMM d")} – `;
+  if (start.getMonth() !== end.getMonth()) {
+    ret += formatDate(end, tz, "MMMM ");
+  }
+  ret += formatDate(end, tz, "d");
+  return ret;
+}

@@ -135,7 +135,7 @@ export default function Index() {
                 <td>{eventCounts?.[account.id]}</td>
                 <td>
                   <Button
-                    variant="outline"
+                    variant="subtle"
                     compact
                     type="submit"
                     name="resync"

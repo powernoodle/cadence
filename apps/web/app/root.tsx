@@ -3,6 +3,7 @@ import type {
   LinksFunction,
   V2_MetaFunction,
 } from "@remix-run/cloudflare";
+import { json } from "@remix-run/cloudflare";
 import { Sentry } from "./sentry";
 
 import { cssBundleHref } from "@remix-run/css-bundle";
@@ -17,15 +18,17 @@ import {
   useRevalidator,
   useRouteError,
   isRouteErrorResponse,
+  useFetcher,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
-import { json } from "@remix-run/cloudflare";
 import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@divvy/db";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 import {
   MantineProvider,
+  ColorSchemeProvider,
+  ColorScheme,
   createEmotionCache,
   Title,
   Text,
@@ -36,6 +39,7 @@ import { useColorScheme } from "@mantine/hooks";
 import { StylesPlaceholder } from "@mantine/remix";
 
 import { APP_NAME, createServerClient } from "./util";
+import { userPrefs } from "~/cookies";
 
 export const meta: V2_MetaFunction = () => [
   { charset: "utf-8" },
@@ -58,6 +62,9 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     SUPABASE_ANON_KEY: context.SUPABASE_ANON_KEY as string,
   };
 
+  const cookieHeader = request.headers.get("Cookie");
+  const prefs = (await userPrefs.parse(cookieHeader)) || {};
+
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -70,6 +77,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       env,
       session,
       user,
+      prefs,
     },
     {
       headers: response.headers,
@@ -155,9 +163,27 @@ export const links: LinksFunction = () => [
 ];
 
 export default function App() {
-  const { env, session, user } = useLoaderData<typeof loader>();
+  const { env, session, user, prefs } = useLoaderData<typeof loader>();
+  const setPrefs = useFetcher();
 
-  const colorScheme = useColorScheme();
+  const systemColorScheme = useColorScheme();
+  const [colorScheme, setColorScheme] = useState<ColorScheme>(
+    prefs?.theme || systemColorScheme
+  );
+  useEffect(() => {
+    if (!prefs?.theme) {
+      toggleColorScheme(systemColorScheme);
+    }
+  }, [systemColorScheme]);
+  const toggleColorScheme = (value?: ColorScheme) => {
+    const nextColorScheme =
+      value || (colorScheme === "dark" ? "light" : "dark");
+    setColorScheme(nextColorScheme);
+    setPrefs.submit(
+      { theme: nextColorScheme },
+      { method: "post", action: "/prefs" }
+    );
+  };
 
   const { revalidate } = useRevalidator();
 
@@ -173,7 +199,7 @@ export default function App() {
   useEffect(() => {
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    } = supabase.auth.onAuthStateChange((event, _session) => {
       switch (event) {
         case "SIGNED_OUT":
           revalidate();
@@ -187,20 +213,29 @@ export default function App() {
   }, [serverAccessToken, supabase]);
 
   return (
-    <MantineProvider theme={{ colorScheme }} withGlobalStyles withNormalizeCSS>
-      <html lang="en">
-        <head>
-          <StylesPlaceholder />
-          <Meta />
-          <Links />
-        </head>
-        <body>
-          <Outlet context={{ supabase, session, user }} />
-          <ScrollRestoration />
-          <Scripts />
-          <LiveReload />
-        </body>
-      </html>
-    </MantineProvider>
+    <ColorSchemeProvider
+      colorScheme={colorScheme}
+      toggleColorScheme={toggleColorScheme}
+    >
+      <MantineProvider
+        theme={{ colorScheme }}
+        withGlobalStyles
+        withNormalizeCSS
+      >
+        <html lang="en">
+          <head>
+            <StylesPlaceholder />
+            <Meta />
+            <Links />
+          </head>
+          <body>
+            <Outlet context={{ supabase, session, user }} />
+            <ScrollRestoration />
+            <Scripts />
+            <LiveReload />
+          </body>
+        </html>
+      </MantineProvider>
+    </ColorSchemeProvider>
   );
 }

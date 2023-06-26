@@ -47,12 +47,11 @@ export function Guage({
               value:
                 total - sections.reduce((acc, { value }) => acc + value, 0),
               label: "",
-              color: theme.fn.themeColor("gray", 4),
+              color: theme.fn.themeColor("gray", 7),
             },
           ]
         : []
     );
-  console.log(graphSections);
   return (
     <Box p={15}>
       <AspectRatio ratio={0.9} w="100%">

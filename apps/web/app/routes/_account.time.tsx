@@ -1,7 +1,7 @@
 /** @jsxfrag */
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   AspectRatio,
@@ -10,6 +10,9 @@ import {
   Card,
   Center,
   Title,
+  Navbar,
+  NavLink,
+  Anchor,
   Text,
   Grid,
   Group,
@@ -17,7 +20,14 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { ResponsiveWaffle } from "@nivo/waffle";
-import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
+import {
+  IconZoomCheckFilled,
+  IconZoomCheck,
+  IconZoomQuestion,
+  IconZoomCancel,
+  IconTrendingUp,
+  IconTrendingDown,
+} from "@tabler/icons-react";
 
 import type { Database } from "@divvy/db";
 import { getDateRange } from "./_account";
@@ -90,6 +100,7 @@ function StatCard({
   description,
   color,
   maximize,
+  links,
 }: {
   title: string;
   pastMinutes: number;
@@ -100,6 +111,7 @@ function StatCard({
   description: string;
   color: string;
   maximize?: boolean;
+  links: any;
 }) {
   return (
     <Card>
@@ -118,6 +130,14 @@ function StatCard({
           targetMinutes={targetMinutes}
           maximize={maximize}
         />
+        {links.map((link: any) => (
+          <Anchor href="#" color={link.color} pl={15}>
+            <Group>
+              {link.icon}
+              <Text>{link.label}</Text>
+            </Group>
+          </Anchor>
+        ))}
       </SimpleGrid>
     </Card>
   );
@@ -133,15 +153,6 @@ const HOURS_PER_WEEK = 40;
 
 export default function MeetingLoad() {
   const { data, previousData } = useLoaderData<typeof loader>();
-  const theme = useMantineTheme();
-  console.log(theme.colors);
-  const colors = [
-    theme.colors.orange[4],
-    theme.colors.yellow[4],
-    theme.colors.blue[4],
-    theme.colors.teal[4],
-    theme.colors.gray[4],
-  ];
   if (!data || !previousData) return null;
 
   const otherHours =
@@ -198,6 +209,28 @@ export default function MeetingLoad() {
               weeklyMinutesToAnnualWeeks(data.internal.minutes)
             )} weeks annually.`}
             color="orange"
+            links={[
+              {
+                icon: <IconZoomCheckFilled />,
+                color: "gray.5",
+                label: "17 meetings done",
+              },
+              {
+                icon: <IconZoomCheck />,
+                color: "gray.1",
+                label: "9 meetings scheduled",
+              },
+              {
+                icon: <IconZoomCancel />,
+                color: "gray.5",
+                label: "2 meetings declined",
+              },
+              {
+                icon: <IconZoomQuestion />,
+                color: "yellow.2",
+                label: "3 meetings pending",
+              },
+            ]}
           />
         </Grid.Col>
         <Grid.Col sm={12} md={6} lg={6}>
@@ -211,6 +244,28 @@ export default function MeetingLoad() {
             maximize={true}
             description={`You had ${data.external.count} external meetings.`}
             color="yellow"
+            links={[
+              {
+                icon: <IconZoomCheckFilled />,
+                color: "gray.5",
+                label: "2 meetings done",
+              },
+              {
+                icon: <IconZoomCheck />,
+                color: "gray.1",
+                label: "2 meetings scheduled",
+              },
+              {
+                icon: <IconZoomCancel />,
+                color: "gray.5",
+                label: "No meetings declined",
+              },
+              {
+                icon: <IconZoomQuestion />,
+                color: "gray.5",
+                label: "No meetings pending",
+              },
+            ]}
           />
         </Grid.Col>
         <Grid.Col sm={12} md={6} lg={6}>
@@ -228,6 +283,28 @@ export default function MeetingLoad() {
               data.focus.minutes / data.focus.count
             )} minutes.`}
             color="blue"
+            links={[
+              {
+                icon: <IconZoomCheckFilled />,
+                color: "gray.5",
+                label: "5 blocks done",
+              },
+              {
+                icon: <IconZoomCheck />,
+                color: "gray.1",
+                label: "3 blocks scheduled",
+              },
+              {
+                icon: <IconZoomCancel />,
+                color: "gray.5",
+                label: "1 block skipped",
+              },
+              {
+                icon: <IconZoomQuestion />,
+                color: "yellow.2",
+                label: "1 block with conflicts",
+              },
+            ]}
           />
         </Grid.Col>
         <Grid.Col sm={12} md={6} lg={6}>
@@ -239,6 +316,28 @@ export default function MeetingLoad() {
             trend={data.growth.minutes - previousData.growth.minutes}
             description={`.`}
             color="cyan"
+            links={[
+              {
+                icon: <IconZoomCheckFilled />,
+                color: "gray.5",
+                label: "1 activity done",
+              },
+              {
+                icon: <IconZoomCheck />,
+                color: "gray.5",
+                label: "No activities scheduled",
+              },
+              {
+                icon: <IconZoomCancel />,
+                color: "gray.5",
+                label: "1 activity skipped",
+              },
+              {
+                icon: <IconZoomQuestion />,
+                color: "yellow.2",
+                label: "2 activities pending",
+              },
+            ]}
           />
         </Grid.Col>
       </Grid>

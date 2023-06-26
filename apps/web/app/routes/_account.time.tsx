@@ -5,6 +5,7 @@ import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   AspectRatio,
+  SimpleGrid,
   Box,
   Card,
   Center,
@@ -105,7 +106,7 @@ function StatCard({
       <Title order={2} size="h4" fw={500} color={color + ".4"}>
         {title}
       </Title>
-      <Group>
+      <SimpleGrid cols={2}>
         <ProjectionGuage
           pastMinutes={pastMinutes}
           scheduledMinutes={scheduledMinutes}
@@ -117,7 +118,7 @@ function StatCard({
           targetMinutes={targetMinutes}
           maximize={maximize}
         />
-      </Group>
+      </SimpleGrid>
     </Card>
   );
 }

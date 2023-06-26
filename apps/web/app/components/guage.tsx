@@ -11,6 +11,7 @@ import {
   RingProgress,
   useMantineTheme,
 } from "@mantine/core";
+import { ResponsivePie } from "@nivo/pie";
 import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
 
 import { durationFmt } from "../util";
@@ -18,6 +19,7 @@ import { durationFmt } from "../util";
 export type GuageSections = {
   label: string;
   color: string;
+  shade: number;
   value: number;
 };
 export function Guage({
@@ -29,21 +31,42 @@ export function Guage({
   label: React.ReactNode;
   total?: number;
 }) {
-  if (!total) {
-    total = sections.reduce((acc, { value }) => acc + value, 0) || 100;
-  }
-  const graphSections = sections.map(({ label, color, value }) => ({
-    value: (value / (total as number)) * 100,
-    tooltip: `${label}: ${durationFmt(value)}`,
-    color,
-  }));
+  const theme = useMantineTheme();
+  const graphSections = sections
+    .map(({ label, color, shade, value }) => ({
+      id: label,
+      value,
+      label: `${label}: ${durationFmt(value)}`,
+      color: theme.fn.themeColor(color, shade),
+    }))
+    .concat(
+      total
+        ? [
+            {
+              id: "empty",
+              value:
+                total - sections.reduce((acc, { value }) => acc + value, 0),
+              label: "",
+              color: theme.fn.themeColor("gray", 4),
+            },
+          ]
+        : []
+    );
+  console.log(graphSections);
   return (
-    <RingProgress
-      size={300}
-      thickness={30}
-      sections={graphSections}
-      label={label}
-    />
+    <Box p={15}>
+      <AspectRatio ratio={0.9} w="100%">
+        <ResponsivePie
+          data={graphSections}
+          colors={graphSections.map(({ color }) => color)}
+          startAngle={-90}
+          innerRadius={0.8}
+          enableArcLabels={false}
+          enableArcLinkLabels={false}
+        />
+        <Stack spacing={0}>{label}</Stack>
+      </AspectRatio>
+    </Box>
   );
 }
 
@@ -63,19 +86,22 @@ export function ProjectionGuage({
     {
       label: "Past",
       value: pastMinutes,
-      color: `${color}.7`,
+      color,
+      shade: 7,
     },
     {
       label: "Scheduled",
       value: scheduledMinutes,
-      color: `${color}.4`,
+      color,
+      shade: 4,
     },
     ...(diff >= 0
       ? [
           {
             label: "Projected",
             value: diff,
-            color: `${color}.2`,
+            color,
+            shade: 2,
           },
         ]
       : []),
@@ -127,12 +153,14 @@ export function TargetGuage({
       {
         label: "Projected",
         value: projectedMinutes,
-        color: "green.4",
+        color: "green",
+        shade: 4,
       },
       {
         label: "Under target",
         value: targetMinutes - projectedMinutes,
-        color: maximize ? "red.4" : "green.2",
+        color: maximize ? "red" : "green",
+        shade: maximize ? 4 : 2,
       },
     ];
     return (
@@ -159,12 +187,14 @@ export function TargetGuage({
     {
       label: "Target",
       value: targetMinutes,
-      color: "green.4",
+      color: "green",
+      shade: 4,
     },
     {
       label: "Over target",
       value: projectedMinutes - targetMinutes,
-      color: maximize ? "green.2" : "red.4",
+      color: maximize ? "green" : "red",
+      shade: maximize ? 2 : 4,
     },
   ];
   return (

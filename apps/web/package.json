@@ -29,6 +29,7 @@
     "@mantine/remix": "^6.0.13",
     "@mantine/styles": "^6.0.13",
     "@nivo/core": "^0.83.0",
+    "@nivo/pie": "^0.83.0",
     "@nivo/waffle": "^0.83.0",
     "@remix-run/cloudflare": "^1.17.0",
     "@remix-run/cloudflare-pages": "^1.17.0",

@@ -198,156 +198,153 @@ export default function MeetingLoad() {
       <Title order={2} size="h2" mb="lg">
         Weekly working hours
       </Title>
-      <Grid columns={12}>
-        <Grid.Col sm={12} md={6} lg={6}>
-          <StatCard
-            title={"Work Meetings"}
-            pastMinutes={9 * 60}
-            scheduledMinutes={4 * 60}
-            projectedMinutes={14 * 60}
-            targetMinutes={10 * 60}
-            trend={7}
-            description={`You attend ${
-              data.internal.count
-            } meetings totalling ${
-              data.internal.minutes
-            } minutes each week. That's ${Math.round(
-              weeklyMinutesToAnnualWeeks(data.internal.minutes)
-            )} weeks annually.`}
-            color="orange"
-            links={[
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 8, 1, colorScheme),
-                label: "9 scheduled",
-              },
-              {
-                icon: <IconCalendarQuestion />,
-                color: makeColor("yellow", 9, 2, colorScheme),
-                label: "3 pending",
-              },
-              {
-                icon: <IconCalendarX />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "2 declined",
-              },
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "17 done",
-              },
-            ]}
-          />
-        </Grid.Col>
-        <Grid.Col sm={12} md={6} lg={6}>
-          <StatCard
-            title={"Customer Meetings"}
-            pastMinutes={2 * 60}
-            scheduledMinutes={1.5 * 60}
-            projectedMinutes={3.5 * 60}
-            targetMinutes={3 * 60}
-            trend={10}
-            maximize={true}
-            description={`You had ${data.external.count} external meetings.`}
-            color="yellow"
-            links={[
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 8, 1, colorScheme),
-                label: "2 scheduled",
-              },
-              {
-                icon: <IconCalendarQuestion />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "0 pending",
-              },
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "2 done",
-              },
-              {
-                icon: <IconCalendarX />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "0 declined",
-              },
-            ]}
-          />
-        </Grid.Col>
-        <Grid.Col sm={12} md={6} lg={6}>
-          <StatCard
-            title={"Deep Work Blocks"}
-            pastMinutes={11 * 60}
-            scheduledMinutes={9 * 60}
-            projectedMinutes={18 * 60}
-            targetMinutes={22 * 60}
-            maximize={true}
-            trend={5}
-            description={`You have ${
-              data.focus.minutes
-            } minutes of focus time each week, with an average length of ${Math.round(
-              data.focus.minutes / data.focus.count
-            )} minutes.`}
-            color="blue"
-            links={[
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 8, 1, colorScheme),
-                label: "3 scheduled",
-              },
-              {
-                icon: <IconCalendarExclamation />,
-                color: makeColor("yellow", 9, 2, colorScheme),
-                label: "1 conflict",
-              },
-              {
-                icon: <IconCalendarX />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "1 skipped",
-              },
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "5 done",
-              },
-            ]}
-          />
-        </Grid.Col>
-        <Grid.Col sm={12} md={6} lg={6}>
-          <StatCard
-            title={"Health, Growth & Giving Activities"}
-            pastMinutes={30}
-            scheduledMinutes={0}
-            projectedMinutes={30}
-            trend={-20}
-            maximize={true}
-            description={`.`}
-            color="cyan"
-            links={[
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "0 scheduled",
-              },
-              {
-                icon: <IconCalendarQuestion />,
-                color: makeColor("yellow", 9, 2, colorScheme),
-                label: "2 pending",
-              },
-              {
-                icon: <IconCalendarX />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "1 skipped",
-              },
-              {
-                icon: <IconCalendarCheck />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "1 done",
-              },
-            ]}
-          />
-        </Grid.Col>
-      </Grid>
+      <SimpleGrid
+        cols={1}
+        breakpoints={[
+          { minWidth: "98rem", cols: 2 },
+          { minWidth: "138rem", cols: 3 },
+          { minWidth: "184rem", cols: 4 },
+        ]}
+      >
+        <StatCard
+          title={"Work Meetings"}
+          pastMinutes={9 * 60}
+          scheduledMinutes={4 * 60}
+          projectedMinutes={14 * 60}
+          targetMinutes={10 * 60}
+          trend={7}
+          description={`You attend ${data.internal.count} meetings totalling ${
+            data.internal.minutes
+          } minutes each week. That's ${Math.round(
+            weeklyMinutesToAnnualWeeks(data.internal.minutes)
+          )} weeks annually.`}
+          color="orange"
+          links={[
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 8, 1, colorScheme),
+              label: "9 scheduled",
+            },
+            {
+              icon: <IconCalendarQuestion />,
+              color: makeColor("yellow", 9, 2, colorScheme),
+              label: "3 pending",
+            },
+            {
+              icon: <IconCalendarX />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "2 declined",
+            },
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "17 done",
+            },
+          ]}
+        />
+        <StatCard
+          title={"Customer Meetings"}
+          pastMinutes={2 * 60}
+          scheduledMinutes={1.5 * 60}
+          projectedMinutes={3.5 * 60}
+          targetMinutes={3 * 60}
+          trend={10}
+          maximize={true}
+          description={`You had ${data.external.count} external meetings.`}
+          color="yellow"
+          links={[
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 8, 1, colorScheme),
+              label: "2 scheduled",
+            },
+            {
+              icon: <IconCalendarQuestion />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "0 pending",
+            },
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "2 done",
+            },
+            {
+              icon: <IconCalendarX />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "0 declined",
+            },
+          ]}
+        />
+        <StatCard
+          title={"Deep Work Blocks"}
+          pastMinutes={11 * 60}
+          scheduledMinutes={9 * 60}
+          projectedMinutes={18 * 60}
+          targetMinutes={22 * 60}
+          maximize={true}
+          trend={5}
+          description={`You have ${
+            data.focus.minutes
+          } minutes of focus time each week, with an average length of ${Math.round(
+            data.focus.minutes / data.focus.count
+          )} minutes.`}
+          color="blue"
+          links={[
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 8, 1, colorScheme),
+              label: "3 scheduled",
+            },
+            {
+              icon: <IconCalendarExclamation />,
+              color: makeColor("yellow", 9, 2, colorScheme),
+              label: "1 conflict",
+            },
+            {
+              icon: <IconCalendarX />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "1 skipped",
+            },
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "5 done",
+            },
+          ]}
+        />
+        <StatCard
+          title={"Health, Growth & Giving Activities"}
+          pastMinutes={30}
+          scheduledMinutes={0}
+          projectedMinutes={30}
+          trend={-20}
+          maximize={true}
+          description={`.`}
+          color="cyan"
+          links={[
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "0 scheduled",
+            },
+            {
+              icon: <IconCalendarQuestion />,
+              color: makeColor("yellow", 9, 2, colorScheme),
+              label: "2 pending",
+            },
+            {
+              icon: <IconCalendarX />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "1 skipped",
+            },
+            {
+              icon: <IconCalendarCheck />,
+              color: makeColor("gray", 6, 5, colorScheme),
+              label: "1 done",
+            },
+          ]}
+        />
+      </SimpleGrid>
     </>
   );
 }

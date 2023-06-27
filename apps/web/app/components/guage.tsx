@@ -32,6 +32,8 @@ export function Guage({
 }) {
   const { colorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
+  const sectionsTotal = sections.reduce((acc, { value }) => acc + value, 0);
+  if (sectionsTotal === 0) total = 1;
   const graphSections = sections
     .map(({ label, color, shade, value }) => ({
       id: label,
@@ -44,8 +46,7 @@ export function Guage({
         ? [
             {
               id: "empty",
-              value:
-                total - sections.reduce((acc, { value }) => acc + value, 0),
+              value: total - sectionsTotal,
               label: "",
               color: theme.fn.themeColor(
                 "gray",
@@ -102,7 +103,7 @@ export function ProjectionGuage({
   trend?: number;
   maximize?: boolean;
 }) {
-  trend = Math.round(trend);
+  trend = Math.round(trend || 0);
   const { colorScheme } = useMantineColorScheme();
   const projectedMinutes = pastMinutes + scheduledMinutes + pendingMinutes;
   const sections = [
@@ -125,7 +126,7 @@ export function ProjectionGuage({
       shade: 2,
     },
   ];
-  const DiffIcon = trend && trend > 0 ? IconArrowUpRight : IconArrowDownRight;
+  const DiffIcon = trend > 0 ? IconArrowUpRight : IconArrowDownRight;
   return (
     <Guage
       sections={sections}
@@ -144,7 +145,7 @@ export function ProjectionGuage({
             fz="sm"
             fw={500}
             color={makeColor(
-              !!maximize === (trend ?? 0) > 0 ? "teal" : "red",
+              !!maximize === trend > 0 ? "teal" : "red",
               5,
               3,
               colorScheme
@@ -152,7 +153,7 @@ export function ProjectionGuage({
             mt="md"
           >
             <Group spacing={0}>
-              {!!trend ? (
+              {trend !== 0 ? (
                 <>
                   <DiffIcon size="1rem" stroke={1.5} />
                   <span>{trend}%</span>

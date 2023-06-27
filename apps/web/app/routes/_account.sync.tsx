@@ -123,10 +123,12 @@ export default function Login() {
       <Space h="lg" />
       <Stack>
         <Card>
-          Signed in as {user.email}.{" "}
-          <Button variant="subtle" onClick={logout}>
-            Logout
-          </Button>
+          <Stack>
+            <Text>Signed in as {user.email}.</Text>
+            <Button variant="subtle" onClick={logout}>
+              Logout
+            </Button>
+          </Stack>
         </Card>
         {syncedAt && syncProgress === null && (
           <Card>
@@ -141,7 +143,9 @@ export default function Login() {
               </ClientOnly>
 
               {!reauth && (
-                <Button onClick={() => setReauth(true)}>Re-authorize</Button>
+                <Button variant="subtle" onClick={() => setReauth(true)}>
+                  Reauthorize
+                </Button>
               )}
             </Stack>
           </Card>

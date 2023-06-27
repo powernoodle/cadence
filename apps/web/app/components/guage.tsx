@@ -154,8 +154,8 @@ export function ProjectionGuage({
             <Group spacing={0}>
               {!!trend ? (
                 <>
-                  <span>{trend}%</span>
                   <DiffIcon size="1rem" stroke={1.5} />
+                  <span>{trend}%</span>
                 </>
               ) : (
                 <span>&nbsp;</span>

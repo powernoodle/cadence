@@ -1,15 +1,13 @@
 /** @jsxfrag */
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { useOutletContext, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   SimpleGrid,
   Card,
   Title,
   Button,
-  Text,
-  Grid,
   Group,
   useMantineColorScheme,
 } from "@mantine/core";
@@ -23,12 +21,11 @@ import {
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@divvy/db";
 
-import { SupabaseOutletContext } from "../root";
-import { DateRange } from "../components/daterange";
-import { getDateRange } from "./_account";
+import { getDateRange, DateRangeSelect } from "../components/date-range";
 import { createServerClient, getAccountId, safeQuery } from "../util";
 import { ProjectionGuage, TargetGuage } from "../components/guage";
 import { makeColor } from "../color";
+import { USER_TZ } from "../config";
 
 type DayStats = {
   minutes: number;
@@ -63,9 +60,12 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
 
-  const [current, previous] = getDateRange(new URL(request.url).searchParams);
-  const during = `[${current[0].toISOString()}, ${current[1].toISOString()})`;
-  const previousDuring = `[${previous[0].toISOString()}, ${previous[1].toISOString()})`;
+  const { current, previous } = getDateRange(
+    new URL(request.url).searchParams,
+    USER_TZ
+  );
+  const during = `[${current.start}, ${current.end})`;
+  const previousDuring = `[${previous.start}, ${previous.end})`;
 
   const data = await getStats(supabase, during);
   const previousData = await getStats(supabase, previousDuring);
@@ -87,7 +87,6 @@ function StatCard({
   projectedMinutes,
   targetMinutes,
   trend,
-  description,
   color,
   maximize,
   links,
@@ -98,7 +97,6 @@ function StatCard({
   projectedMinutes: number;
   targetMinutes?: number;
   trend?: number;
-  description: string;
   color: string;
   maximize?: boolean;
   links: any;
@@ -145,53 +143,15 @@ function StatCard({
   );
 }
 
-function weeklyMinutesToAnnualWeeks(minutes: number) {
-  const weeksInYear = 48;
-  const daysInWeek = 5;
-  return ((minutes / 60) * weeksInYear) / daysInWeek;
-}
-
-const HOURS_PER_WEEK = 40;
+export const handle = {
+  headerControl: () => <DateRangeSelect />,
+};
 
 export default function MeetingLoad() {
   const { colorScheme } = useMantineColorScheme();
-  const { useHeaderControl } = useOutletContext<SupabaseOutletContext>();
   const { data, previousData } = useLoaderData<typeof loader>();
-  useHeaderControl(() => <DateRange />);
 
   if (!data || !previousData) return null;
-
-  const otherHours =
-    HOURS_PER_WEEK -
-    (data.focus.minutes + data.internal.minutes + data.external.minutes) / 60;
-  const previousOtherHours =
-    HOURS_PER_WEEK -
-    (previousData.focus.minutes +
-      previousData.internal.minutes +
-      previousData.external.minutes) /
-      60;
-  const chartData = [
-    {
-      id: "internal",
-      value: data.internal.minutes / 60,
-    },
-    {
-      id: "external",
-      value: data.external.minutes / 60,
-    },
-    {
-      id: "focus",
-      value: data.focus.minutes / 60,
-    },
-    {
-      id: "growth",
-      value: data.growth.minutes / 60,
-    },
-    {
-      id: "other",
-      value: otherHours,
-    },
-  ];
 
   return (
     <>
@@ -213,11 +173,6 @@ export default function MeetingLoad() {
           projectedMinutes={14 * 60}
           targetMinutes={10 * 60}
           trend={7}
-          description={`You attend ${data.internal.count} meetings totalling ${
-            data.internal.minutes
-          } minutes each week. That's ${Math.round(
-            weeklyMinutesToAnnualWeeks(data.internal.minutes)
-          )} weeks annually.`}
           color="orange"
           links={[
             {
@@ -250,7 +205,6 @@ export default function MeetingLoad() {
           targetMinutes={3 * 60}
           trend={10}
           maximize={true}
-          description={`You had ${data.external.count} external meetings.`}
           color="yellow"
           links={[
             {
@@ -283,11 +237,6 @@ export default function MeetingLoad() {
           targetMinutes={22 * 60}
           maximize={true}
           trend={5}
-          description={`You have ${
-            data.focus.minutes
-          } minutes of focus time each week, with an average length of ${Math.round(
-            data.focus.minutes / data.focus.count
-          )} minutes.`}
           color="blue"
           links={[
             {
@@ -319,7 +268,6 @@ export default function MeetingLoad() {
           projectedMinutes={30}
           trend={-20}
           maximize={true}
-          description={`.`}
           color="cyan"
           links={[
             {

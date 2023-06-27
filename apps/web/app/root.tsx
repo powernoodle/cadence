@@ -55,8 +55,6 @@ export type SupabaseOutletContext = {
   supabase: SupabaseClient<Database>;
   user: User;
   syncProgress: number | null;
-  useHeaderControl: (control: () => React.ReactNode) => void;
-  headerControl: React.ReactNode | null;
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -216,18 +214,6 @@ export default function App() {
     };
   }, [serverAccessToken, supabase]);
 
-  const [headerControl, setHeaderControl] = useState<React.ReactNode>(null);
-  const useHeaderControl = useCallback(
-    (control: () => React.ReactNode, deps: any[] = []) => {
-      const memoControl = useMemo(control, deps);
-      useEffect(() => {
-        setHeaderControl(memoControl);
-        return () => setHeaderControl(null);
-      }, []);
-    },
-    [setHeaderControl]
-  );
-
   return (
     <ColorSchemeProvider
       colorScheme={colorScheme}
@@ -250,8 +236,6 @@ export default function App() {
                 supabase,
                 session,
                 user,
-                headerControl,
-                useHeaderControl,
               }}
             />
             <ScrollRestoration />

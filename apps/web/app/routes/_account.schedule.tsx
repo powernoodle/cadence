@@ -15,7 +15,7 @@ import {
   durationFmt,
 } from "../util";
 import { USER_TZ } from "../config";
-import { getDateRange } from "./_account";
+import { getDateRange, DateRange } from "../components/date-range";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);

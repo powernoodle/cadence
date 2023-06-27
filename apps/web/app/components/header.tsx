@@ -52,9 +52,12 @@ function ThemeToggle() {
 
 export default function Header({ menu }: { menu?: ReactNode }) {
   const location = useLocation();
-  const { user, headerControl } = useOutletContext<SupabaseOutletContext>();
+  const { user } = useOutletContext<SupabaseOutletContext>();
   const routes = useMatches();
   const isPublic = routes.some((r) => r.id === "routes/_public");
+  const headerControl = routes
+    .filter((r) => r.handle?.headerControl)?.[0]
+    ?.handle?.headerControl?.();
 
   return (
     <MantineHeader height={{ base: 60, md: 60 }} p="xs">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 
@@ -20,23 +20,20 @@ import {
   Select,
   useMantineTheme,
 } from "@mantine/core";
-import { DatePickerInput } from "@mantine/dates";
 
-import add from "date-fns/add";
-import differenceInDays from "date-fns/differenceInDays";
-import sub from "date-fns/sub";
 import {
-  toTz,
-  fromTz,
   toDate,
   endOfDay,
   endOfMonth,
   endOfWeek,
-  formatDate,
   startOfDay,
   startOfMonth,
   startOfWeek,
 } from "@divvy/tz";
+
+import add from "date-fns/add";
+import sub from "date-fns/sub";
+import differenceInDays from "date-fns/differenceInDays";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, getAccountId, safeQuery } from "../util";
@@ -181,6 +178,7 @@ function AccountSelect() {
 
   return (
     <Select
+      mb="md"
       placeholder="Select account"
       value={value?.toString()}
       onChange={handleChange}
@@ -196,81 +194,7 @@ function AccountSelect() {
 
 function AppNavbar({ opened }: { opened: boolean }) {
   const location = useLocation();
-  const { dateRange: _defaultDateRange, isAdmin } =
-    useLoaderData<typeof loader>();
-  const defaultDateRange: [Date, Date] = [
-    fromTz(new Date(_defaultDateRange[0] as string), USER_TZ),
-    fromTz(new Date(_defaultDateRange[1] as string), USER_TZ),
-  ];
-  useEffect(() => {
-    setDateRange(defaultDateRange);
-  }, _defaultDateRange);
-
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const timeframes = [
-    { label: "28 Days", value: "28d" },
-    { label: "Month", value: "month" },
-    { label: "Week", value: "week" },
-    { label: "Custom", value: "custom" },
-  ];
-  const [timeframe, setTimeframeState] = useState(
-    searchParams.get("timeframe") || "28d"
-  );
-  const onTimeframeChange = async (timeframe: string) => {
-    if (!timeframe) return;
-    setTimeframeState(timeframe);
-    const [current] = getDateRange(
-      new URLSearchParams(location.search),
-      timeframe
-    );
-    setSearchParams((p) => {
-      const { start, end, ...other } = Object.fromEntries(p.entries());
-      return {
-        ...other,
-        timeframe,
-        ...(timeframe === "custom"
-          ? {
-              start: formatDate(current[0], USER_TZ, "yyyy-MM-dd"),
-              end: formatDate(current[1], USER_TZ, "yyyy-MM-dd"),
-            }
-          : {}),
-      };
-    });
-  };
-
-  const [dateRange, setDateRange] =
-    useState<[Date | null, Date | null]>(defaultDateRange);
-
-  const onDateRangeChange = (range: [Date | null, Date | null]) => {
-    if (range[0] === null) return;
-    switch (timeframe) {
-      case "28d":
-        range[1] = add(range[0], { days: 28 });
-        break;
-      case "month":
-        range[1] = endOfMonth(range[0], USER_TZ);
-        break;
-      case "week":
-        range[1] = endOfWeek(range[0], USER_TZ);
-        break;
-    }
-    setDateRange(range);
-    if (range[1] === null) return;
-    setSearchParams((p) => ({
-      ...Object.fromEntries(p.entries()),
-      ...(range[0]
-        ? {
-            start: formatDate(toTz(range[0], USER_TZ), USER_TZ, "yyyy-MM-dd"),
-          }
-        : {}),
-      ...(range[1]
-        ? {
-            end: formatDate(toTz(range[1], USER_TZ), USER_TZ, "yyyy-MM-dd"),
-          }
-        : {}),
-    }));
-  };
+  const { isAdmin } = useLoaderData<typeof loader>();
 
   return (
     <Navbar
@@ -279,50 +203,37 @@ function AppNavbar({ opened }: { opened: boolean }) {
       hidden={!opened}
       width={{ sm: 200, lg: 300 }}
     >
-      {isAdmin && (
-        <Navbar.Section mb="md">
-          <AccountSelect />
-        </Navbar.Section>
-      )}
-      <Navbar.Section>
+      <Navbar.Section grow>
         <NavLink
-          label="Your Time"
+          label="Time Balance"
           component={Link}
           to={`/time${location.search}`}
           active={location.pathname === "/time"}
         />
-        {isAdmin && (
-          <NavLink
-            label="Schedule"
-            component={Link}
-            to={`/schedule${location.search}`}
-            active={location.pathname === "/schedule"}
-          />
-        )}
-      </Navbar.Section>
-      <Navbar.Section mt="md" grow>
-        <Select
-          mb="sm"
-          value={timeframe}
-          onChange={onTimeframeChange}
-          data={timeframes}
+        <NavLink
+          label="Prioritize"
+          component={Link}
+          to={`/schedule${location.search}`}
+          active={location.pathname === "/prioritize"}
         />
-        <DatePickerInput
-          mb="sm"
-          type="range"
-          value={dateRange}
-          onChange={onDateRangeChange}
-          allowSingleDateInRange
+        <NavLink
+          label="Review"
+          component={Link}
+          to={`/schedule${location.search}`}
+          active={location.pathname === "/review"}
         />
       </Navbar.Section>
       <Navbar.Section>
         {isAdmin && (
-          <NavLink
-            label="Admin"
-            component={Link}
-            to={`/admin`}
-            active={location.pathname === "/admin"}
-          />
+          <>
+            <AccountSelect />
+            <NavLink
+              label="Admin"
+              component={Link}
+              to={`/admin`}
+              active={location.pathname === "/admin"}
+            />
+          </>
         )}
         <NavLink
           label="Settings"

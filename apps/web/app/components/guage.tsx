@@ -1,7 +1,9 @@
 import {
   AspectRatio,
   Box,
+  Center,
   Text,
+  Paper,
   Group,
   Stack,
   useMantineTheme,
@@ -34,7 +36,7 @@ export function Guage({
     .map(({ label, color, shade, value }) => ({
       id: label,
       value,
-      label: `${label}: ${durationFmt(value)}`,
+      label: `${label}: ${durationFmt(value)} hours`,
       color: theme.fn.themeColor(color, shade),
     }))
     .concat(
@@ -55,16 +57,31 @@ export function Guage({
     );
   return (
     <Box p={15}>
-      <AspectRatio ratio={0.9} w="100%">
-        <ResponsivePie
-          data={graphSections}
-          colors={graphSections.map(({ color }) => color)}
-          startAngle={-90}
-          innerRadius={0.8}
-          enableArcLabels={false}
-          enableArcLinkLabels={false}
-        />
-        {label}
+      <AspectRatio ratio={1} w="100%">
+        <Box>
+          <Center sx={{ zIndex: 1 }}>{label}</Center>
+        </Box>
+        <Box
+          sx={{
+            overflow: "visible !important",
+          }}
+        >
+          <ResponsivePie
+            data={graphSections}
+            colors={graphSections.map(({ color }) => color)}
+            startAngle={-90}
+            innerRadius={0.8}
+            enableArcLabels={false}
+            enableArcLinkLabels={false}
+            tooltip={(d) =>
+              d.datum.label ? (
+                <Paper p="xs">
+                  <Text color={d.datum.color}>{d.datum.label}</Text>
+                </Paper>
+              ) : null
+            }
+          />
+        </Box>
       </AspectRatio>
     </Box>
   );
@@ -116,28 +133,14 @@ export function ProjectionGuage({
     <Guage
       sections={sections}
       label={
-        <Stack spacing={0}>
-          <Text
-            fz="lg"
-            color={makeColor("gray", 6, 5, colorScheme)}
-            ta="center"
-            mt="md"
-          >
+        <Stack spacing={0} align="center">
+          <Text fz="lg" color={makeColor("gray", 6, 5, colorScheme)} mt="md">
             Projected
           </Text>
-          <Text
-            fz={32}
-            fw={700}
-            color={makeColor("gray", 8, 2, colorScheme)}
-            ta="center"
-          >
+          <Text fz={32} fw={700} color={makeColor("gray", 8, 2, colorScheme)}>
             {durationFmt(projectedMinutes)}
           </Text>
-          <Text
-            fz="sm"
-            color={makeColor("gray", 6, 5, colorScheme)}
-            ta="center"
-          >
+          <Text fz="sm" color={makeColor("gray", 6, 5, colorScheme)}>
             hours/week
           </Text>
           <Text

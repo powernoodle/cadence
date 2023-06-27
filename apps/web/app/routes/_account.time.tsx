@@ -103,7 +103,7 @@ function StatCard({
 }) {
   const { colorScheme } = useMantineColorScheme();
   return (
-    <Card>
+    <Card sx={{ overflow: "visible !important" }}>
       <Title
         order={2}
         size="h4"

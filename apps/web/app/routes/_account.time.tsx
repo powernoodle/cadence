@@ -114,7 +114,7 @@ function StatCard({
       >
         {title}
       </Title>
-      <SimpleGrid cols={2}>
+      <SimpleGrid cols={1} breakpoints={[{ minWidth: "48rem", cols: 2 }]}>
         <ProjectionGuage
           pastMinutes={pastMinutes}
           scheduledMinutes={scheduledMinutes}
@@ -129,7 +129,7 @@ function StatCard({
           maximize={maximize}
         />
       </SimpleGrid>
-      <Group>
+      <Group position="apart">
         {links.map((link: any, i: number) => (
           <Button
             key={i.toString()}

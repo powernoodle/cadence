@@ -110,9 +110,9 @@ export function isSameDay(d1: Date, d2: Date, tz: string) {
 export function formatWeek(date: Date, tz: string) {
   const start = startOfWeek(date, tz);
   const end = endOfWeek(date, tz);
-  let ret = `${formatDate(start, tz, "MMMM d")} – `;
+  let ret = `${formatDate(start, tz, "MMM d")} – `;
   if (start.getMonth() !== end.getMonth()) {
-    ret += formatDate(end, tz, "MMMM ");
+    ret += formatDate(end, tz, "MMM ");
   }
   ret += formatDate(end, tz, "d");
   return ret;

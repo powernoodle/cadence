@@ -56,6 +56,7 @@ export type SupabaseOutletContext = {
   user: User;
   syncProgress: number | null;
   useHeaderControl: (control: () => React.ReactNode) => void;
+  headerControl: React.ReactNode | null;
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {

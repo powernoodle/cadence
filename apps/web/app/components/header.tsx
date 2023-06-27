@@ -6,6 +6,7 @@ import {
   Link,
 } from "@remix-run/react";
 import {
+  MediaQuery,
   Button,
   UnstyledButton,
   Flex,
@@ -56,7 +57,7 @@ export default function Header({ menu }: { menu?: ReactNode }) {
   const isPublic = routes.some((r) => r.id === "routes/_public");
 
   return (
-    <MantineHeader height={60} p="xs">
+    <MantineHeader height={{ base: 60, md: 60 }} p="xs">
       <Flex
         mih={50}
         gap="md"
@@ -67,26 +68,30 @@ export default function Header({ menu }: { menu?: ReactNode }) {
       >
         <Group>
           {menu}
-          <UnstyledButton component={Link} to="/">
-            <Title order={1} size="h2">
-              {APP_NAME}
-            </Title>
-          </UnstyledButton>
+          <MediaQuery smallerThan="md" styles={{ display: "none" }}>
+            <UnstyledButton component={Link} to="/">
+              <Title order={1} size="h2">
+                {APP_NAME}
+              </Title>
+            </UnstyledButton>
+          </MediaQuery>
         </Group>
         <Group>{headerControl}</Group>
-        <Group>
-          {user && !isPublic && <ThemeToggle />}
-          {user && isPublic && (
-            <Button component={Link} to={DEFAULT_PATH}>
-              Go to app
-            </Button>
-          )}
-          {!user && location.pathname !== "/login" && (
-            <Button component={Link} to="/login">
-              Sign in
-            </Button>
-          )}
-        </Group>
+        <MediaQuery smallerThan="md" styles={{ display: "none" }}>
+          <Group>
+            {user && !isPublic && <ThemeToggle />}
+            {user && isPublic && (
+              <Button component={Link} to={DEFAULT_PATH}>
+                Go to app
+              </Button>
+            )}
+            {!user && location.pathname !== "/login" && (
+              <Button component={Link} to="/login">
+                Sign in
+              </Button>
+            )}
+          </Group>
+        </MediaQuery>
       </Flex>
     </MantineHeader>
   );

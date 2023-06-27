@@ -125,7 +125,7 @@ export function DateRange() {
 
   return (
     <Group spacing="xs">
-      <Button variant="subtle">
+      <Button variant="subtle" p={0}>
         <IconChevronLeft />
       </Button>
       <Select
@@ -133,13 +133,14 @@ export function DateRange() {
         onChange={onTimeframeChange}
         data={timeframes}
         variant="unstyled"
+        w="13em"
         styles={{
           input: {
             textAlign: "center",
           },
         }}
       />
-      <Button variant="subtle">
+      <Button variant="subtle" p={0}>
         <IconChevronRight />
       </Button>
     </Group>

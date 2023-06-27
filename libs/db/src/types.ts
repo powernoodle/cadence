@@ -263,6 +263,13 @@ export interface Database {
       }
     }
     Functions: {
+      calc_event_status: {
+        Args: {
+          at: unknown
+          response: Database["public"]["Enums"]["attendance"]
+        }
+        Returns: Database["public"]["Enums"]["event_status"]
+      }
       calculate_day: {
         Args: {
           _account_id: number
@@ -281,9 +288,10 @@ export interface Database {
         }
         Returns: {
           account_id: number
-          type: string
-          minutes: number
-          num: number
+          type: Database["public"]["Enums"]["event_type"]
+          status: Database["public"]["Enums"]["event_status"]
+          weekly_minutes: number
+          total_count: number
         }[]
       }
       event_by_organizer: {

@@ -95,6 +95,7 @@ export function ProjectionGuage({
   color,
   trend,
   maximize,
+  label,
 }: {
   pastMinutes: number;
   scheduledMinutes: number;
@@ -102,8 +103,12 @@ export function ProjectionGuage({
   color: string;
   trend?: number;
   maximize?: boolean;
+  label: string;
 }) {
-  trend = Math.round(trend || 0);
+  if (!trend || isNaN(trend) || trend === Infinity) {
+    trend = 0;
+  }
+  trend = Math.round(trend);
   const { colorScheme } = useMantineColorScheme();
   const projectedMinutes = pastMinutes + scheduledMinutes + pendingMinutes;
   const sections = [
@@ -133,7 +138,7 @@ export function ProjectionGuage({
       label={
         <Stack spacing={0} align="center">
           <Text fz="lg" color={makeColor("gray", 6, 5, colorScheme)} mt="md">
-            Projected
+            {label}
           </Text>
           <Text fz={32} fw={700} color={makeColor("gray", 8, 2, colorScheme)}>
             {durationFmt(projectedMinutes)}

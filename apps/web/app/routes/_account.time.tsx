@@ -14,14 +14,17 @@ import {
 import {
   IconCalendarCheck,
   IconCalendarX,
-  IconCalendarExclamation,
   IconCalendarQuestion,
 } from "@tabler/icons-react";
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@divvy/db";
 
-import { getDateRange, DateRangeSelect } from "../components/date-range";
+import {
+  getDateRange,
+  isPast,
+  DateRangeSelect,
+} from "../components/date-range";
 import { createServerClient, getAccountId, safeQuery } from "../util";
 import { ProjectionGuage, TargetGuage } from "../components/guage";
 import { makeColor } from "../color";
@@ -40,29 +43,31 @@ type EventStats = {
   [key in EventType]?: TypeStats;
 };
 
-// async function getStats(supabase: SupabaseClient<Database>, during: string): Promise<Stats> {
-//   const data = safeQuery(
-//     await supabase.rpc("day_stats", {
-//       _account_id: 8664,
-//       during,
-//     })
-//   )?.reduce(
-//     (acc, { type, minutes, num }) => {
-//       acc[type] = {
-//         minutes,
-//         count: num,
-//       };
-//       return acc;
-//     },
-//     {
-//       focus: { minutes: 0, count: 0 },
-//       internal: { minutes: 0, count: 0 },
-//       external: { minutes: 0, count: 0 },
-//       growth: { minutes: 0, count: 0 },
-//     } as { [key: string]: DayStats }
-//   );
-//   return data;
-// }
+async function getStats(
+  supabase: SupabaseClient<Database>,
+  accountId: number,
+  during: string
+): Promise<EventStats> {
+  const focusData = safeQuery(
+    await supabase.rpc("day_stats", {
+      _account_id: accountId,
+      during,
+    })
+  );
+  const data = focusData?.reduce(
+    (acc, { type, status, weekly_minutes, total_count }) => {
+      acc[type] = {
+        [status]: {
+          minutes: weekly_minutes,
+          count: total_count,
+        },
+      };
+      return acc;
+    },
+    {}
+  );
+  return data || {};
+}
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -75,119 +80,15 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const during = `[${current.start}, ${current.end})`;
   const previousDuring = `[${previous.start}, ${previous.end})`;
 
-  // const data = await getStats(supabase, during);
-  // const previousData = await getStats(supabase, previousDuring);
-
-  const data: EventStats = {
-    internal: {
-      attended: {
-        count: 17,
-        minutes: 9 * 60,
-      },
-      scheduled: {
-        count: 9,
-        minutes: 4 * 60,
-      },
-      pending: {
-        count: 3,
-        minutes: 60,
-      },
-      declined: {
-        count: 2,
-        minutes: 60,
-      },
-    },
-    external: {
-      attended: {
-        count: 2,
-        minutes: 2 * 60,
-      },
-      scheduled: {
-        count: 2,
-        minutes: 1.5 * 60,
-      },
-      pending: {
-        count: 0,
-        minutes: 0,
-      },
-      declined: {
-        count: 0,
-        minutes: 0,
-      },
-    },
-    focus: {
-      attended: {
-        count: 5,
-        minutes: 11 * 60,
-      },
-      scheduled: {
-        count: 3,
-        minutes: 9 * 60,
-      },
-    },
-    growth: {
-      attended: {
-        count: 1,
-        minutes: 30,
-      },
-      scheduled: {
-        count: 0,
-        minutes: 0,
-      },
-      pending: {
-        count: 2,
-        minutes: 40,
-      },
-      declined: {
-        count: 1,
-        minutes: 45,
-      },
-    },
-  };
-  const previousData = {
-    internal: {
-      attended: {
-        count: 30,
-        minutes: 12 * 60,
-      },
-      declined: {
-        count: 2,
-        minutes: 60,
-      },
-    },
-    external: {
-      attended: {
-        count: 3,
-        minutes: 3 * 60,
-      },
-      declined: {
-        count: 0,
-        minutes: 0,
-      },
-    },
-    focus: {
-      attended: {
-        count: 8,
-        minutes: 16 * 60,
-      },
-    },
-    growth: {
-      attended: {
-        count: 3,
-        minutes: 3 * 30,
-      },
-      declined: {
-        count: 1,
-        minutes: 45,
-      },
-    },
-  };
+  const data = await getStats(supabase, accountId, during);
+  const previousData = await getStats(supabase, accountId, previousDuring);
 
   return json(
     {
       data,
       previousData,
       accountId,
+      isPast: isPast(current.end, USER_TZ),
     },
     { headers: response.headers }
   );
@@ -200,6 +101,7 @@ function StatCard({
   targetMinutes,
   color,
   maximize,
+  isPast,
 }: {
   title: string;
   data: TypeStats;
@@ -207,6 +109,7 @@ function StatCard({
   targetMinutes?: number;
   color: string;
   maximize?: boolean;
+  isPast: boolean;
 }) {
   const { colorScheme } = useMantineColorScheme();
 
@@ -264,6 +167,7 @@ function StatCard({
       </Title>
       <SimpleGrid cols={1} breakpoints={[{ minWidth: "48rem", cols: 2 }]}>
         <ProjectionGuage
+          label={isPast ? "Attended" : "Projected"}
           pastMinutes={data?.attended?.minutes || 0}
           scheduledMinutes={data?.scheduled?.minutes || 0}
           pendingMinutes={data?.pending?.minutes || 0}
@@ -298,8 +202,7 @@ export const handle = {
 };
 
 export default function MeetingLoad() {
-  const { data, previousData } = useLoaderData<typeof loader>();
-
+  const { data, previousData, isPast } = useLoaderData<typeof loader>();
   if (!data || !previousData) return null;
 
   return (
@@ -321,6 +224,7 @@ export default function MeetingLoad() {
           previousData={previousData.internal || {}}
           targetMinutes={10 * 60}
           color="orange"
+          isPast={isPast}
         />
         <StatCard
           title={"Customer Meetings"}
@@ -329,6 +233,7 @@ export default function MeetingLoad() {
           targetMinutes={3 * 60}
           maximize={true}
           color="yellow"
+          isPast={isPast}
         />
         <StatCard
           title={"Deep Work Blocks"}
@@ -337,6 +242,7 @@ export default function MeetingLoad() {
           targetMinutes={22 * 60}
           maximize={true}
           color="blue"
+          isPast={isPast}
         />
         <StatCard
           title={"Health, Growth & Giving Activities"}
@@ -344,6 +250,7 @@ export default function MeetingLoad() {
           previousData={previousData.growth || {}}
           maximize={true}
           color="cyan"
+          isPast={isPast}
         />
       </SimpleGrid>
     </>

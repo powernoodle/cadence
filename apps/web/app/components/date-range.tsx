@@ -27,6 +27,11 @@ function formatDay(d: Date, tz: string) {
   return formatDate(d, tz, "yyyy-MM-dd");
 }
 
+export function isPast(day: string, tz: string) {
+  const today = formatDay(new Date(), tz);
+  return day < today;
+}
+
 function makeDateRange(
   start: Date,
   timeframe: Timeframe,

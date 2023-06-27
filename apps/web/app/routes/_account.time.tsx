@@ -7,17 +7,17 @@ import {
   SimpleGrid,
   Card,
   Title,
-  Anchor,
+  Button,
   Text,
   Grid,
   Group,
   useMantineColorScheme,
 } from "@mantine/core";
 import {
-  IconZoomCheckFilled,
-  IconZoomCheck,
-  IconZoomQuestion,
-  IconZoomCancel,
+  IconCalendarCheck,
+  IconCalendarX,
+  IconCalendarExclamation,
+  IconCalendarQuestion,
 } from "@tabler/icons-react";
 
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -109,7 +109,7 @@ function StatCard({
       <Title
         order={2}
         size="h4"
-        fw={500}
+        fw={700}
         color={makeColor(color, 6, 4, colorScheme)}
       >
         {title}
@@ -128,15 +128,19 @@ function StatCard({
           targetMinutes={targetMinutes}
           maximize={maximize}
         />
-        {links.map((link: any, i: number) => (
-          <Anchor key={i.toString()} href="#" color={link.color} pl={15}>
-            <Group>
-              {link.icon}
-              <Text>{link.label}</Text>
-            </Group>
-          </Anchor>
-        ))}
       </SimpleGrid>
+      <Group>
+        {links.map((link: any, i: number) => (
+          <Button
+            key={i.toString()}
+            color={link.color}
+            variant="subtle"
+            leftIcon={link.icon}
+          >
+            {link.label}
+          </Button>
+        ))}
+      </Group>
     </Card>
   );
 }
@@ -213,24 +217,24 @@ export default function MeetingLoad() {
             color="orange"
             links={[
               {
-                icon: <IconZoomCheckFilled />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "17 meetings done",
-              },
-              {
-                icon: <IconZoomCheck />,
+                icon: <IconCalendarCheck />,
                 color: makeColor("gray", 8, 1, colorScheme),
-                label: "9 meetings scheduled",
+                label: "9 scheduled",
               },
               {
-                icon: <IconZoomCancel />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "2 meetings declined",
-              },
-              {
-                icon: <IconZoomQuestion />,
+                icon: <IconCalendarQuestion />,
                 color: makeColor("yellow", 9, 2, colorScheme),
-                label: "3 meetings pending",
+                label: "3 pending",
+              },
+              {
+                icon: <IconCalendarX />,
+                color: makeColor("gray", 6, 5, colorScheme),
+                label: "2 declined",
+              },
+              {
+                icon: <IconCalendarCheck />,
+                color: makeColor("gray", 6, 5, colorScheme),
+                label: "17 done",
               },
             ]}
           />
@@ -248,31 +252,31 @@ export default function MeetingLoad() {
             color="yellow"
             links={[
               {
-                icon: <IconZoomCheckFilled />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "2 meetings done",
-              },
-              {
-                icon: <IconZoomCheck />,
+                icon: <IconCalendarCheck />,
                 color: makeColor("gray", 8, 1, colorScheme),
-                label: "2 meetings scheduled",
+                label: "2 scheduled",
               },
               {
-                icon: <IconZoomCancel />,
+                icon: <IconCalendarQuestion />,
                 color: makeColor("gray", 6, 5, colorScheme),
-                label: "No meetings declined",
+                label: "0 pending",
               },
               {
-                icon: <IconZoomQuestion />,
+                icon: <IconCalendarCheck />,
                 color: makeColor("gray", 6, 5, colorScheme),
-                label: "No meetings pending",
+                label: "2 done",
+              },
+              {
+                icon: <IconCalendarX />,
+                color: makeColor("gray", 6, 5, colorScheme),
+                label: "0 declined",
               },
             ]}
           />
         </Grid.Col>
         <Grid.Col sm={12} md={6} lg={6}>
           <StatCard
-            title={"Deep Work"}
+            title={"Deep Work Blocks"}
             pastMinutes={11 * 60}
             scheduledMinutes={9 * 60}
             projectedMinutes={18 * 60}
@@ -287,31 +291,31 @@ export default function MeetingLoad() {
             color="blue"
             links={[
               {
-                icon: <IconZoomCheckFilled />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "5 blocks done",
-              },
-              {
-                icon: <IconZoomCheck />,
+                icon: <IconCalendarCheck />,
                 color: makeColor("gray", 8, 1, colorScheme),
-                label: "3 blocks scheduled",
+                label: "3 scheduled",
               },
               {
-                icon: <IconZoomCancel />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "1 block skipped",
-              },
-              {
-                icon: <IconZoomQuestion />,
+                icon: <IconCalendarExclamation />,
                 color: makeColor("yellow", 9, 2, colorScheme),
-                label: "1 block with conflicts",
+                label: "1 conflict",
+              },
+              {
+                icon: <IconCalendarX />,
+                color: makeColor("gray", 6, 5, colorScheme),
+                label: "1 skipped",
+              },
+              {
+                icon: <IconCalendarCheck />,
+                color: makeColor("gray", 6, 5, colorScheme),
+                label: "5 done",
               },
             ]}
           />
         </Grid.Col>
         <Grid.Col sm={12} md={6} lg={6}>
           <StatCard
-            title={"Health, Growth & Giving"}
+            title={"Health, Growth & Giving Activities"}
             pastMinutes={30}
             scheduledMinutes={0}
             projectedMinutes={30}
@@ -321,24 +325,24 @@ export default function MeetingLoad() {
             color="cyan"
             links={[
               {
-                icon: <IconZoomCheckFilled />,
+                icon: <IconCalendarCheck />,
                 color: makeColor("gray", 6, 5, colorScheme),
-                label: "1 activity done",
+                label: "0 scheduled",
               },
               {
-                icon: <IconZoomCheck />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "No activities scheduled",
-              },
-              {
-                icon: <IconZoomCancel />,
-                color: makeColor("gray", 6, 5, colorScheme),
-                label: "1 activity skipped",
-              },
-              {
-                icon: <IconZoomQuestion />,
+                icon: <IconCalendarQuestion />,
                 color: makeColor("yellow", 9, 2, colorScheme),
-                label: "2 activities pending",
+                label: "2 pending",
+              },
+              {
+                icon: <IconCalendarX />,
+                color: makeColor("gray", 6, 5, colorScheme),
+                label: "1 skipped",
+              },
+              {
+                icon: <IconCalendarCheck />,
+                color: makeColor("gray", 6, 5, colorScheme),
+                label: "1 done",
               },
             ]}
           />

@@ -75,7 +75,7 @@ export function Guage({
             enableArcLinkLabels={false}
             tooltip={(d) =>
               d.datum.label ? (
-                <Paper p="xs">
+                <Paper p={2}>
                   <Text color={d.datum.color}>{d.datum.label}</Text>
                 </Paper>
               ) : null
@@ -90,20 +90,21 @@ export function Guage({
 export function ProjectionGuage({
   pastMinutes,
   scheduledMinutes,
-  projectedMinutes,
+  pendingMinutes,
   color,
   trend,
   maximize,
 }: {
   pastMinutes: number;
   scheduledMinutes: number;
-  projectedMinutes: number;
+  pendingMinutes: number;
   color: string;
   trend?: number;
   maximize?: boolean;
 }) {
+  trend = Math.round(trend);
   const { colorScheme } = useMantineColorScheme();
-  const diff = projectedMinutes - pastMinutes - scheduledMinutes;
+  const projectedMinutes = pastMinutes + scheduledMinutes + pendingMinutes;
   const sections = [
     {
       label: "Past",
@@ -117,16 +118,12 @@ export function ProjectionGuage({
       color,
       shade: 4,
     },
-    ...(diff >= 0
-      ? [
-          {
-            label: "Projected",
-            value: diff,
-            color,
-            shade: 2,
-          },
-        ]
-      : []),
+    {
+      label: "Pending",
+      value: pendingMinutes,
+      color,
+      shade: 2,
+    },
   ];
   const DiffIcon = trend && trend > 0 ? IconArrowUpRight : IconArrowDownRight;
   return (

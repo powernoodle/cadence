@@ -382,6 +382,7 @@ export interface Database {
     }
     Enums: {
       attendance: "accepted" | "declined" | "tentative"
+      event_status: "attended" | "scheduled" | "pending" | "declined"
       event_type: "internal" | "external" | "personal" | "focus" | "growth"
       provider: "google" | "azure"
     }

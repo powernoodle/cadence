@@ -27,34 +27,42 @@ import { ProjectionGuage, TargetGuage } from "../components/guage";
 import { makeColor } from "../color";
 import { USER_TZ } from "../config";
 
-type DayStats = {
-  minutes: number;
-  count: number;
+type EventType = Database["public"]["Enums"]["event_type"];
+type EventStatus = Database["public"]["Enums"]["event_status"];
+
+type TypeStats = {
+  [key in EventStatus]?: {
+    minutes: number;
+    count: number;
+  };
+};
+type EventStats = {
+  [key in EventType]?: TypeStats;
 };
 
-async function getStats(supabase: SupabaseClient<Database>, during: string) {
-  const data = safeQuery(
-    await supabase.rpc("day_stats", {
-      _account_id: 8664,
-      during,
-    })
-  )?.reduce(
-    (acc, { type, minutes, num }) => {
-      acc[type] = {
-        minutes,
-        count: num,
-      };
-      return acc;
-    },
-    {
-      focus: { minutes: 0, count: 0 },
-      internal: { minutes: 0, count: 0 },
-      external: { minutes: 0, count: 0 },
-      growth: { minutes: 0, count: 0 },
-    } as { [key: string]: DayStats }
-  );
-  return data;
-}
+// async function getStats(supabase: SupabaseClient<Database>, during: string): Promise<Stats> {
+//   const data = safeQuery(
+//     await supabase.rpc("day_stats", {
+//       _account_id: 8664,
+//       during,
+//     })
+//   )?.reduce(
+//     (acc, { type, minutes, num }) => {
+//       acc[type] = {
+//         minutes,
+//         count: num,
+//       };
+//       return acc;
+//     },
+//     {
+//       focus: { minutes: 0, count: 0 },
+//       internal: { minutes: 0, count: 0 },
+//       external: { minutes: 0, count: 0 },
+//       growth: { minutes: 0, count: 0 },
+//     } as { [key: string]: DayStats }
+//   );
+//   return data;
+// }
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -67,8 +75,113 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const during = `[${current.start}, ${current.end})`;
   const previousDuring = `[${previous.start}, ${previous.end})`;
 
-  const data = await getStats(supabase, during);
-  const previousData = await getStats(supabase, previousDuring);
+  // const data = await getStats(supabase, during);
+  // const previousData = await getStats(supabase, previousDuring);
+
+  const data: EventStats = {
+    internal: {
+      attended: {
+        count: 17,
+        minutes: 9 * 60,
+      },
+      scheduled: {
+        count: 9,
+        minutes: 4 * 60,
+      },
+      pending: {
+        count: 3,
+        minutes: 60,
+      },
+      declined: {
+        count: 2,
+        minutes: 60,
+      },
+    },
+    external: {
+      attended: {
+        count: 2,
+        minutes: 2 * 60,
+      },
+      scheduled: {
+        count: 2,
+        minutes: 1.5 * 60,
+      },
+      pending: {
+        count: 0,
+        minutes: 0,
+      },
+      declined: {
+        count: 0,
+        minutes: 0,
+      },
+    },
+    focus: {
+      attended: {
+        count: 5,
+        minutes: 11 * 60,
+      },
+      scheduled: {
+        count: 3,
+        minutes: 9 * 60,
+      },
+    },
+    growth: {
+      attended: {
+        count: 1,
+        minutes: 30,
+      },
+      scheduled: {
+        count: 0,
+        minutes: 0,
+      },
+      pending: {
+        count: 2,
+        minutes: 40,
+      },
+      declined: {
+        count: 1,
+        minutes: 45,
+      },
+    },
+  };
+  const previousData = {
+    internal: {
+      attended: {
+        count: 30,
+        minutes: 12 * 60,
+      },
+      declined: {
+        count: 2,
+        minutes: 60,
+      },
+    },
+    external: {
+      attended: {
+        count: 3,
+        minutes: 3 * 60,
+      },
+      declined: {
+        count: 0,
+        minutes: 0,
+      },
+    },
+    focus: {
+      attended: {
+        count: 8,
+        minutes: 16 * 60,
+      },
+    },
+    growth: {
+      attended: {
+        count: 3,
+        minutes: 3 * 30,
+      },
+      declined: {
+        count: 1,
+        minutes: 45,
+      },
+    },
+  };
 
   return json(
     {
@@ -82,26 +195,63 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 
 function StatCard({
   title,
-  pastMinutes,
-  scheduledMinutes,
-  projectedMinutes,
+  data,
+  previousData,
   targetMinutes,
-  trend,
   color,
   maximize,
-  links,
 }: {
   title: string;
-  pastMinutes: number;
-  scheduledMinutes: number;
-  projectedMinutes: number;
+  data: TypeStats;
+  previousData: TypeStats;
   targetMinutes?: number;
-  trend?: number;
   color: string;
   maximize?: boolean;
-  links: any;
 }) {
   const { colorScheme } = useMantineColorScheme();
+
+  const links = [
+    {
+      icon: <IconCalendarCheck />,
+      color: makeColor("gray", 8, 1, colorScheme),
+      label: `${data.scheduled?.count || 0} scheduled`,
+    },
+    ...(data.pending
+      ? [
+          {
+            icon: <IconCalendarQuestion />,
+            color: makeColor("yellow", 9, 2, colorScheme),
+            label: `${data.pending.count || 0} pending`,
+          },
+        ]
+      : []),
+    ...(data.declined
+      ? [
+          {
+            icon: <IconCalendarX />,
+            color: makeColor("gray", 6, 5, colorScheme),
+            label: `${data.declined.count || 0} declined`,
+          },
+        ]
+      : []),
+    {
+      icon: <IconCalendarCheck />,
+      color: makeColor("gray", 6, 5, colorScheme),
+      label: `${data.attended?.count || 0} attended`,
+    },
+  ];
+  const projectedMinutes =
+    (data?.attended?.minutes || 0) +
+    (data?.scheduled?.minutes || 0) +
+    (data?.pending?.minutes || 0);
+  const trend =
+    (projectedMinutes /
+      ((previousData?.attended?.minutes || 0) +
+        (previousData?.scheduled?.minutes || 0) +
+        (previousData?.pending?.minutes || 0))) *
+      100 -
+    100;
+
   return (
     <Card sx={{ overflow: "visible !important" }}>
       <Title
@@ -114,9 +264,9 @@ function StatCard({
       </Title>
       <SimpleGrid cols={1} breakpoints={[{ minWidth: "48rem", cols: 2 }]}>
         <ProjectionGuage
-          pastMinutes={pastMinutes}
-          scheduledMinutes={scheduledMinutes}
-          projectedMinutes={projectedMinutes}
+          pastMinutes={data?.attended?.minutes || 0}
+          scheduledMinutes={data?.scheduled?.minutes || 0}
+          pendingMinutes={data?.pending?.minutes || 0}
           color={color}
           trend={trend}
           maximize={maximize}
@@ -148,7 +298,6 @@ export const handle = {
 };
 
 export default function MeetingLoad() {
-  const { colorScheme } = useMantineColorScheme();
   const { data, previousData } = useLoaderData<typeof loader>();
 
   if (!data || !previousData) return null;
@@ -168,129 +317,33 @@ export default function MeetingLoad() {
       >
         <StatCard
           title={"Work Meetings"}
-          pastMinutes={9 * 60}
-          scheduledMinutes={4 * 60}
-          projectedMinutes={14 * 60}
+          data={data.internal || {}}
+          previousData={previousData.internal || {}}
           targetMinutes={10 * 60}
-          trend={7}
           color="orange"
-          links={[
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 8, 1, colorScheme),
-              label: "9 scheduled",
-            },
-            {
-              icon: <IconCalendarQuestion />,
-              color: makeColor("yellow", 9, 2, colorScheme),
-              label: "3 pending",
-            },
-            {
-              icon: <IconCalendarX />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "2 declined",
-            },
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "17 done",
-            },
-          ]}
         />
         <StatCard
           title={"Customer Meetings"}
-          pastMinutes={2 * 60}
-          scheduledMinutes={1.5 * 60}
-          projectedMinutes={3.5 * 60}
+          data={data.external || {}}
+          previousData={previousData.external || {}}
           targetMinutes={3 * 60}
-          trend={10}
           maximize={true}
           color="yellow"
-          links={[
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 8, 1, colorScheme),
-              label: "2 scheduled",
-            },
-            {
-              icon: <IconCalendarQuestion />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "0 pending",
-            },
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "2 done",
-            },
-            {
-              icon: <IconCalendarX />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "0 declined",
-            },
-          ]}
         />
         <StatCard
           title={"Deep Work Blocks"}
-          pastMinutes={11 * 60}
-          scheduledMinutes={9 * 60}
-          projectedMinutes={18 * 60}
+          data={data.focus || {}}
+          previousData={previousData.focus || {}}
           targetMinutes={22 * 60}
           maximize={true}
-          trend={5}
           color="blue"
-          links={[
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 8, 1, colorScheme),
-              label: "3 scheduled",
-            },
-            {
-              icon: <IconCalendarExclamation />,
-              color: makeColor("yellow", 9, 2, colorScheme),
-              label: "1 conflict",
-            },
-            {
-              icon: <IconCalendarX />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "1 skipped",
-            },
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "5 done",
-            },
-          ]}
         />
         <StatCard
           title={"Health, Growth & Giving Activities"}
-          pastMinutes={30}
-          scheduledMinutes={0}
-          projectedMinutes={30}
-          trend={-20}
+          data={data.growth || {}}
+          previousData={previousData.growth || {}}
           maximize={true}
           color="cyan"
-          links={[
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "0 scheduled",
-            },
-            {
-              icon: <IconCalendarQuestion />,
-              color: makeColor("yellow", 9, 2, colorScheme),
-              label: "2 pending",
-            },
-            {
-              icon: <IconCalendarX />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "1 skipped",
-            },
-            {
-              icon: <IconCalendarCheck />,
-              color: makeColor("gray", 6, 5, colorScheme),
-              label: "1 done",
-            },
-          ]}
         />
       </SimpleGrid>
     </>

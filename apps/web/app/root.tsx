@@ -20,7 +20,7 @@ import {
   isRouteErrorResponse,
   useFetcher,
 } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
 import type { Database } from "@divvy/db";
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -41,6 +41,8 @@ import { StylesPlaceholder } from "@mantine/remix";
 import { APP_NAME, createServerClient } from "./util";
 import { userPrefs } from "~/cookies";
 
+import { useOutletContext } from "@remix-run/react";
+
 export const meta: V2_MetaFunction = () => [
   { charset: "utf-8" },
   { title: APP_NAME },
@@ -53,6 +55,7 @@ export type SupabaseOutletContext = {
   supabase: SupabaseClient<Database>;
   user: User;
   syncProgress: number | null;
+  useHeaderControl: (control: () => React.ReactNode) => void;
 };
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -212,6 +215,18 @@ export default function App() {
     };
   }, [serverAccessToken, supabase]);
 
+  const [headerControl, setHeaderControl] = useState<React.ReactNode>(null);
+  const useHeaderControl = useCallback(
+    (control: () => React.ReactNode, deps: any[] = []) => {
+      const memoControl = useMemo(control, deps);
+      useEffect(() => {
+        setHeaderControl(memoControl);
+        return () => setHeaderControl(null);
+      }, []);
+    },
+    [setHeaderControl]
+  );
+
   return (
     <ColorSchemeProvider
       colorScheme={colorScheme}
@@ -229,7 +244,15 @@ export default function App() {
             <Links />
           </head>
           <body>
-            <Outlet context={{ supabase, session, user }} />
+            <Outlet
+              context={{
+                supabase,
+                session,
+                user,
+                headerControl,
+                useHeaderControl,
+              }}
+            />
             <ScrollRestoration />
             <Scripts />
             <LiveReload />

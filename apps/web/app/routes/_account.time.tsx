@@ -1,7 +1,8 @@
 /** @jsxfrag */
+import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useOutletContext, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   AspectRatio,
@@ -28,13 +29,10 @@ import {
 } from "@tabler/icons-react";
 
 import type { Database } from "@divvy/db";
+import { SupabaseOutletContext } from "../root";
+import { DateRange } from "../components/daterange";
 import { getDateRange } from "./_account";
-import {
-  createServerClient,
-  getAccountId,
-  safeQuery,
-  durationFmt,
-} from "../util";
+import { createServerClient, getAccountId, safeQuery } from "../util";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { ProjectionGuage, TargetGuage } from "../components/guage";
 
@@ -152,6 +150,7 @@ function weeklyMinutesToAnnualWeeks(minutes: number) {
 const HOURS_PER_WEEK = 40;
 
 export default function MeetingLoad() {
+  const { useHeaderControl } = useOutletContext<SupabaseOutletContext>();
   const { data, previousData } = useLoaderData<typeof loader>();
   if (!data || !previousData) return null;
 
@@ -186,6 +185,8 @@ export default function MeetingLoad() {
       value: otherHours,
     },
   ];
+
+  useHeaderControl(() => <DateRange />);
 
   return (
     <>
@@ -275,7 +276,6 @@ export default function MeetingLoad() {
             scheduledMinutes={9 * 60}
             projectedMinutes={18 * 60}
             targetMinutes={22 * 60}
-            trend={data.focus.minutes - previousData.focus.minutes}
             maximize={true}
             trend={5}
             description={`You have ${
@@ -314,7 +314,8 @@ export default function MeetingLoad() {
             pastMinutes={30}
             scheduledMinutes={0}
             projectedMinutes={30}
-            trend={data.growth.minutes - previousData.growth.minutes}
+            trend={-20}
+            maximize={true}
             description={`.`}
             color="cyan"
             links={[

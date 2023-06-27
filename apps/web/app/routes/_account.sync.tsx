@@ -30,8 +30,6 @@ import { SupabaseOutletContext } from "../root";
 import { signInWithAzure, signInWithGoogle } from "../auth";
 import { createServerClient, getAccountId, safeQuery } from "../util";
 
-import googleImg from "../assets/google-warning.png";
-
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
@@ -165,20 +163,6 @@ export default function Login() {
               >
                 <Text>Divvy was not granted access to your calendar.</Text>
                 <Text mt="md">{params.get("error")}</Text>
-              </Alert>
-            )}
-            {provider === "false" && (
-              <Alert
-                icon={<IconInfoCircle size="1rem" />}
-                title="Completing Google sign in"
-              >
-                <Text>
-                  Google manually approves apps for access to calendars. Divvy
-                  is currently awaiting approval. Until then, you will see the
-                  warning below. Please follow the steps shown to complete your
-                  sign in.
-                </Text>
-                <Image src={googleImg} mt="md" />
               </Alert>
             )}
           </>

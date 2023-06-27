@@ -1,26 +1,18 @@
 /** @jsxfrag */
-import { useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { Link, useOutletContext, useLoaderData } from "@remix-run/react";
+import { useOutletContext, useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
-  AspectRatio,
   SimpleGrid,
-  Box,
   Card,
-  Center,
   Title,
-  Navbar,
-  NavLink,
   Anchor,
   Text,
   Grid,
   Group,
-  Stack,
-  useMantineTheme,
+  useMantineColorScheme,
 } from "@mantine/core";
-import { ResponsiveWaffle } from "@nivo/waffle";
 import {
   IconZoomCheckFilled,
   IconZoomCheck,
@@ -28,13 +20,15 @@ import {
   IconZoomCancel,
 } from "@tabler/icons-react";
 
+import { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@divvy/db";
+
 import { SupabaseOutletContext } from "../root";
 import { DateRange } from "../components/daterange";
 import { getDateRange } from "./_account";
 import { createServerClient, getAccountId, safeQuery } from "../util";
-import { SupabaseClient } from "@supabase/supabase-js";
 import { ProjectionGuage, TargetGuage } from "../components/guage";
+import { makeColor } from "../color";
 
 type DayStats = {
   minutes: number;
@@ -109,9 +103,15 @@ function StatCard({
   maximize?: boolean;
   links: any;
 }) {
+  const { colorScheme } = useMantineColorScheme();
   return (
     <Card>
-      <Title order={2} size="h4" fw={500} color={color + ".4"}>
+      <Title
+        order={2}
+        size="h4"
+        fw={500}
+        color={makeColor(color, 6, 4, colorScheme)}
+      >
         {title}
       </Title>
       <SimpleGrid cols={2}>
@@ -150,8 +150,11 @@ function weeklyMinutesToAnnualWeeks(minutes: number) {
 const HOURS_PER_WEEK = 40;
 
 export default function MeetingLoad() {
+  const { colorScheme } = useMantineColorScheme();
   const { useHeaderControl } = useOutletContext<SupabaseOutletContext>();
   const { data, previousData } = useLoaderData<typeof loader>();
+  useHeaderControl(() => <DateRange />);
+
   if (!data || !previousData) return null;
 
   const otherHours =
@@ -186,8 +189,6 @@ export default function MeetingLoad() {
     },
   ];
 
-  useHeaderControl(() => <DateRange />);
-
   return (
     <>
       <Title order={2} size="h2" mb="lg">
@@ -213,22 +214,22 @@ export default function MeetingLoad() {
             links={[
               {
                 icon: <IconZoomCheckFilled />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "17 meetings done",
               },
               {
                 icon: <IconZoomCheck />,
-                color: "gray.1",
+                color: makeColor("gray", 8, 1, colorScheme),
                 label: "9 meetings scheduled",
               },
               {
                 icon: <IconZoomCancel />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "2 meetings declined",
               },
               {
                 icon: <IconZoomQuestion />,
-                color: "yellow.2",
+                color: makeColor("yellow", 9, 2, colorScheme),
                 label: "3 meetings pending",
               },
             ]}
@@ -248,22 +249,22 @@ export default function MeetingLoad() {
             links={[
               {
                 icon: <IconZoomCheckFilled />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "2 meetings done",
               },
               {
                 icon: <IconZoomCheck />,
-                color: "gray.1",
+                color: makeColor("gray", 8, 1, colorScheme),
                 label: "2 meetings scheduled",
               },
               {
                 icon: <IconZoomCancel />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "No meetings declined",
               },
               {
                 icon: <IconZoomQuestion />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "No meetings pending",
               },
             ]}
@@ -287,22 +288,22 @@ export default function MeetingLoad() {
             links={[
               {
                 icon: <IconZoomCheckFilled />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "5 blocks done",
               },
               {
                 icon: <IconZoomCheck />,
-                color: "gray.1",
+                color: makeColor("gray", 8, 1, colorScheme),
                 label: "3 blocks scheduled",
               },
               {
                 icon: <IconZoomCancel />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "1 block skipped",
               },
               {
                 icon: <IconZoomQuestion />,
-                color: "yellow.2",
+                color: makeColor("yellow", 9, 2, colorScheme),
                 label: "1 block with conflicts",
               },
             ]}
@@ -321,22 +322,22 @@ export default function MeetingLoad() {
             links={[
               {
                 icon: <IconZoomCheckFilled />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "1 activity done",
               },
               {
                 icon: <IconZoomCheck />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "No activities scheduled",
               },
               {
                 icon: <IconZoomCancel />,
-                color: "gray.5",
+                color: makeColor("gray", 6, 5, colorScheme),
                 label: "1 activity skipped",
               },
               {
                 icon: <IconZoomQuestion />,
-                color: "yellow.2",
+                color: makeColor("yellow", 9, 2, colorScheme),
                 label: "2 activities pending",
               },
             ]}

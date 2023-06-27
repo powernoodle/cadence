@@ -1,19 +1,16 @@
 import {
   AspectRatio,
   Box,
-  Card,
-  Center,
-  Title,
   Text,
-  Grid,
   Group,
   Stack,
-  RingProgress,
   useMantineTheme,
+  useMantineColorScheme,
 } from "@mantine/core";
 import { ResponsivePie } from "@nivo/pie";
 import { IconArrowUpRight, IconArrowDownRight } from "@tabler/icons-react";
 
+import { makeColor } from "../color";
 import { durationFmt } from "../util";
 
 export type GuageSections = {
@@ -31,6 +28,7 @@ export function Guage({
   label: React.ReactNode;
   total?: number;
 }) {
+  const { colorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
   const graphSections = sections
     .map(({ label, color, shade, value }) => ({
@@ -47,7 +45,10 @@ export function Guage({
               value:
                 total - sections.reduce((acc, { value }) => acc + value, 0),
               label: "",
-              color: theme.fn.themeColor("gray", 7),
+              color: theme.fn.themeColor(
+                "gray",
+                colorScheme === "light" ? 2 : 7
+              ),
             },
           ]
         : []
@@ -63,7 +64,7 @@ export function Guage({
           enableArcLabels={false}
           enableArcLinkLabels={false}
         />
-        <Stack spacing={0}>{label}</Stack>
+        {label}
       </AspectRatio>
     </Box>
   );
@@ -84,6 +85,7 @@ export function ProjectionGuage({
   trend?: number;
   maximize?: boolean;
 }) {
+  const { colorScheme } = useMantineColorScheme();
   const diff = projectedMinutes - pastMinutes - scheduledMinutes;
   const sections = [
     {
@@ -114,35 +116,53 @@ export function ProjectionGuage({
     <Guage
       sections={sections}
       label={
-        <>
-          {!!trend && (
-            <Text fz="sm" fw={500} mb="md">
-              <span>&nbsp;</span>
-            </Text>
-          )}
-          <Text color="gray.5" ta="center">
+        <Stack spacing={0}>
+          <Text
+            fz="lg"
+            color={makeColor("gray", 6, 5, colorScheme)}
+            ta="center"
+            mt="md"
+          >
             Projected
           </Text>
-          <Text fz={32} fw={700} ta="center">
+          <Text
+            fz={32}
+            fw={700}
+            color={makeColor("gray", 8, 2, colorScheme)}
+            ta="center"
+          >
             {durationFmt(projectedMinutes)}
           </Text>
-          <Text color="gray.5" ta="center">
-            hrs/wk
+          <Text
+            fz="sm"
+            color={makeColor("gray", 6, 5, colorScheme)}
+            ta="center"
+          >
+            hours/week
           </Text>
-          {!!trend && (
-            <Text
-              color={!!maximize === trend > 0 ? "teal.4" : "red.4"}
-              fz="sm"
-              fw={500}
-              mt="md"
-            >
-              <Group spacing={0}>
-                <span>{trend}%</span>
-                <DiffIcon size="1rem" stroke={1.5} />
-              </Group>
-            </Text>
-          )}
-        </>
+          <Text
+            fz="sm"
+            fw={500}
+            color={makeColor(
+              !!maximize === (trend ?? 0) > 0 ? "teal" : "red",
+              5,
+              3,
+              colorScheme
+            )}
+            mt="md"
+          >
+            <Group spacing={0}>
+              {!!trend ? (
+                <>
+                  <span>{trend}%</span>
+                  <DiffIcon size="1rem" stroke={1.5} />
+                </>
+              ) : (
+                <span>&nbsp;</span>
+              )}
+            </Group>
+          </Text>
+        </Stack>
       }
     />
   );
@@ -157,12 +177,17 @@ export function TargetGuage({
   projectedMinutes: number;
   maximize?: boolean;
 }) {
+  const { colorScheme } = useMantineColorScheme();
   if (targetMinutes === undefined) {
     return (
       <Guage
         sections={[]}
         label={
-          <Text fz={24} color="gray.5" ta="center">
+          <Text
+            fz={24}
+            color={makeColor("gray", 6, 5, colorScheme)}
+            ta="center"
+          >
             Set target
           </Text>
         }
@@ -208,26 +233,37 @@ export function TargetGuage({
       sections={sections}
       total={targetMinutes * 2}
       label={
-        <>
-          <Text fz="sm" fw={500} mt="md">
-            <span>&nbsp;</span>
-          </Text>
-          <Text color="gray.5" ta="center">
+        <Stack spacing={0}>
+          <Text
+            fz="lg"
+            color={makeColor("gray", 6, 5, colorScheme)}
+            ta="center"
+            mt="md"
+          >
             Target
           </Text>
-          <Text fz={32} fw={700} ta="center">
+          <Text
+            fz={32}
+            fw={700}
+            color={makeColor("gray", 8, 2, colorScheme)}
+            ta="center"
+          >
             {durationFmt(targetMinutes)}
           </Text>
-          <Text color="gray.5" ta="center">
-            hrs/wk
+          <Text
+            fz="sm"
+            color={makeColor("gray", 6, 5, colorScheme)}
+            ta="center"
+          >
+            hours/week
           </Text>
-          <Text color="gray.6" fz="sm" fw={500} mt="md">
+          <Text fz="sm" color={makeColor("gray", 6, 5, colorScheme)} mt="md">
             <Group spacing={0}>
               <DiffIcon size="1rem" stroke={1.5} />
               <span>&nbsp;is better</span>
             </Group>
           </Text>
-        </>
+        </Stack>
       }
     />
   );

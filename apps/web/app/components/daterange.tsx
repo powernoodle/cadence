@@ -133,6 +133,11 @@ export function DateRange() {
         onChange={onTimeframeChange}
         data={timeframes}
         variant="unstyled"
+        styles={{
+          input: {
+            textAlign: "center",
+          },
+        }}
       />
       <Button variant="subtle">
         <IconChevronRight />

@@ -4,8 +4,9 @@ import {
   useLocation,
   useLoaderData,
   useRevalidator,
+  useSubmit,
 } from "@remix-run/react";
-import { LoaderArgs, json } from "@remix-run/cloudflare";
+import { LoaderArgs, json, redirect } from "@remix-run/cloudflare";
 import { ClientOnly } from "remix-utils";
 import {
   Alert,
@@ -27,6 +28,7 @@ import { IconInfoCircle, IconAlertCircle } from "@tabler/icons-react";
 import formatDate from "date-fns/format";
 
 import { SupabaseOutletContext } from "../root";
+import { DEFAULT_PATH } from "~/config";
 import { signInWithAzure, signInWithGoogle } from "../auth";
 import { createServerClient, getAccountId, safeQuery } from "../util";
 
@@ -57,7 +59,8 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   );
 };
 
-export default function Login() {
+export default function Sync() {
+  const submit = useSubmit();
   const { supabase, user } = useOutletContext<SupabaseOutletContext>();
   const provider = user.app_metadata?.provider;
   const params = new URLSearchParams(useLocation().search);
@@ -99,8 +102,9 @@ export default function Login() {
         (payload) => {
           const newSyncProgress = payload.new?.sync_progress ?? null;
           setSyncProgress(newSyncProgress);
-          if (syncProgressOrig && !newSyncProgress) {
+          if (syncedAt !== payload.new?.synced_at) {
             revalidator.revalidate();
+            submit(null, { method: "get", action: DEFAULT_PATH });
           }
         }
       )

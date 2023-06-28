@@ -256,7 +256,7 @@ export default function MeetingLoad() {
       <SimpleGrid
         cols={1}
         breakpoints={[
-          { minWidth: "98rem", cols: 2 },
+          { minWidth: "94rem", cols: 2 },
           { minWidth: "138rem", cols: 3 },
           { minWidth: "184rem", cols: 4 },
         ]}

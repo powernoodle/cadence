@@ -142,34 +142,34 @@ function StatCard({
   const { colorScheme } = useMantineColorScheme();
 
   const links = [
-    {
-      icon: <IconCalendarCheck />,
-      color: makeColor("gray", 8, 1, colorScheme),
-      label: `${data.scheduled?.count || 0} scheduled`,
-    },
-    ...(data.pending
-      ? [
-          {
-            icon: <IconCalendarQuestion />,
-            color: makeColor("yellow", 9, 2, colorScheme),
-            label: `${data.pending.count || 0} pending`,
-          },
-        ]
-      : []),
-    ...(data.declined
-      ? [
-          {
-            icon: <IconCalendarX />,
-            color: makeColor("gray", 6, 5, colorScheme),
-            label: `${data.declined.count || 0} declined`,
-          },
-        ]
-      : []),
-    {
-      icon: <IconCalendarCheck />,
-      color: makeColor("gray", 6, 5, colorScheme),
-      label: `${data.attended?.count || 0} attended`,
-    },
+    // {
+    //   icon: <IconCalendarCheck />,
+    //   color: makeColor("gray", 8, 1, colorScheme),
+    //   label: `${data.scheduled?.count || 0} scheduled`,
+    // },
+    // ...(data.pending
+    //   ? [
+    //       {
+    //         icon: <IconCalendarQuestion />,
+    //         color: makeColor("yellow", 9, 2, colorScheme),
+    //         label: `${data.pending.count || 0} pending`,
+    //       },
+    //     ]
+    //   : []),
+    // ...(data.declined
+    //   ? [
+    //       {
+    //         icon: <IconCalendarX />,
+    //         color: makeColor("gray", 6, 5, colorScheme),
+    //         label: `${data.declined.count || 0} declined`,
+    //       },
+    //     ]
+    //   : []),
+    // {
+    //   icon: <IconCalendarCheck />,
+    //   color: makeColor("gray", 6, 5, colorScheme),
+    //   label: `${data.attended?.count || 0} attended`,
+    // },
   ];
   const projectedMinutes =
     (data?.attended?.minutes || 0) +

@@ -15,14 +15,14 @@ import {
   durationFmt,
 } from "../util";
 import { USER_TZ } from "../config";
-import { getDateRange, DateRange } from "../components/date-range";
+import { getDateRange, DateRangeSelect } from "../components/date-range";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
 
-  const [current] = getDateRange(new URL(request.url).searchParams);
-  const during = `[${current[0].toISOString()}, ${current[1].toISOString()})`;
+  const { current } = getDateRange(new URL(request.url).searchParams, USER_TZ);
+  const during = `[${current.start}, ${current.end})`;
 
   let events = safeQuery(
     await supabase
@@ -52,6 +52,10 @@ const fmtTime = (start: Date, end: Date) => {
     USER_TZ,
     "h:mm aaa"
   )}`;
+};
+
+export const handle = {
+  headerControl: () => <DateRangeSelect />,
 };
 
 function Meetings({

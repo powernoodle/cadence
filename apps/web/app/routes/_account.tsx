@@ -125,18 +125,14 @@ function AppNavbar({ opened }: { opened: boolean }) {
           to={`/time${location.search}`}
           active={location.pathname === "/time"}
         />
-        <NavLink
-          label="Prioritize"
-          component={Link}
-          to={`/schedule${location.search}`}
-          active={location.pathname === "/prioritize"}
-        />
-        <NavLink
-          label="Review"
-          component={Link}
-          to={`/schedule${location.search}`}
-          active={location.pathname === "/review"}
-        />
+        {isAdmin && (
+          <NavLink
+            label="Schedule"
+            component={Link}
+            to={`/schedule${location.search}`}
+            active={location.pathname === "/schedule"}
+          />
+        )}
       </Navbar.Section>
       <Navbar.Section>
         {isAdmin && (

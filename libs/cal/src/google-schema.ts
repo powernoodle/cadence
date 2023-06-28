@@ -1,3 +1,4 @@
+// foo
 export namespace calendar_v3 {
   interface StandardParameters {
     /**

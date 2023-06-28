@@ -1,4 +1,16 @@
+import { add } from "date-fns";
+import { eachDayOfInterval, startOfDay } from "@divvy/tz";
+
+const USER_TZ = "America/New_York";
+
 export type Response = "accepted" | "declined" | "tentative" | null;
+export type EventType =
+  | "internal"
+  | "external"
+  | "growth"
+  | "focus"
+  | "personal"
+  | null;
 
 export type Attendance = {
   email: string;
@@ -19,6 +31,20 @@ export class Event {
     );
   }
 
+  public static SplitDays(start: Date, end: Date) {
+    if ((end.getTime() - start.getTime()) / 1000 / 60 / 60 <= 24) {
+      return [{ start, end }];
+    }
+    const openEnd = new Date(end.getTime() - 1);
+    const days = eachDayOfInterval({ start, end: openEnd }, USER_TZ);
+    return days.map((d, i) => {
+      let dayStart = i === 0 ? start : startOfDay(d, USER_TZ);
+      let dayEnd =
+        i === days.length - 1 ? end : startOfDay(add(d, { days: 1 }), USER_TZ);
+      return { start: dayStart, end: dayEnd };
+    });
+  }
+
   public readonly id: string;
   public readonly series: string;
   public readonly start: Date;
@@ -31,12 +57,13 @@ export class Event {
   public readonly attendance: Attendance[] = [];
 
   private _title?: string;
-  private _isMeeting: boolean = true;
+  private _accountEmail: string;
 
   constructor(args: {
     id: string;
     start: Date;
     end: Date;
+    accountEmail: string;
     series?: string;
     title?: string;
     description?: string;
@@ -50,6 +77,7 @@ export class Event {
     attendance?: Attendance[];
   }) {
     this.id = args.id;
+    this._accountEmail = args.accountEmail;
     this.start = args.start;
     this.end = args.end;
     this.series = args.series || args.id;
@@ -66,9 +94,27 @@ export class Event {
       this.attendance = args.attendance;
     }
 
-    if (args.notMeeting || (this.numAttendees <= 1 && !this.isOnline)) {
-      this._isMeeting = false;
+    if (args.notMeeting || this.numAttendees <= 1 || this.length >= 24 * 60) {
+      // Not a meeting
+    } else if (
+      this._title?.match(
+        /coaching|mentor|training|health|volunteer|break|buffer|yoga|massage/i
+      )
+    ) {
+      this.type = "growth";
+    } else if (this.hasExternalAttendees()) {
+      this.type = "external";
+    } else {
+      this.type = "internal";
     }
+  }
+
+  public hasExternalAttendees(): boolean {
+    const [_, internalDomain] = this._accountEmail.split("@");
+    return this.attendance.some((a) => {
+      const [_, domain] = a.email.split("@");
+      return domain !== internalDomain;
+    });
   }
 
   public get title(): string {
@@ -79,7 +125,7 @@ export class Event {
     if (this.isPrivate) {
       title = "Private meeting";
     } else {
-      title = "Untitled meeting";
+      title = "Meeting";
     }
     if (this.numAttendees > 1) {
       const names = this.attendance
@@ -108,28 +154,18 @@ export class Event {
     return this.attendance.length;
   }
 
+  public get response(): Response | null {
+    return (
+      this.attendance.filter((a) => a.email === this._accountEmail)[0]
+        ?.response || null
+    );
+  }
+
   public get length(): number {
-    let minutes = (this.end.getTime() - this.start.getTime()) / 1000 / 60;
-    if (minutes > 8 * 60) {
-      const fullDays = Math.floor(minutes / (24 * 60));
-      const remainder = minutes - fullDays * 24 * 60;
-      minutes = fullDays * 8 * 60;
-      if (remainder <= 8 * 60) {
-        minutes += remainder;
-      } else {
-        minutes += 8 * 60;
-      }
-    }
-    return minutes;
+    return (this.end.getTime() - this.start.getTime()) / 1000 / 60;
   }
 
-  public get isMeeting(): boolean {
-    return this._isMeeting && !this.isCancelled;
-  }
-
-  public get isCancelledMeeting(): boolean {
-    return this._isMeeting && this.isCancelled;
-  }
+  public readonly type: EventType = null;
 }
 
 export class EventError extends Error {

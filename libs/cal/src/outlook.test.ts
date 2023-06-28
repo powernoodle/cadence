@@ -1,8 +1,10 @@
+// foo
 import { expect, test } from "@jest/globals";
 import { OutlookClient } from "./outlook";
 
 test.only("fetches events", async () => {
   const client = new OutlookClient(
+    "kris.braun@letscollide.io",
     process.env.MICROSOFT_CLIENT_ID!,
     process.env.MICROSOFT_OAUTH_SECRET!,
     {
@@ -19,9 +21,8 @@ test.only("fetches events", async () => {
     new Date("2023-05-17"),
     {}
   )) {
-    const event = client.transform(rawEvent);
-    console.dir(event);
-    console.log(JSON.stringify(event?.attendance));
-    expect(event).toBeDefined();
+    const events = client.transform(rawEvent);
+    console.dir(events);
+    expect(events).toBeDefined();
   }
 });

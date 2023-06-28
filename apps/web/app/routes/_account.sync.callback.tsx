@@ -3,6 +3,7 @@ import { redirect } from "@remix-run/cloudflare";
 import { createServerClient } from "@supabase/auth-helpers-remix";
 
 import { Sentry } from "../sentry";
+import { DEFAULT_PATH } from "../config";
 import { safeQuery } from "../util";
 import { getSession } from "../auth";
 
@@ -58,7 +59,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       await context.SYNC_QUEUE.send({ accountId });
     }
 
-    return redirect("/meetings", {
+    return redirect(DEFAULT_PATH, {
       status: 303,
       headers: response.headers,
     });

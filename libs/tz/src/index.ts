@@ -6,6 +6,7 @@ import _startOfDay from "date-fns/startOfDay";
 import _startOfMonth from "date-fns/startOfMonth";
 import _startOfWeek from "date-fns/startOfWeek";
 import _isSameDay from "date-fns/isSameDay";
+import _eachDayOfInterval from "date-fns/eachDayOfInterval";
 import {
   zonedTimeToUtc,
   utcToZonedTime,
@@ -33,6 +34,20 @@ function zoned2<T>(
   const d1z = utcToZonedTime(d1, tz);
   const d2z = utcToZonedTime(d2, tz);
   return fn(d1z, d2z);
+}
+
+function zonedInterval<T1>(
+  interval: Interval,
+  tz: string,
+  fn: (date: Interval, options?: T1) => Date[],
+  options?: T1
+): Date[] {
+  const inputZoned = {
+    start: utcToZonedTime(interval.start, tz),
+    end: utcToZonedTime(interval.end, tz),
+  };
+  const fnZoned = options ? fn(inputZoned, options) : fn(inputZoned);
+  return fnZoned.map((d) => zonedTimeToUtc(d, tz));
 }
 
 export const toDate = (date: string, tz: string) => {
@@ -80,6 +95,25 @@ export function endOfWeek(
   return zoned(date, tz, _endOfWeek, options);
 }
 
+export function eachDayOfInterval(
+  interval: Parameters<typeof _eachDayOfInterval>[0],
+  tz: string,
+  options?: Parameters<typeof _eachDayOfInterval>[1]
+) {
+  return zonedInterval(interval, tz, _eachDayOfInterval, options);
+}
+
 export function isSameDay(d1: Date, d2: Date, tz: string) {
   return zoned2(d1, d2, tz, _isSameDay);
+}
+
+export function formatWeek(date: Date, tz: string) {
+  const start = startOfWeek(date, tz);
+  const end = endOfWeek(date, tz);
+  let ret = `${formatDate(start, tz, "MMM d")} – `;
+  if (start.getMonth() !== end.getMonth()) {
+    ret += formatDate(end, tz, "MMM ");
+  }
+  ret += formatDate(end, tz, "d");
+  return ret;
 }

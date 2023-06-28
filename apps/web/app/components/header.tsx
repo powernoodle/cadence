@@ -6,29 +6,61 @@ import {
   Link,
 } from "@remix-run/react";
 import {
+  MediaQuery,
   Button,
   UnstyledButton,
   Flex,
   Group,
   Header as MantineHeader,
+  useMantineColorScheme,
+  ActionIcon,
   Title,
 } from "@mantine/core";
 
+import { DEFAULT_PATH } from "../config";
 import { APP_NAME } from "../util";
 import { SupabaseOutletContext } from "../root";
 
-export default function Header({ menu }: { menu?: ReactNode }) {
-  const location = useLocation();
-  const { supabase, user } = useOutletContext<SupabaseOutletContext>();
-  const routes = useMatches();
-  const isPublic = routes.some((r) => r.id === "routes/_public");
+import { IconSun, IconMoonStars } from "@tabler/icons-react";
 
-  const logout = async () => {
-    await supabase.auth.signOut();
-  };
+function ThemeToggle() {
+  const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
   return (
-    <MantineHeader height={60} p="xs">
+    <ActionIcon
+      onClick={() => toggleColorScheme()}
+      size="lg"
+      sx={(theme) => ({
+        backgroundColor:
+          theme.colorScheme === "dark"
+            ? theme.colors.dark[6]
+            : theme.colors.gray[0],
+        color:
+          theme.colorScheme === "dark"
+            ? theme.colors.yellow[4]
+            : theme.colors.blue[6],
+      })}
+    >
+      {colorScheme === "dark" ? (
+        <IconSun size="1.2rem" />
+      ) : (
+        <IconMoonStars size="1.2rem" />
+      )}
+    </ActionIcon>
+  );
+}
+
+export default function Header({ menu }: { menu?: ReactNode }) {
+  const location = useLocation();
+  const { user } = useOutletContext<SupabaseOutletContext>();
+  const routes = useMatches();
+  const isPublic = routes.some((r) => r.id === "routes/_public");
+  const headerControl = routes
+    .filter((r) => r.handle?.headerControl)?.[0]
+    ?.handle?.headerControl?.();
+
+  return (
+    <MantineHeader height={{ base: 60, md: 60 }} p="xs">
       <Flex
         mih={50}
         gap="md"
@@ -39,25 +71,30 @@ export default function Header({ menu }: { menu?: ReactNode }) {
       >
         <Group>
           {menu}
-          <UnstyledButton component={Link} to="/">
-            <Title order={1} size="h2">
-              {APP_NAME}
-            </Title>
-          </UnstyledButton>
+          <MediaQuery smallerThan="md" styles={{ display: "none" }}>
+            <UnstyledButton component={Link} to="/">
+              <Title order={1} size="h2">
+                {APP_NAME}
+              </Title>
+            </UnstyledButton>
+          </MediaQuery>
         </Group>
-        <Group>
-          {user && isPublic && (
-            <Button component={Link} to="/meetings">
-              View Dashboard
-            </Button>
-          )}
-          {user && !isPublic && <Button onClick={logout}>Logout</Button>}
-          {!user && location.pathname !== "/login" && (
-            <Button component={Link} to="/login">
-              Sign in
-            </Button>
-          )}
-        </Group>
+        <Group>{headerControl}</Group>
+        <MediaQuery smallerThan="md" styles={{ display: "none" }}>
+          <Group>
+            {user && !isPublic && <ThemeToggle />}
+            {user && isPublic && (
+              <Button component={Link} to={DEFAULT_PATH}>
+                Go to app
+              </Button>
+            )}
+            {!user && location.pathname !== "/login" && (
+              <Button component={Link} to="/login">
+                Sign in
+              </Button>
+            )}
+          </Group>
+        </MediaQuery>
       </Flex>
     </MantineHeader>
   );

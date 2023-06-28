@@ -1,5 +1,7 @@
 import { Client } from "pg";
 import { format as pgFormat } from "@scaleleap/pg-format";
+import { formatInTimeZone } from "date-fns-tz";
+import { eachDayOfInterval } from "@divvy/tz";
 
 import type { Attendance } from "@divvy/cal";
 import { EventError } from "@divvy/cal";
@@ -13,6 +15,9 @@ import {
   GoogleClient,
   OutlookClient,
 } from "@divvy/cal";
+
+// TODO: load this from the account
+export const USER_TZ = "America/New_York";
 
 export class CalendarStore {
   private db: Client;
@@ -51,11 +56,12 @@ export class CalendarStore {
     outlookOauthSecret: string
   ) {
     await this.db.connect();
-    const { provider, access_token, refresh_token } =
+    const { email, provider, access_token, refresh_token } =
       await this.loadCredentials();
     const credentials = { access_token, refresh_token };
     if (provider === "google") {
       this.calendar = new GoogleClient(
+        email,
         googleClientId,
         googleOauthSecret,
         credentials,
@@ -65,6 +71,7 @@ export class CalendarStore {
       );
     } else if (provider === "azure") {
       this.calendar = new OutlookClient(
+        email,
         outlookClientId,
         outlookOauthSecret,
         credentials,
@@ -89,6 +96,7 @@ export class CalendarStore {
     if (!data?.length) {
       throw Error(`Account ${this.accountId} not found`);
     }
+    const email = data[0].email;
     const provider = data[0].provider;
     if (!provider) {
       console.error(`Account ${this.accountId} missing provider`);
@@ -109,7 +117,7 @@ export class CalendarStore {
       console.error(`Account ${this.accountId} missing refresh_token`);
       throw Error("Missing refresh token");
     }
-    return { provider, access_token, refresh_token };
+    return { email, provider, access_token, refresh_token };
   };
 
   private async saveCredentials(credentials: any) {
@@ -123,31 +131,53 @@ export class CalendarStore {
     await this.query("SELECT link_series($1)", [this.accountId]);
   }
 
-  private async saveEvent(event: Event) {
+  private async calculateDays(start: Date, end: Date) {
+    console.log(`Recalculating ${this.accountId} days ${start} to ${end}`);
+    const days = eachDayOfInterval({ start: start, end: end }, USER_TZ);
+    for (let batch = 0; batch < days.length / 10; batch += 1) {
+      let query = "";
+      for (const day of days.slice(batch * 10, (batch + 1) * 10)) {
+        query += pgFormat(
+          "SELECT calculate_day(%L, %L); ",
+          this.accountId,
+          formatInTimeZone(day, USER_TZ, "yyyy-MM-dd")
+        );
+      }
+      await this.query(query);
+    }
+  }
+
+  private async saveEvent(event: Event, sequence?: number) {
     const data = await this.query(
       `
-        INSERT INTO event (account_id, at, title, cal_id, series, is_meeting, is_offsite, is_online, is_onsite)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        INSERT INTO event (account_id, day, at, title, cal_id, series, type, is_offsite, is_online, is_onsite, response, is_cancelled)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         ON CONFLICT (account_id, cal_id) DO UPDATE SET
+            day = EXCLUDED.day,
             at = EXCLUDED.at,
             title = EXCLUDED.title,
             series = EXCLUDED.series,
-            is_meeting = EXCLUDED.is_meeting,
+            type = EXCLUDED.type,
             is_offsite = EXCLUDED.is_offsite,
             is_online = EXCLUDED.is_online,
-            is_onsite = EXCLUDED.is_onsite
+            is_onsite = EXCLUDED.is_onsite,
+            response = EXCLUDED.response,
+            is_cancelled = EXCLUDED.is_cancelled
         RETURNING id
       `,
       [
         this.accountId,
+        formatInTimeZone(event.start, USER_TZ, "yyyy-MM-dd"),
         `[${event.start?.toISOString()},${event.end?.toISOString()})`,
         event.title,
-        event.id,
+        sequence ? `${event.id}:${sequence}` : event.id,
         event.series,
-        event.isMeeting,
+        event.type,
         event.isOffsite,
         event.isOnline,
         event.isOnsite,
+        event.response,
+        event.isCancelled,
       ]
     );
     const eventId = data[0]?.id;
@@ -285,10 +315,15 @@ export class CalendarStore {
 
   private async processRawEvent(rawEvent: RawEvent) {
     if (!this.calendar) throw Error("Calendar not initialized");
-    const event = this.calendar.transform(rawEvent);
+    const events = this.calendar.transform(rawEvent);
     let eventId = undefined;
-    ({ eventId } = await this.saveEvent(event));
-    return eventId;
+    ({ eventId } = await this.saveEvent(events[0]));
+    let sequence = 1;
+    for (const event of events.slice(1)) {
+      await this.saveEvent(event, sequence);
+      sequence += 1;
+    }
+    return { event: events[0], eventId };
   }
 
   public async syncEvents(
@@ -316,7 +351,7 @@ export class CalendarStore {
     )) {
       let eventId;
       try {
-        eventId = await this.processRawEvent(rawEvent);
+        ({ eventId } = await this.processRawEvent(rawEvent));
         successCount += 1;
       } catch (e) {
         errorCount += 1;
@@ -331,7 +366,7 @@ export class CalendarStore {
         errorLogger?.(e);
       }
     }
-    await this.finalizeProcessing();
+    await this.finalizeProcessing(min, max, errorLogger);
     try {
       await this.saveProgress();
       if (successCount > 0 || errorCount === 0) {
@@ -345,7 +380,11 @@ export class CalendarStore {
     }
   }
 
-  private async finalizeProcessing(errorLogger?: (error: any) => void) {
+  private async finalizeProcessing(
+    min: Date,
+    max: Date,
+    errorLogger?: (error: any) => void
+  ) {
     try {
       await this.linkSeries();
     } catch (e) {
@@ -353,6 +392,11 @@ export class CalendarStore {
     }
     try {
       await this.saveNames();
+    } catch (e) {
+      errorLogger?.(e);
+    }
+    try {
+      await this.calculateDays(min, max);
     } catch (e) {
       errorLogger?.(e);
     }
@@ -376,25 +420,26 @@ export class CalendarStore {
         [this.accountId, sync_start]
       );
 
+      let min: Date | undefined;
+      let max: Date | undefined;
+      console.log(`Reprocessing ${data.length} events`);
       for (const row of data) {
         let rawEvent = row.raw_event;
         // There was a bug where the whole row was written into the raw_event
         // field
         if (rawEvent.raw_event) rawEvent = rawEvent.raw_event;
-        let eventId;
         try {
-          eventId = await this.processRawEvent(rawEvent);
+          const { event } = await this.processRawEvent(rawEvent);
+          if (!min || event.start.getTime() < min.getTime()) min = event.start;
+          if (!max || event.end.getTime() > max.getTime()) max = event.end;
         } catch (e) {
           errorLogger?.(new EventError("Error saving event", rawEvent, e));
         }
-        try {
-          await this.saveRaw(rawEvent, eventId);
-        } catch (e) {
-          errorLogger?.(e);
-        }
       }
 
-      await this.finalizeProcessing();
+      if (min && max) {
+        await this.finalizeProcessing(min, max, errorLogger);
+      }
     } catch (e) {
       errorLogger?.(e);
     }

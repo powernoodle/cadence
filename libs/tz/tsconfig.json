@@ -1,15 +1,14 @@
 {
   "extends": "../../tsconfig.json",
   "include": ["**/*.ts"],
-  "exclude": ["jest.config.ts", "**/dist"],
+  "exclude": ["jest.config.ts", "**/dist", "*.test.ts"],
   "compilerOptions": {
     "outDir": "dist",
     "baseUrl": "src",
     "rootDir": "src",
-    "target": "es2020",
     "preserveConstEnums": true,
     "sourceMap": true,
-    "module": "esnext",
+    "module": "es2020",
     "composite": true,
     "noEmit": false,
     "skipLibCheck": true

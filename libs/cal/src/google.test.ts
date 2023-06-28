@@ -1,8 +1,10 @@
+// foo
 import { expect, test } from "@jest/globals";
 import { GoogleClient } from "./google";
 
 test("fetches events", async () => {
   const client = new GoogleClient(
+    "kris.braun@gamil.com",
     process.env.GOOGLE_CLIENT_ID!,
     process.env.GOOGLE_OAUTH_SECRET!,
     {
@@ -19,9 +21,8 @@ test("fetches events", async () => {
     new Date("2023-05-16"),
     {}
   )) {
-    const event = client.transform(rawEvent);
-    console.dir(event);
-    console.log(JSON.stringify(event?.attendance));
-    expect(event).toBeDefined();
+    const events = client.transform(rawEvent);
+    console.dir(events);
+    expect(events).toBeDefined();
   }
 });

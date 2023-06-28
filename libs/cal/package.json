@@ -6,19 +6,21 @@
   "type": "module",
   "scripts": {
     "build": "mkdir -p dist && tsc --build",
-    "test": "jest"
+    "test": "node --experimental-vm-modules ../../node_modules/jest/bin/jest.js"
   },
   "keywords": [],
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "@divvy/tz": "workspace:^",
     "@microsoft/microsoft-graph-client": "^3.0.5",
     "@worker-tools/json-fetch": "2.1.0-pre.6",
     "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.0",
     "googleapis": "^118.0.0"
   },
   "devDependencies": {
-    "dotenv": "^16.0.3",
-    "@microsoft/microsoft-graph-types": "^2.30.0"
+    "@microsoft/microsoft-graph-types": "^2.30.0",
+    "dotenv": "^16.0.3"
   }
 }

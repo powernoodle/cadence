@@ -60,16 +60,8 @@ export const costFmt = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-export const durationFmt = (length: number, full: boolean = false) => {
+export const durationFmt = (length: number) => {
   const hours = Math.floor(length / 60);
   const minutes = length % 60;
-  let ret = "";
-  if (hours) {
-    ret = `${hours.toLocaleString()}h`;
-  }
-  if (full || minutes) {
-    if (ret) ret += " ";
-    ret += `${String(minutes).padStart(hours ? 2 : 1, "0")}m`;
-  }
-  return ret;
+  return `${hours}:${String(minutes).padStart(2, "0")}`;
 };

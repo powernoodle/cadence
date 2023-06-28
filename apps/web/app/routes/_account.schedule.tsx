@@ -2,7 +2,7 @@
 import React, { PropsWithChildren } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 
-import { isSameDay, toDate, formatDate } from "../tz";
+import { isSameDay, toDate, formatDate } from "@divvy/tz";
 
 import { useLoaderData } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
@@ -14,14 +14,15 @@ import {
   getAccountId,
   durationFmt,
 } from "../util";
-import { getDateRange, USER_TZ } from "./_account";
+import { USER_TZ } from "../config";
+import { getDateRange, DateRangeSelect } from "../components/date-range";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
 
-  const [current] = getDateRange(new URL(request.url).searchParams);
-  const during = `[${current[0].toISOString()}, ${current[1].toISOString()})`;
+  const { current } = getDateRange(new URL(request.url).searchParams, USER_TZ);
+  const during = `[${current.start}, ${current.end})`;
 
   let events = safeQuery(
     await supabase
@@ -53,6 +54,10 @@ const fmtTime = (start: Date, end: Date) => {
   )}`;
 };
 
+export const handle = {
+  headerControl: () => <DateRangeSelect />,
+};
+
 function Meetings({
   events,
 }: {
@@ -61,7 +66,7 @@ function Meetings({
     title: string;
     length: number;
     at: string;
-    is_meeting: boolean;
+    type: string;
     invitee_count: number;
     attendee_count: number;
   }[];
@@ -94,15 +99,23 @@ function Meetings({
               </tr>
             )}
             {events.map((row) => {
-              const dates = row.at.replaceAll(/["\[\]]/g, "").split(",");
+              const dates = row.at.replaceAll(/["\[\]()]/g, "").split(",");
               const start = toDate(dates[0], USER_TZ);
               const end = toDate(dates[1], USER_TZ);
               const isNewDay = !last || !isSameDay(last, start, USER_TZ);
               last = start;
               const StyledText = ({ children }: PropsWithChildren<{}>) => (
                 <Text
-                  fw={row.is_meeting ? 700 : 300}
-                  c={row.is_meeting ? "blue" : ""}
+                  fw={
+                    row.type === "internal" || row.type === "external"
+                      ? 700
+                      : 300
+                  }
+                  c={
+                    row.type === "internal" || row.type === "external"
+                      ? "blue"
+                      : ""
+                  }
                 >
                   {children}
                 </Text>

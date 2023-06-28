@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 
@@ -20,93 +20,10 @@ import {
   Select,
   useMantineTheme,
 } from "@mantine/core";
-import { DatePickerInput } from "@mantine/dates";
-
-import add from "date-fns/add";
-import differenceInDays from "date-fns/differenceInDays";
-import sub from "date-fns/sub";
-import {
-  toTz,
-  fromTz,
-  toDate,
-  endOfDay,
-  endOfMonth,
-  endOfWeek,
-  formatDate,
-  startOfDay,
-  startOfMonth,
-  startOfWeek,
-} from "../tz";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, getAccountId, safeQuery } from "../util";
 import Header from "../components/header";
-
-// TODO: load this from the account
-export const USER_TZ = "America/New_York";
-
-export const getDateRange = (params: URLSearchParams, timeframe?: string) => {
-  const startParam = params.get("start");
-  const endParam = params.get("end");
-  if (!timeframe) timeframe = params.get("timeframe") || "28d";
-  const start = startParam
-    ? startOfDay(toDate(startParam, USER_TZ), USER_TZ)
-    : startOfDay(new Date(), USER_TZ);
-  const end = endParam
-    ? endOfDay(toDate(endParam, USER_TZ), USER_TZ)
-    : endOfDay(new Date(), USER_TZ);
-
-  switch (timeframe) {
-    case "month":
-      return [
-        [startOfMonth(end, USER_TZ), endOfMonth(end, USER_TZ)],
-        [
-          startOfMonth(sub(end, { months: 1 }), USER_TZ),
-          endOfMonth(sub(end, { months: 1 }), USER_TZ),
-        ],
-        [
-          startOfMonth(add(end, { months: 1 }), USER_TZ),
-          endOfMonth(add(end, { months: 1 }), USER_TZ),
-        ],
-      ];
-    case "week":
-      return [
-        [startOfWeek(end, USER_TZ), endOfWeek(end, USER_TZ)],
-        [
-          startOfWeek(sub(end, { weeks: 1 }), USER_TZ),
-          endOfWeek(sub(end, { weeks: 1 }), USER_TZ),
-        ],
-        [
-          startOfWeek(add(end, { weeks: 1 }), USER_TZ),
-          endOfWeek(add(end, { weeks: 1 }), USER_TZ),
-        ],
-      ];
-    case "28d":
-      return [
-        [startOfDay(sub(end, { days: 27 }), USER_TZ), endOfDay(end, USER_TZ)],
-        [
-          startOfDay(sub(end, { days: 27 + 28 }), USER_TZ),
-          endOfDay(sub(end, { days: 28 }), USER_TZ),
-        ],
-        [
-          startOfDay(add(end, { days: 1 }), USER_TZ),
-          endOfDay(add(end, { days: 28 }), USER_TZ),
-        ],
-      ];
-    default:
-      return [
-        [start, end],
-        [
-          sub(start, { days: differenceInDays(end, start) + 1 }),
-          sub(end, { days: differenceInDays(end, start) }),
-        ],
-        [
-          add(start, { days: differenceInDays(end, start) }),
-          add(end, { days: differenceInDays(end, start) + 1 }),
-        ],
-      ];
-  }
-};
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -149,18 +66,11 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     }
   }
 
-  const [current] = getDateRange(url.searchParams);
-  const dateRange: [Date | null, Date | null] = [
-    current[0],
-    startOfDay(current[1], USER_TZ),
-  ];
-
   return json(
     {
       isAdmin,
       accountId,
       accounts: accounts ?? [],
-      dateRange,
       syncedAt,
     },
     { headers: response.headers }
@@ -183,6 +93,7 @@ function AccountSelect() {
 
   return (
     <Select
+      mb="md"
       placeholder="Select account"
       value={value?.toString()}
       onChange={handleChange}
@@ -198,81 +109,7 @@ function AccountSelect() {
 
 function AppNavbar({ opened }: { opened: boolean }) {
   const location = useLocation();
-  const { dateRange: _defaultDateRange, isAdmin } =
-    useLoaderData<typeof loader>();
-  const defaultDateRange: [Date, Date] = [
-    fromTz(new Date(_defaultDateRange[0] as string), USER_TZ),
-    fromTz(new Date(_defaultDateRange[1] as string), USER_TZ),
-  ];
-  useEffect(() => {
-    setDateRange(defaultDateRange);
-  }, _defaultDateRange);
-
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  const timeframes = [
-    { label: "28 Days", value: "28d" },
-    { label: "Month", value: "month" },
-    { label: "Week", value: "week" },
-    { label: "Custom", value: "custom" },
-  ];
-  const [timeframe, setTimeframeState] = useState(
-    searchParams.get("timeframe") || "28d"
-  );
-  const onTimeframeChange = async (timeframe: string) => {
-    if (!timeframe) return;
-    setTimeframeState(timeframe);
-    const [current] = getDateRange(
-      new URLSearchParams(location.search),
-      timeframe
-    );
-    setSearchParams((p) => {
-      const { start, end, ...other } = Object.fromEntries(p.entries());
-      return {
-        ...other,
-        timeframe,
-        ...(timeframe === "custom"
-          ? {
-              start: formatDate(current[0], USER_TZ, "yyyy-MM-dd"),
-              end: formatDate(current[1], USER_TZ, "yyyy-MM-dd"),
-            }
-          : {}),
-      };
-    });
-  };
-
-  const [dateRange, setDateRange] =
-    useState<[Date | null, Date | null]>(defaultDateRange);
-
-  const onDateRangeChange = (range: [Date | null, Date | null]) => {
-    if (range[0] === null) return;
-    switch (timeframe) {
-      case "28d":
-        range[1] = add(range[0], { days: 28 });
-        break;
-      case "month":
-        range[1] = endOfMonth(range[0], USER_TZ);
-        break;
-      case "week":
-        range[1] = endOfWeek(range[0], USER_TZ);
-        break;
-    }
-    setDateRange(range);
-    if (range[1] === null) return;
-    setSearchParams((p) => ({
-      ...Object.fromEntries(p.entries()),
-      ...(range[0]
-        ? {
-            start: formatDate(toTz(range[0], USER_TZ), USER_TZ, "yyyy-MM-dd"),
-          }
-        : {}),
-      ...(range[1]
-        ? {
-            end: formatDate(toTz(range[1], USER_TZ), USER_TZ, "yyyy-MM-dd"),
-          }
-        : {}),
-    }));
-  };
+  const { isAdmin } = useLoaderData<typeof loader>();
 
   return (
     <Navbar
@@ -281,47 +118,34 @@ function AppNavbar({ opened }: { opened: boolean }) {
       hidden={!opened}
       width={{ sm: 200, lg: 300 }}
     >
-      {isAdmin && (
-        <Navbar.Section mb="md">
-          <AccountSelect />
-        </Navbar.Section>
-      )}
-      <Navbar.Section>
+      <Navbar.Section grow>
         <NavLink
-          label="Insights"
+          label="Time Balance"
           component={Link}
-          to={`/meetings${location.search}`}
-          active={location.pathname === "/meetings"}
+          to={`/time${location.search}`}
+          active={location.pathname === "/time"}
         />
-        <NavLink
-          label="Schedule"
-          component={Link}
-          to={`/schedule${location.search}`}
-          active={location.pathname === "/schedule"}
-        />
-      </Navbar.Section>
-      <Navbar.Section mt="md" grow>
-        <Select
-          mb="sm"
-          value={timeframe}
-          onChange={onTimeframeChange}
-          data={timeframes}
-        />
-        <DatePickerInput
-          mb="sm"
-          type="range"
-          value={dateRange}
-          onChange={onDateRangeChange}
-          allowSingleDateInRange
-        />
+        {isAdmin && (
+          <NavLink
+            label="Schedule"
+            component={Link}
+            to={`/schedule${location.search}`}
+            active={location.pathname === "/schedule"}
+          />
+        )}
       </Navbar.Section>
       <Navbar.Section>
-        <NavLink
-          label="Admin"
-          component={Link}
-          to={`/admin`}
-          active={location.pathname === "/admin"}
-        />
+        {isAdmin && (
+          <>
+            <AccountSelect />
+            <NavLink
+              label="Admin"
+              component={Link}
+              to={`/admin`}
+              active={location.pathname === "/admin"}
+            />
+          </>
+        )}
         <NavLink
           label="Settings"
           component={Link}

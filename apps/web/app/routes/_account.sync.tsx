@@ -112,10 +112,22 @@ export default function Login() {
 
   const [reauth, setReauth] = useState(false);
 
+  const logout = async () => {
+    await supabase.auth.signOut();
+  };
+
   return (
     <Container size="xs" p="sm">
       <Space h="lg" />
       <Stack>
+        <Card>
+          <Stack>
+            <Text>Signed in as {user.email}.</Text>
+            <Button variant="subtle" onClick={logout}>
+              Logout
+            </Button>
+          </Stack>
+        </Card>
         {syncedAt && syncProgress === null && (
           <Card>
             <Stack>
@@ -129,7 +141,9 @@ export default function Login() {
               </ClientOnly>
 
               {!reauth && (
-                <Button onClick={() => setReauth(true)}>Re-authorize</Button>
+                <Button variant="subtle" onClick={() => setReauth(true)}>
+                  Reauthorize
+                </Button>
               )}
             </Stack>
           </Card>

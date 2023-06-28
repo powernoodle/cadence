@@ -59,7 +59,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       await context.SYNC_QUEUE.send({ accountId });
     }
 
-    return redirect(DEFAULT_PATH, {
+    return redirect("/sync", {
       status: 303,
       headers: response.headers,
     });
@@ -71,7 +71,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       "error",
       error instanceof Error ? error.message : "Unknown error"
     );
-    return redirect(`/login?${params.toString()}`, {
+    return redirect(`/sync?${params.toString()}`, {
       status: 303,
       headers: response.headers,
     });

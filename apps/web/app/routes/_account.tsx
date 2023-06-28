@@ -52,18 +52,11 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     );
     syncedAt = data?.synced_at;
   }
-  if (!syncedAt) {
-    if (isAdmin && !url.pathname.startsWith("/admin")) {
-      return redirect(`/admin`, {
-        status: 303,
-        headers: response.headers,
-      });
-    } else if (!isAdmin && !url.pathname.startsWith("/sync")) {
-      return redirect(`/sync`, {
-        status: 303,
-        headers: response.headers,
-      });
-    }
+  if (!syncedAt && !url.pathname.startsWith("/sync")) {
+    return redirect(`/sync`, {
+      status: 303,
+      headers: response.headers,
+    });
   }
 
   return json(

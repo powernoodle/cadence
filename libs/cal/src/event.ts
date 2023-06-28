@@ -91,7 +91,14 @@ export class Event {
       !this.isOffsite || (!this.isOnline && !this.isOnsite && !!args.location);
 
     if (args.attendance) {
-      this.attendance = args.attendance;
+      const emails = new Set<string>();
+      this.attendance = [];
+      for (const a of args.attendance) {
+        if (!emails.has(a.email)) {
+          this.attendance.push(a);
+          emails.add(a.email);
+        }
+      }
     }
 
     if (args.notMeeting || this.numAttendees <= 1 || this.length >= 24 * 60) {

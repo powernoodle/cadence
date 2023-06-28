@@ -3,17 +3,15 @@ import {
   useOutletContext,
   useLocation,
   useLoaderData,
-  useRevalidator,
   useSubmit,
 } from "@remix-run/react";
-import { LoaderArgs, json, redirect } from "@remix-run/cloudflare";
+import { LoaderArgs, json } from "@remix-run/cloudflare";
 import { ClientOnly } from "remix-utils";
 import {
   Alert,
   Button,
   Card,
   Container,
-  Image,
   Progress,
   Space,
   Stack,
@@ -24,7 +22,7 @@ import {
   GoogleLoginButton,
   MicrosoftLoginButton,
 } from "react-social-login-buttons";
-import { IconInfoCircle, IconAlertCircle } from "@tabler/icons-react";
+import { IconAlertCircle } from "@tabler/icons-react";
 import formatDate from "date-fns/format";
 
 import { SupabaseOutletContext } from "../root";
@@ -84,7 +82,6 @@ export default function Sync() {
   const [syncProgress, setSyncProgress] = useState<number | null>(
     syncProgressOrig
   );
-  const revalidator = useRevalidator();
   useEffect(() => {
     setSyncProgress(
       typeof syncProgressOrig === "undefined" ? null : syncProgressOrig
@@ -102,8 +99,7 @@ export default function Sync() {
         (payload) => {
           const newSyncProgress = payload.new?.sync_progress ?? null;
           setSyncProgress(newSyncProgress);
-          if (syncedAt !== payload.new?.synced_at) {
-            revalidator.revalidate();
+          if (!!syncedAt !== !!payload.new?.synced_at) {
             submit(null, { method: "get", action: DEFAULT_PATH });
           }
         }
@@ -124,34 +120,6 @@ export default function Sync() {
     <Container size="xs" p="sm">
       <Space h="lg" />
       <Stack>
-        <Card>
-          <Stack>
-            <Text>Signed in as {user.email}.</Text>
-            <Button variant="subtle" onClick={logout}>
-              Logout
-            </Button>
-          </Stack>
-        </Card>
-        {syncedAt && syncProgress === null && (
-          <Card>
-            <Stack>
-              <ClientOnly>
-                {() => (
-                  <Text>
-                    Calendar {user.email} synced at{" "}
-                    {formatDate(new Date(syncedAt), "yyyy-MM-dd h:mm aaa")}.
-                  </Text>
-                )}
-              </ClientOnly>
-
-              {!reauth && (
-                <Button variant="subtle" onClick={() => setReauth(true)}>
-                  Reauthorize
-                </Button>
-              )}
-            </Stack>
-          </Card>
-        )}
         {(reauth || (!syncedAt && syncProgress === null)) && (
           <>
             <Card>
@@ -197,6 +165,34 @@ export default function Sync() {
               sx={{ position: "relative" }}
             />
             <Text mt="md">This may take several minutes.</Text>
+          </Card>
+        )}
+        <Card>
+          <Stack>
+            <Text>Signed in as {user.email}.</Text>
+            <Button variant="subtle" onClick={logout}>
+              Logout
+            </Button>
+          </Stack>
+        </Card>
+        {syncedAt && syncProgress === null && (
+          <Card>
+            <Stack>
+              <ClientOnly>
+                {() => (
+                  <Text>
+                    Calendar {user.email} synced at{" "}
+                    {formatDate(new Date(syncedAt), "yyyy-MM-dd h:mm aaa")}.
+                  </Text>
+                )}
+              </ClientOnly>
+
+              {!reauth && (
+                <Button variant="subtle" onClick={() => setReauth(true)}>
+                  Reauthorize
+                </Button>
+              )}
+            </Stack>
           </Card>
         )}
       </Stack>

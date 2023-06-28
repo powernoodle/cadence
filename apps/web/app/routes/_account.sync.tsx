@@ -123,7 +123,7 @@ export default function Sync() {
     <Container size="xs" p="sm">
       <Space h="lg" />
       <Stack>
-        {(reauth || (!syncedAt && syncProgress === null)) && (
+        {(reauth || !syncedAt) && syncProgress === null && (
           <>
             <Card>
               <Stack>

@@ -56,7 +56,22 @@ export const loader = async ({ context, request }: LoaderArgs) => {
         })
         .eq("id", accountId);
       // @ts-ignore
-      await context.SYNC_QUEUE.send({ accountId });
+      await context.SYNC_QUEUE?.send?.({ accountId });
+    }
+    const cookies = response.headers
+      .get("Set-Cookie")
+      ?.split(", ")
+      ?.map((c) => {
+        if (c.match(/^sb-.*-auth-token=/)) {
+          return c + "; HttpOnly";
+        }
+        return c;
+      });
+    if (cookies) {
+      response.headers.delete("Set-Cookie");
+      for (const cookie of cookies) {
+        response.headers.append("Set-Cookie", cookie);
+      }
     }
 
     return redirect("/sync", {

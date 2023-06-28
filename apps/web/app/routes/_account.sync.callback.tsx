@@ -3,8 +3,7 @@ import { redirect } from "@remix-run/cloudflare";
 import { createServerClient } from "@supabase/auth-helpers-remix";
 
 import { Sentry } from "../sentry";
-import { DEFAULT_PATH } from "../config";
-import { safeQuery } from "../util";
+import { safeQuery, cookieOptions } from "../util";
 import { getSession } from "../auth";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -17,6 +16,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       {
         request,
         response,
+        cookieOptions,
       }
     );
     const session = await getSession(request, supabaseAdmin);
@@ -58,21 +58,21 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       // @ts-ignore
       await context.SYNC_QUEUE?.send?.({ accountId });
     }
-    const cookies = response.headers
-      .get("Set-Cookie")
-      ?.split(", ")
-      ?.map((c) => {
-        if (c.match(/^sb-.*-auth-token=/)) {
-          return c + "; HttpOnly";
-        }
-        return c;
-      });
-    if (cookies) {
-      response.headers.delete("Set-Cookie");
-      for (const cookie of cookies) {
-        response.headers.append("Set-Cookie", cookie);
-      }
-    }
+    // const cookies = response.headers
+    //   .get("Set-Cookie")
+    //   ?.split(", ")
+    //   ?.map((c) => {
+    //     if (c.match(/^sb-.*-auth-token=/)) {
+    //       return c + "; HttpOnly";
+    //     }
+    //     return c;
+    //   });
+    // if (cookies) {
+    //   response.headers.delete("Set-Cookie");
+    //   for (const cookie of cookies) {
+    //     response.headers.append("Set-Cookie", cookie);
+    //   }
+    // }
 
     return redirect("/sync", {
       status: 303,

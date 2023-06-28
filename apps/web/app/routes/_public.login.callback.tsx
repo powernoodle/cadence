@@ -5,6 +5,7 @@ import { createServerClient } from "@supabase/auth-helpers-remix";
 import { Sentry } from "../sentry";
 import { getSession } from "../auth";
 import { DEFAULT_PATH } from "../config";
+import { cookieOptions } from "../util";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const response = new Response();
@@ -16,6 +17,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       {
         request,
         response,
+        cookieOptions,
       }
     );
     const session = await getSession(request, supabaseAdmin);

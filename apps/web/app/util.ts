@@ -11,6 +11,13 @@ export const APP_NAME = "Divvy";
 
 export const makeTitle = (pageTitle: string) => `${pageTitle} | ${APP_NAME}`;
 
+export const cookieOptions = {
+  name: "dda",
+  lifetime: 60 * 60 * 8,
+  domain: "",
+  path: "/",
+};
+
 export const createServerClient = (
   context: AppLoadContext,
   request: Request
@@ -22,6 +29,7 @@ export const createServerClient = (
     {
       request,
       response,
+      cookieOptions,
     }
   );
   return { response, supabase };

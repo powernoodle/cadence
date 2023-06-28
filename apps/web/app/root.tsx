@@ -38,7 +38,7 @@ import {
 import { useColorScheme } from "@mantine/hooks";
 import { StylesPlaceholder } from "@mantine/remix";
 
-import { APP_NAME, createServerClient } from "./util";
+import { APP_NAME, createServerClient, cookieOptions } from "./util";
 import { userPrefs } from "~/cookies";
 
 import { useOutletContext } from "@remix-run/react";
@@ -193,6 +193,7 @@ export default function App() {
     createBrowserClient<Database>(env.SUPABASE_URL, env.SUPABASE_ANON_KEY, {
       // @ts-ignore
       auth: { flowType: "pkce" },
+      cookieOptions,
     })
   );
 

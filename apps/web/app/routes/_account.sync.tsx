@@ -3,6 +3,7 @@ import {
   useOutletContext,
   useLocation,
   useLoaderData,
+  useRevalidator,
   useSubmit,
 } from "@remix-run/react";
 import { LoaderArgs, json } from "@remix-run/cloudflare";
@@ -82,6 +83,7 @@ export default function Sync() {
   const [syncProgress, setSyncProgress] = useState<number | null>(
     syncProgressOrig
   );
+  const revalidator = useRevalidator();
   useEffect(() => {
     setSyncProgress(
       typeof syncProgressOrig === "undefined" ? null : syncProgressOrig
@@ -100,6 +102,7 @@ export default function Sync() {
           const newSyncProgress = payload.new?.sync_progress ?? null;
           setSyncProgress(newSyncProgress);
           if (!!syncedAt !== !!payload.new?.synced_at) {
+            revalidator.revalidate();
             submit(null, { method: "get", action: DEFAULT_PATH });
           }
         }

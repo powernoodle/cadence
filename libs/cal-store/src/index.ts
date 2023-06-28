@@ -217,29 +217,29 @@ export class CalendarStore {
     return name;
   }
 
-  private accountIds: { [email: string]: number } = {};
+  private contactIds: { [email: string]: number } = {};
   private newNames: [number, string][] = [];
   private missingNames: { [id: number]: boolean } = {};
   private async saveAttendees(eventId: number, attendees: Attendance[]) {
     // populate cache with missing IDs
-    const missingAccounts: [string, string | null][] = [];
+    const missingContacts: [string, string | null][] = [];
     for (const attendee of attendees) {
-      if (attendee.email in this.accountIds) {
-        const id = this.accountIds[attendee.email];
+      if (attendee.email in this.contactIds) {
+        const id = this.contactIds[attendee.email];
         if (this.missingNames[id]) {
           const name = this.formatName(attendee.name);
           if (name) {
-            this.newNames.push([this.accountIds[attendee.email], name]);
+            this.newNames.push([this.contactIds[attendee.email], name]);
             delete this.missingNames[id];
           }
         }
       } else {
         const name = this.formatName(attendee.name);
-        missingAccounts.push([attendee.email, name]);
+        missingContacts.push([attendee.email, name]);
       }
     }
 
-    if (missingAccounts.length) {
+    if (missingContacts.length) {
       const data = await this.query(
         pgFormat(
           `
@@ -247,31 +247,32 @@ export class CalendarStore {
               VALUES %L
             ),
             ins AS (
-              INSERT INTO account (email, name)
-              SELECT * FROM input_rows
-              ON CONFLICT (email) DO NOTHING
-              RETURNING id, email, name
+              INSERT INTO contact (account_id, hash, email, name)
+              SELECT %L, encode(digest(email, 'sha256'), 'hex'), email, name FROM input_rows
+              ON CONFLICT (account_id, hash) DO NOTHING
+              RETURNING id, hash, email, name
             )
-            SELECT 'i' AS source                           -- 'i' for 'inserted'
+            SELECT 'i' AS source                      -- 'i' for 'inserted'
                 , id, email, name
             FROM   ins
             UNION  ALL
-            SELECT 's' AS source                           -- 's' for 'selected'
-                , a.id, a.email, a.name
+            SELECT 's' AS source                      -- 's' for 'selected'
+                , c.id, c.email, c.name
             FROM   input_rows
-            JOIN   account a USING (email);           -- columns of unique index
+            JOIN   contact c USING (email);            -- columns of unique index
           `,
-          missingAccounts
+          missingContacts,
+          this.accountId
         )
       );
-      for (const account of data) {
-        this.accountIds[account.email] = parseInt(account.id);
-        if (!account.name) {
-          const name = missingAccounts.find((a) => account.email === a[0])?.[1];
+      for (const contact of data) {
+        this.contactIds[contact.email] = parseInt(contact.id);
+        if (!contact.name) {
+          const name = missingContacts.find((a) => contact.email === a[0])?.[1];
           if (name) {
-            this.newNames.push([parseInt(account.id), name]);
+            this.newNames.push([parseInt(contact.id), name]);
           } else {
-            this.missingNames[account.id] = true;
+            this.missingNames[contact.id] = true;
           }
         }
       }
@@ -281,7 +282,7 @@ export class CalendarStore {
     const dbAttendees = attendees.map((attendee) => {
       return [
         eventId,
-        this.accountIds[attendee.email],
+        this.contactIds[attendee.email],
         attendee.response || null,
         !!attendee.isOrganizer,
       ];
@@ -289,9 +290,9 @@ export class CalendarStore {
     await this.query(
       pgFormat(
         `
-          INSERT INTO attendee (event_id, account_id, response, is_organizer)
+          INSERT INTO attendee (event_id, contact_id, response, is_organizer)
           VALUES %L
-          ON CONFLICT (event_id, account_id) DO
+          ON CONFLICT (event_id, contact_id) DO
               UPDATE SET response = excluded.response, is_organizer = excluded.is_organizer
         `,
         dbAttendees
@@ -303,10 +304,10 @@ export class CalendarStore {
     if (this.newNames.length === 0) return;
     const query = pgFormat(
       `
-          UPDATE account AS a
+          UPDATE contact AS c
           SET name = n.name
           FROM ( VALUES %L ) AS n(id, name)
-          WHERE a.id = n.id
+          WHERE c.id = n.id
         `,
       this.newNames
     );

@@ -80,22 +80,51 @@ export interface Database {
       }
       attendee: {
         Row: {
-          account_id: number
+          contact_id: number
           event_id: number
           is_organizer: boolean
           response: Database["public"]["Enums"]["attendance"] | null
         }
         Insert: {
-          account_id: number
+          contact_id: number
           event_id: number
           is_organizer?: boolean
           response?: Database["public"]["Enums"]["attendance"] | null
         }
         Update: {
-          account_id?: number
+          contact_id?: number
           event_id?: number
           is_organizer?: boolean
           response?: Database["public"]["Enums"]["attendance"] | null
+        }
+      }
+      contact: {
+        Row: {
+          account_id: number
+          created_at: string | null
+          email: string | null
+          hash: string
+          id: number
+          name: string | null
+          organization_id: number | null
+        }
+        Insert: {
+          account_id: number
+          created_at?: string | null
+          email?: string | null
+          hash: string
+          id?: number
+          name?: string | null
+          organization_id?: number | null
+        }
+        Update: {
+          account_id?: number
+          created_at?: string | null
+          email?: string | null
+          hash?: string
+          id?: number
+          name?: string | null
+          organization_id?: number | null
         }
       }
       day: {
@@ -235,6 +264,23 @@ export interface Database {
           event_id?: number | null
           id?: number
           raw_event?: Json
+        }
+      }
+      target: {
+        Row: {
+          account_id: number
+          event_type: Database["public"]["Enums"]["event_type"]
+          minutes: number
+        }
+        Insert: {
+          account_id: number
+          event_type: Database["public"]["Enums"]["event_type"]
+          minutes: number
+        }
+        Update: {
+          account_id?: number
+          event_type?: Database["public"]["Enums"]["event_type"]
+          minutes?: number
         }
       }
     }

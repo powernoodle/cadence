@@ -12,7 +12,7 @@
   "dependencies": {
     "@divvy/cal": "workspace:^",
     "@divvy/cal-store": "workspace:^",
-    "@supabase/supabase-js": "^2.21.0",
+    "@supabase/supabase-js": "^2.26.0",
     "date-fns": "^2.30.0",
     "toucan-js": "^3.1.0"
   },

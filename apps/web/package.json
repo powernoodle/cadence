@@ -38,7 +38,7 @@
     "@sentry/integrations": "^7.55.2",
     "@sentry/remix": "^7.55.2",
     "@supabase/auth-helpers-remix": "^0.2.1",
-    "@supabase/supabase-js": "^2.25.0",
+    "@supabase/supabase-js": "^2.26.0",
     "@tabler/icons-react": "^2.22.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",

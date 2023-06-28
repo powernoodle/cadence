@@ -31,6 +31,12 @@ export const getAccountId = async (
   request: Request,
   supabase: SupabaseClient
 ): Promise<number> => {
+  const session = (await supabase.auth.getSession()).data.session;
+  if (!session) {
+    console.error("No session");
+    throw redirect("/login");
+  }
+
   const url = new URL(request.url);
   const accountParam = url.searchParams.get("account");
   if (accountParam) {
@@ -39,8 +45,11 @@ export const getAccountId = async (
     return parseInt(accountParam);
   }
 
-  const userId = (await supabase.auth.getSession()).data.session?.user?.id;
-  if (!userId) throw redirect("/login");
+  const userId = session.user?.id;
+  if (!userId) {
+    console.log("No user on session");
+    throw redirect("/login");
+  }
   const { data } = await supabase
     .from("account")
     .select()

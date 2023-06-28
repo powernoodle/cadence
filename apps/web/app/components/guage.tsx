@@ -9,6 +9,7 @@ import {
   Paper,
   Group,
   Stack,
+  FocusTrap,
   useMantineTheme,
   useMantineColorScheme,
 } from "@mantine/core";
@@ -273,40 +274,43 @@ export function TargetGuage({
               )}
             </Button>
           )}
-          {edit && (
-            <Group pt={4} pb={4} spacing={2} sx={{ height: "50px" }}>
-              <NumberInput
-                value={Math.floor((target ?? projectedMinutes) / 60)}
-                onChange={(value) =>
-                  setTarget(
-                    (value || 0) * 60 + ((target ?? projectedMinutes) % 60)
-                  )
-                }
-                hideControls={true}
-                precision={0}
-                min={0}
-                max={3600}
-                sx={{ width: "5em" }}
-              />
-              <Text>:</Text>
-              <NumberInput
-                value={(target ?? Math.round(projectedMinutes / 15) * 15) % 60}
-                step={15}
-                onChange={(value) => {
-                  if (value === -1) value = -15;
-                  setTarget(
-                    Math.floor((target ?? projectedMinutes) / 60) * 60 +
-                      (value || 0)
-                  );
-                }}
-                formatter={(n) => String(n).padStart(2, "0")}
-                precision={0}
-                min={-1}
-                max={60}
-                sx={{ width: "4em" }}
-              />
-            </Group>
-          )}
+          <FocusTrap active={edit}>
+            {edit && (
+              <Group pt={4} pb={4} spacing={2} sx={{ height: "50px" }}>
+                <NumberInput
+                  value={Math.floor((target ?? projectedMinutes) / 60)}
+                  onChange={(value) =>
+                    setTarget(
+                      (value || 0) * 60 + ((target ?? projectedMinutes) % 60)
+                    )
+                  }
+                  precision={0}
+                  min={0}
+                  max={3600}
+                  sx={{ width: "5em" }}
+                />
+                <Text>:</Text>
+                <NumberInput
+                  value={
+                    (target ?? Math.round(projectedMinutes / 15) * 15) % 60
+                  }
+                  step={15}
+                  onChange={(value) => {
+                    if (value === -1) value = -15;
+                    setTarget(
+                      Math.floor((target ?? projectedMinutes) / 60) * 60 +
+                        (value || 0)
+                    );
+                  }}
+                  formatter={(n) => String(n).padStart(2, "0")}
+                  precision={0}
+                  min={0}
+                  max={45}
+                  sx={{ width: "4em" }}
+                />
+              </Group>
+            )}
+          </FocusTrap>
           {(hasTarget || edit) && (
             <Text fz="sm" color={makeColor("gray", 6, 5, colorScheme)}>
               hours/week

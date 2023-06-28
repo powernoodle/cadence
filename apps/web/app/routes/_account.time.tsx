@@ -1,7 +1,7 @@
 /** @jsxfrag */
-import type { LoaderArgs } from "@remix-run/cloudflare";
+import type { LoaderArgs, ActionArgs } from "@remix-run/cloudflare";
 
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, useFetcher } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
   SimpleGrid,
@@ -64,9 +64,26 @@ async function getStats(
       };
       return acc;
     },
-    {}
+    {} as EventStats
   );
   return data || {};
+}
+
+export async function action({ context, request }: ActionArgs) {
+  const { response, supabase } = createServerClient(context, request);
+  const accountId = await getAccountId(request, supabase);
+  const bodyParams = await request.formData();
+  if (typeof bodyParams.get("targets") === "string") {
+    const targets = JSON.parse(bodyParams.get("targets") as string);
+    for (const [eventType, minutes] of Object.entries(targets)) {
+      safeQuery(
+        await supabase
+          .from("target")
+          .upsert({ account_id: accountId, event_type: eventType, minutes })
+      );
+    }
+  }
+  return json({});
 }
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -83,10 +100,19 @@ export const loader = async ({ context, request }: LoaderArgs) => {
   const data = await getStats(supabase, accountId, during);
   const previousData = await getStats(supabase, accountId, previousDuring);
 
+  const targets =
+    safeQuery(
+      await supabase.from("target").select().eq("account_id", accountId)
+    )?.reduce((acc, { event_type, minutes }) => {
+      acc[event_type] = minutes;
+      return acc;
+    }, {} as Record<EventType, number>) || {};
+
   return json(
     {
       data,
       previousData,
+      targets,
       accountId,
       isPast: isPast(current.end, USER_TZ),
     },
@@ -102,6 +128,7 @@ function StatCard({
   color,
   maximize,
   isPast,
+  onTargetChange,
 }: {
   title: string;
   data: TypeStats;
@@ -110,6 +137,7 @@ function StatCard({
   color: string;
   maximize?: boolean;
   isPast: boolean;
+  onTargetChange?: (minutes: number) => void;
 }) {
   const { colorScheme } = useMantineColorScheme();
 
@@ -179,6 +207,7 @@ function StatCard({
           projectedMinutes={projectedMinutes}
           targetMinutes={targetMinutes}
           maximize={maximize}
+          onChange={onTargetChange}
         />
       </SimpleGrid>
       <Group position="apart">
@@ -202,8 +231,22 @@ export const handle = {
 };
 
 export default function MeetingLoad() {
-  const { data, previousData, isPast } = useLoaderData<typeof loader>();
+  const { data, previousData, targets, isPast } =
+    useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
+
   if (!data || !previousData) return null;
+
+  const updateTarget = (type: EventType, target: number) => {
+    fetcher.submit(
+      {
+        targets: JSON.stringify({
+          [type]: target,
+        }),
+      },
+      { method: "post" }
+    );
+  };
 
   return (
     <>
@@ -222,7 +265,8 @@ export default function MeetingLoad() {
           title={"Work Meetings"}
           data={data.internal || {}}
           previousData={previousData.internal || {}}
-          targetMinutes={10 * 60}
+          targetMinutes={targets?.internal}
+          onTargetChange={(target) => updateTarget("internal", target)}
           color="orange"
           isPast={isPast}
         />
@@ -230,7 +274,8 @@ export default function MeetingLoad() {
           title={"Customer Meetings"}
           data={data.external || {}}
           previousData={previousData.external || {}}
-          targetMinutes={3 * 60}
+          targetMinutes={targets?.external}
+          onTargetChange={(target) => updateTarget("external", target)}
           maximize={true}
           color="yellow"
           isPast={isPast}
@@ -239,7 +284,8 @@ export default function MeetingLoad() {
           title={"Deep Work Blocks"}
           data={data.focus || {}}
           previousData={previousData.focus || {}}
-          targetMinutes={22 * 60}
+          targetMinutes={targets?.focus}
+          onTargetChange={(target) => updateTarget("focus", target)}
           maximize={true}
           color="blue"
           isPast={isPast}
@@ -248,6 +294,8 @@ export default function MeetingLoad() {
           title={"Health, Growth & Giving Activities"}
           data={data.growth || {}}
           previousData={previousData.growth || {}}
+          targetMinutes={targets?.growth}
+          onTargetChange={(target) => updateTarget("growth", target)}
           maximize={true}
           color="cyan"
           isPast={isPast}

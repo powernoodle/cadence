@@ -121,7 +121,7 @@ export function ProjectionGuage({
   const projectedMinutes = pastMinutes + scheduledMinutes + pendingMinutes;
   const sections = [
     {
-      label: "Past",
+      label: "Attended",
       value: pastMinutes,
       color,
       shade: 7,
@@ -186,16 +186,22 @@ export function TargetGuage({
   targetMinutes,
   projectedMinutes,
   maximize,
+  onChange,
 }: {
   targetMinutes?: number;
   projectedMinutes: number;
   maximize?: boolean;
+  onChange?: (target: number) => void;
 }) {
   const { colorScheme } = useMantineColorScheme();
   const [edit, setEdit] = useState(false);
+  const defaultTarget = targetMinutes ?? Math.round(projectedMinutes / 15) * 15;
+  const [target, setTarget] = useState(defaultTarget);
+  const hasTarget = !!targetMinutes;
+
   let sections: GuageSections[] = [];
-  if (targetMinutes) {
-    if (projectedMinutes < targetMinutes) {
+  if (hasTarget || edit) {
+    if (projectedMinutes < target) {
       sections = [
         {
           label: "Projected",
@@ -205,7 +211,7 @@ export function TargetGuage({
         },
         {
           label: "Under target",
-          value: targetMinutes - projectedMinutes,
+          value: target - projectedMinutes,
           color: maximize ? "red" : "green",
           shade: maximize ? 4 : 2,
         },
@@ -214,13 +220,13 @@ export function TargetGuage({
       sections = [
         {
           label: "Target",
-          value: targetMinutes,
+          value: target,
           color: "green",
           shade: 4,
         },
         {
           label: "Over target",
-          value: projectedMinutes - targetMinutes,
+          value: projectedMinutes - target,
           color: maximize ? "green" : "red",
           shade: maximize ? 2 : 4,
         },
@@ -231,10 +237,10 @@ export function TargetGuage({
   return (
     <Guage
       sections={sections}
-      total={targetMinutes ? targetMinutes * 2 : 0}
+      total={hasTarget || edit ? target * 2 : 0}
       label={
         <Stack spacing={0} align="center">
-          {(targetMinutes !== undefined || edit) && (
+          {(hasTarget || edit) && (
             <Text fz="lg" color={makeColor("gray", 6, 5, colorScheme)} mt="md">
               Target
             </Text>
@@ -242,10 +248,12 @@ export function TargetGuage({
           {!edit && (
             <Button
               variant="subtle"
-              onClick={() => setEdit(true)}
+              onClick={() => {
+                setEdit(true);
+              }}
               sx={{ height: "50px" }}
             >
-              {targetMinutes === undefined && (
+              {!hasTarget && (
                 <Text
                   fz={24}
                   fw={300}
@@ -254,13 +262,13 @@ export function TargetGuage({
                   Set target
                 </Text>
               )}
-              {targetMinutes !== undefined && (
+              {hasTarget && (
                 <Text
                   fz={32}
                   fw={700}
                   color={makeColor("gray", 8, 2, colorScheme)}
                 >
-                  {durationFmt(targetMinutes)}
+                  {durationFmt(target)}
                 </Text>
               )}
             </Button>
@@ -268,7 +276,13 @@ export function TargetGuage({
           {edit && (
             <Group pt={4} pb={4} spacing={2} sx={{ height: "50px" }}>
               <NumberInput
-                defaultValue={3600}
+                value={Math.floor((target ?? projectedMinutes) / 60)}
+                onChange={(value) =>
+                  setTarget(
+                    (value || 0) * 60 + ((target ?? projectedMinutes) % 60)
+                  )
+                }
+                hideControls={true}
                 precision={0}
                 min={0}
                 max={3600}
@@ -276,21 +290,29 @@ export function TargetGuage({
               />
               <Text>:</Text>
               <NumberInput
-                defaultValue={0}
+                value={(target ?? Math.round(projectedMinutes / 15) * 15) % 60}
+                step={15}
+                onChange={(value) => {
+                  if (value === -1) value = -15;
+                  setTarget(
+                    Math.floor((target ?? projectedMinutes) / 60) * 60 +
+                      (value || 0)
+                  );
+                }}
                 formatter={(n) => String(n).padStart(2, "0")}
                 precision={0}
-                min={0}
-                max={59}
+                min={-1}
+                max={60}
                 sx={{ width: "4em" }}
               />
             </Group>
           )}
-          {(targetMinutes !== undefined || edit) && (
+          {(hasTarget || edit) && (
             <Text fz="sm" color={makeColor("gray", 6, 5, colorScheme)}>
               hours/week
             </Text>
           )}
-          {targetMinutes !== undefined && !edit && (
+          {hasTarget && !edit && (
             <Text fz="sm" color={makeColor("gray", 6, 5, colorScheme)} mt="md">
               <Group spacing={0}>
                 <DiffIcon size="1rem" stroke={1.5} />
@@ -303,7 +325,10 @@ export function TargetGuage({
               <Button
                 compact
                 variant="subtle"
-                onClick={() => setEdit(false)}
+                onClick={() => {
+                  onChange?.(target ?? projectedMinutes);
+                  setEdit(false);
+                }}
                 title="Save"
               >
                 <IconCheck />
@@ -311,7 +336,10 @@ export function TargetGuage({
               <Button
                 compact
                 variant="subtle"
-                onClick={() => setEdit(false)}
+                onClick={() => {
+                  setTarget(defaultTarget);
+                  setEdit(false);
+                }}
                 title="Cancel"
               >
                 <IconX />

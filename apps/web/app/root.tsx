@@ -166,7 +166,7 @@ export const links: LinksFunction = () => [
 
 export default function App() {
   const { env, session, user, prefs } = useLoaderData<typeof loader>();
-  const setPrefs = useFetcher();
+  const fetcher = useFetcher();
 
   const systemColorScheme = useColorScheme();
   const [colorScheme, setColorScheme] = useState<ColorScheme>(
@@ -181,7 +181,7 @@ export default function App() {
     const nextColorScheme =
       value || (colorScheme === "dark" ? "light" : "dark");
     setColorScheme(nextColorScheme);
-    setPrefs.submit(
+    fetcher.submit(
       { theme: nextColorScheme },
       { method: "post", action: "/prefs" }
     );

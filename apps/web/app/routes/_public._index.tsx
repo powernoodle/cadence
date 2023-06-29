@@ -10,7 +10,11 @@ import {
   ThemeIcon,
   rem,
 } from "@mantine/core";
-import { IconCheck } from "@tabler/icons-react";
+import {
+  IconRulerMeasure,
+  IconAdjustmentsFilled,
+  IconAd,
+} from "@tabler/icons-react";
 import hero from "../assets/hero.svg";
 
 const useStyles = createStyles((theme) => ({
@@ -41,6 +45,13 @@ const useStyles = createStyles((theme) => ({
     [theme.fn.smallerThan("xs")]: {
       fontSize: rem(28),
     },
+  },
+
+  copy: {
+    color:
+      theme.colorScheme === "dark"
+        ? theme.colors.gray[2]
+        : theme.colors.gray[7],
   },
 
   control: {
@@ -74,31 +85,47 @@ export default function Index() {
     <Container>
       <div className={classes.inner}>
         <div className={classes.content}>
-          <Title className={classes.title}>Control your calendar</Title>
-          <Text color="dimmed" mt="md">
-            Time is your most valuable asset, yet it's rarely measured. Divvy is
-            an accountant for your time, helping you budget according to your
-            priorities.
+          <Title order={2} size="h1" className={classes.title} mb="xl">
+            Rule your calendar
+          </Title>
+          <Text mt="md" sx={{ lineHeight: 1.55 }} className={classes.copy}>
+            Every work day, too many things compete for your finite time. Hold
+            back the barrage and make time for what moves you forward.
           </Text>
 
           <List
-            mt={30}
-            spacing="sm"
-            size="sm"
-            icon={
-              <ThemeIcon size={20} radius="xl">
-                <IconCheck size={rem(12)} stroke={1.5} />
-              </ThemeIcon>
-            }
+            mt={24}
+            mb={24}
+            spacing="xl"
+            size="md"
+            center
+            className={classes.copy}
           >
-            <List.Item>
-              <b>Learn from your schedule</b> – dig into data-driven insights
-              that highlight where you spend your time
+            <List.Item
+              icon={
+                <ThemeIcon size={32} radius="xl">
+                  <IconRulerMeasure size={rem(18)} stroke={1.5} />
+                </ThemeIcon>
+              }
+              sx={{ lineHeight: 1.55 }}
+            >
+              <b>Measure what matters</b>
+              <br />
+              Learn from your calendar with a dynamic snapshot of where you're
+              spending your time
             </List.Item>
-            <List.Item>
-              <b>Quick wins</b> – identify changes you can make, such as
-              declining low-value meetings and reducing meeting length and
-              frequency
+            <List.Item
+              icon={
+                <ThemeIcon size={32} radius="xl">
+                  <IconAdjustmentsFilled size={rem(18)} stroke={1.5} />
+                </ThemeIcon>
+              }
+              sx={{ lineHeight: 1.55 }}
+            >
+              <b>Align your time</b>
+              <br />
+              Set and keep goals to reduce time in low-value meetings and make
+              time for activities that advance your priorities
             </List.Item>
           </List>
 

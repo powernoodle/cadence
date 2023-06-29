@@ -51,6 +51,7 @@ function ThemeToggle() {
 }
 
 export default function Header({ menu }: { menu?: ReactNode }) {
+  const { colorScheme } = useMantineColorScheme();
   const location = useLocation();
   const { user } = useOutletContext<SupabaseOutletContext>();
   const routes = useMatches();
@@ -73,7 +74,11 @@ export default function Header({ menu }: { menu?: ReactNode }) {
           {menu}
           <MediaQuery smallerThan="md" styles={{ display: "none" }}>
             <UnstyledButton component={Link} to="/">
-              <Title order={1} size="h2">
+              <Title
+                order={1}
+                size="h2"
+                color={colorScheme === "light" ? "violet.9" : "violet.3"}
+              >
                 {APP_NAME}
               </Title>
             </UnstyledButton>
@@ -82,7 +87,7 @@ export default function Header({ menu }: { menu?: ReactNode }) {
         <Group>{headerControl}</Group>
         <MediaQuery smallerThan="md" styles={{ display: "none" }}>
           <Group>
-            {user && !isPublic && <ThemeToggle />}
+            <ThemeToggle />
             {user && isPublic && (
               <Button component={Link} to={DEFAULT_PATH}>
                 Go to app

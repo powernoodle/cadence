@@ -57,6 +57,7 @@ async function getStats(
   const data = focusData?.reduce(
     (acc, { type, status, weekly_minutes, total_count }) => {
       acc[type] = {
+        ...acc[type],
         [status]: {
           minutes: weekly_minutes,
           count: total_count,
@@ -106,7 +107,7 @@ export const loader = async ({ context, request }: LoaderArgs) => {
     )?.reduce((acc, { event_type, minutes }) => {
       acc[event_type] = minutes;
       return acc;
-    }, {} as Record<EventType, number>) || {};
+    }, {} as Record<EventType, number>) || ({} as Record<EventType, number>);
 
   return json(
     {

@@ -89,18 +89,10 @@ export default function Index() {
             Rule your calendar
           </Title>
           <Text mt="md" sx={{ lineHeight: 1.55 }} className={classes.copy}>
-            Every work day, too many things compete for your finite time. Hold
-            back the barrage and make time for what moves you forward.
+            Reduce your meeting load, making time for what moves you forward.
           </Text>
 
-          <List
-            mt={24}
-            mb={24}
-            spacing="xl"
-            size="md"
-            center
-            className={classes.copy}
-          >
+          <List mt={24} spacing="xl" size="md" center className={classes.copy}>
             <List.Item
               icon={
                 <ThemeIcon size={32} radius="xl">
@@ -109,10 +101,8 @@ export default function Index() {
               }
               sx={{ lineHeight: 1.55 }}
             >
-              <b>Measure what matters</b>
-              <br />
-              Learn from your calendar with a dynamic snapshot of where you're
-              spending your time
+              <b>Understand your time</b> &#8212; Learn from your calendar with
+              a dynamic snapshot of where you're spending your time.
             </List.Item>
             <List.Item
               icon={
@@ -122,14 +112,13 @@ export default function Index() {
               }
               sx={{ lineHeight: 1.55 }}
             >
-              <b>Align your time</b>
-              <br />
-              Set and keep goals to reduce time in low-value meetings and make
-              time for activities that advance your priorities
+              <b>Trim unnecessary meetings</b> &#8212; Set and keep goals to
+              reduce time in low-value meetings and make time for activities
+              that advance your priorities
             </List.Item>
           </List>
 
-          <Group mt={30}>
+          <Group mt={32}>
             <Button
               radius="xl"
               size="md"

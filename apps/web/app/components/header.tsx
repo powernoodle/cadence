@@ -72,7 +72,10 @@ export default function Header({ menu }: { menu?: ReactNode }) {
       >
         <Group>
           {menu}
-          <MediaQuery smallerThan="md" styles={{ display: "none" }}>
+          <MediaQuery
+            smallerThan={isPublic ? undefined : "md"}
+            styles={{ display: "none" }}
+          >
             <UnstyledButton component={Link} to="/">
               <Title
                 order={1}
@@ -85,7 +88,10 @@ export default function Header({ menu }: { menu?: ReactNode }) {
           </MediaQuery>
         </Group>
         <Group>{headerControl}</Group>
-        <MediaQuery smallerThan="md" styles={{ display: "none" }}>
+        <MediaQuery
+          smallerThan={isPublic ? undefined : "md"}
+          styles={{ display: "none" }}
+        >
           <Group>
             <ThemeToggle />
             {user && isPublic && (

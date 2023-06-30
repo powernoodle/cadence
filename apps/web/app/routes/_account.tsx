@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 
@@ -155,6 +155,11 @@ export default function Index() {
   const theme = useMantineTheme();
   const [opened, setOpened] = useState(false);
   const ctx = useOutletContext<SupabaseOutletContext>();
+  let location = useLocation();
+
+  useEffect(() => {
+    setOpened(false);
+  }, [location]);
 
   return (
     <AppShell

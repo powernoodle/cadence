@@ -88,12 +88,14 @@ export const loader = async ({ context, request }: LoaderArgs) => {
 };
 
 function Page({ children }: { children: React.ReactNode }) {
-  const { prefs } = useLoaderData<typeof loader>();
+  // Might be undefined if the loader fails
+  const loaderData = useLoaderData<typeof loader>();
+  const prefs = loaderData?.prefs || {};
   const fetcher = useFetcher();
 
   const systemColorScheme = useColorScheme();
   const [colorScheme, setColorScheme] = useState<ColorScheme>(
-    prefs?.theme || systemColorScheme
+    prefs.theme || systemColorScheme
   );
   const toggleColorScheme = (value?: ColorScheme) => {
     const nextColorScheme =
@@ -105,7 +107,7 @@ function Page({ children }: { children: React.ReactNode }) {
     );
   };
   useEffect(() => {
-    if (!prefs?.theme) {
+    if (!prefs.theme) {
       toggleColorScheme(systemColorScheme);
     }
   }, [systemColorScheme]);
@@ -167,8 +169,10 @@ export function ErrorBoundary() {
   if (!isRouteErrorResponse(error)) {
     Sentry().captureException(error);
   }
+  let title = "Something went wrong";
   let message;
   if (isRouteErrorResponse(error)) {
+    title = "Page not found";
     message = `${error.status} ${error.statusText}`;
   } else if (error instanceof Error) {
     if (error.stack) {
@@ -192,7 +196,7 @@ export function ErrorBoundary() {
     <Page>
       <Container mt="xl">
         <Card>
-          <Title mb="md">Something went wrong</Title>
+          <Title mb="md">{title}</Title>
           <Text>
             <pre>{message}</pre>
           </Text>

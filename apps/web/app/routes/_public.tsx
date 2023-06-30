@@ -35,7 +35,11 @@ function AppFooter() {
 export default function Index() {
   const ctx = useOutletContext<SupabaseOutletContext>();
   return (
-    <AppShell header={<Header />} footer={<AppFooter />}>
+    <AppShell
+      header={<Header />}
+      footer={<AppFooter />}
+      styles={{ main: { minHeight: "unset" } }}
+    >
       <Outlet context={ctx} />
     </AppShell>
   );

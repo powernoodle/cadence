@@ -14,16 +14,20 @@ import { json } from "@remix-run/cloudflare";
 import {
   AppShell,
   Burger,
+  Title,
+  UnstyledButton,
   MediaQuery,
   Navbar,
   NavLink,
   Select,
   useMantineTheme,
+  useMantineColorScheme,
 } from "@mantine/core";
 
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, getAccountId, safeQuery } from "../util";
 import Header from "../components/header";
+import { APP_NAME } from "../util";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
   const { response, supabase } = createServerClient(context, request);
@@ -103,6 +107,7 @@ function AccountSelect() {
 function AppNavbar({ opened }: { opened: boolean }) {
   const location = useLocation();
   const { isAdmin } = useLoaderData<typeof loader>();
+  const { colorScheme } = useMantineColorScheme();
 
   return (
     <Navbar
@@ -111,6 +116,19 @@ function AppNavbar({ opened }: { opened: boolean }) {
       hidden={!opened}
       width={{ sm: 200, lg: 300 }}
     >
+      <MediaQuery largerThan="md" styles={{ display: "none" }}>
+        <Navbar.Section mb="md">
+          <UnstyledButton component={Link} to="/">
+            <Title
+              order={1}
+              size="h2"
+              color={colorScheme === "light" ? "violet.9" : "violet.3"}
+            >
+              {APP_NAME}
+            </Title>
+          </UnstyledButton>
+        </Navbar.Section>
+      </MediaQuery>
       <Navbar.Section grow>
         <NavLink
           label="Time Balance"
@@ -182,6 +200,7 @@ export default function Index() {
                 opened={opened}
                 onClick={() => setOpened((o) => !o)}
                 size="sm"
+                h={36}
                 color={theme.colors.gray[6]}
                 mr="xl"
               />

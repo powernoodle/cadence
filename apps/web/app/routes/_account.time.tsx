@@ -1,9 +1,12 @@
+import { useState } from "react";
+
 /** @jsxfrag */
 import type { LoaderArgs, ActionArgs } from "@remix-run/cloudflare";
 
 import { useLoaderData, useFetcher } from "@remix-run/react";
 import { json } from "@remix-run/cloudflare";
 import {
+  Flex,
   SimpleGrid,
   Card,
   Title,
@@ -20,13 +23,9 @@ import {
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@divvy/db";
 
-import {
-  getDateRange,
-  isPast,
-  DateRangeSelect,
-} from "../components/date-range";
+import { getDateRange, DateRangeSelect } from "../components/date-range";
 import { createServerClient, getAccountId, safeQuery } from "../util";
-import { ProjectionGuage, TargetGuage } from "../components/guage";
+import { TargetGauge, EditGauge } from "../components/gauge";
 import { makeColor } from "../color";
 import { USER_TZ } from "../config";
 
@@ -115,7 +114,6 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       previousData,
       targets,
       accountId,
-      isPast: isPast(current.end, USER_TZ),
     },
     { headers: response.headers }
   );
@@ -128,8 +126,8 @@ function StatCard({
   targetMinutes,
   color,
   maximize,
-  isPast,
   onTargetChange,
+  edit,
 }: {
   title: string;
   data: TypeStats;
@@ -137,8 +135,8 @@ function StatCard({
   targetMinutes?: number;
   color: string;
   maximize?: boolean;
-  isPast: boolean;
   onTargetChange?: (minutes: number) => void;
+  edit?: boolean;
 }) {
   const { colorScheme } = useMantineColorScheme();
 
@@ -195,21 +193,28 @@ function StatCard({
         {title}
       </Title>
       <SimpleGrid cols={1} breakpoints={[{ minWidth: "48rem", cols: 2 }]}>
-        <ProjectionGuage
-          label={isPast ? "Attended" : "Projected"}
-          pastMinutes={data?.attended?.minutes || 0}
-          scheduledMinutes={data?.scheduled?.minutes || 0}
-          pendingMinutes={data?.pending?.minutes || 0}
-          color={color}
-          trend={trend}
-          maximize={maximize}
-        />
-        <TargetGuage
-          projectedMinutes={projectedMinutes}
-          targetMinutes={targetMinutes}
-          maximize={maximize}
-          onChange={onTargetChange}
-        />
+        {!edit && (
+          <TargetGauge
+            pastMinutes={data?.attended?.minutes || 0}
+            scheduledMinutes={data?.scheduled?.minutes || 0}
+            pendingMinutes={data?.pending?.minutes || 0}
+            targetMinutes={targetMinutes}
+            totalMinutes={40 * 60}
+            color={color}
+            trend={trend}
+            maximize={maximize}
+          />
+        )}
+        {edit && (
+          <EditGauge
+            averageMinutes={previousData?.attended?.minutes || 0}
+            targetMinutes={targetMinutes}
+            totalMinutes={40 * 60}
+            color={color}
+            maximize={maximize}
+            onChange={onTargetChange}
+          />
+        )}
       </SimpleGrid>
       <Group position="apart">
         {links.map((link: any, i: number) => (
@@ -232,13 +237,19 @@ export const handle = {
 };
 
 export default function MeetingLoad() {
-  const { data, previousData, targets, isPast } =
-    useLoaderData<typeof loader>();
+  const {
+    data,
+    previousData,
+    targets: loaderTargets,
+  } = useLoaderData<typeof loader>();
+  const [targets, setTargets] = useState(loaderTargets);
+  const [edit, setEdit] = useState(false);
   const fetcher = useFetcher();
 
   if (!data || !previousData) return null;
 
   const updateTarget = (type: EventType, target: number) => {
+    setTargets({ ...targets, [type]: target });
     fetcher.submit(
       {
         targets: JSON.stringify({
@@ -251,9 +262,14 @@ export default function MeetingLoad() {
 
   return (
     <>
-      <Title order={2} size="h2" mb="lg">
-        Weekly working hours
-      </Title>
+      <Flex justify="space-between">
+        <Title order={2} size="h2" mb="lg">
+          Weekly working hours
+        </Title>
+        <Button onClick={() => setEdit(!edit)}>
+          {edit ? "Done" : "Edit Targets"}
+        </Button>
+      </Flex>
       <SimpleGrid
         cols={1}
         breakpoints={[
@@ -269,7 +285,7 @@ export default function MeetingLoad() {
           targetMinutes={targets?.internal}
           onTargetChange={(target) => updateTarget("internal", target)}
           color="orange"
-          isPast={isPast}
+          edit={edit}
         />
         <StatCard
           title={"Customer Meetings"}
@@ -279,7 +295,7 @@ export default function MeetingLoad() {
           onTargetChange={(target) => updateTarget("external", target)}
           maximize={true}
           color="yellow"
-          isPast={isPast}
+          edit={edit}
         />
         <StatCard
           title={"Deep Work Blocks"}
@@ -289,7 +305,7 @@ export default function MeetingLoad() {
           onTargetChange={(target) => updateTarget("focus", target)}
           maximize={true}
           color="blue"
-          isPast={isPast}
+          edit={edit}
         />
         <StatCard
           title={"Health, Growth & Giving Activities"}
@@ -299,7 +315,7 @@ export default function MeetingLoad() {
           onTargetChange={(target) => updateTarget("growth", target)}
           maximize={true}
           color="cyan"
-          isPast={isPast}
+          edit={edit}
         />
       </SimpleGrid>
     </>

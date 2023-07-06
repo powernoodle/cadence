@@ -1,30 +1,72 @@
-import { Box, Stack, Group, SimpleGrid, Text, Slider } from "@mantine/core";
+import {
+  Box,
+  Flex,
+  Slider,
+  Stack,
+  Text,
+  useMantineColorScheme,
+} from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
+import { Fragment } from "react";
+import { MEETING_ACTIVITIES, NON_MEETING_ACTIVITIES } from "~/activities";
 
-import { EditGauge } from "./gauge";
+import { makeColor } from "../color";
 
-const TOTAL_MINUTES = 40 * 60;
+const WEEKLY_HOURS = 40;
+
+function Activities({
+  activities,
+  color,
+}: {
+  activities: string[];
+  color: string;
+}) {
+  const { colorScheme } = useMantineColorScheme();
+  const isSm = useMediaQuery("(max-width: 768px)");
+  return (
+    <Text
+      ta={isSm ? "inherit" : "justify"}
+      lineClamp={isSm ? 8 : 4}
+      fz={isSm ? "sm" : "md"}
+    >
+      {activities.map((activity, i) => (
+        <Fragment key={i}>
+          {i > 0 && <> &sdot; </>}
+          <Text
+            span
+            color={makeColor(i % 2 ? color : "gray", 7, 5, colorScheme)}
+          >
+            {activity}
+          </Text>
+        </Fragment>
+      ))}
+    </Text>
+  );
+}
 
 export function Target({
-  targets,
+  target,
   onChange,
 }: {
-  targets: { [key: string]: number };
-  onChange: (target: string, value: number) => void;
+  target: number;
+  onChange: (value: number) => void;
 }) {
-  const workingMinutes = Object.values(targets).reduce(
-    (sum, value) => sum + value,
-    0
-  );
-  const meetingMinutes = Object.entries(targets)
-    .filter(([key]) => key !== "everything")
-    .reduce((sum, [_, value]) => sum + value, 0);
   return (
     <Stack>
+      <Flex justify="space-between">
+        <Text fz="xl" fw={700} color="orange">
+          Meetings
+        </Text>
+        <Text fz="xl" fw={700} color="violet.5">
+          Everything Else
+        </Text>
+      </Flex>
       <Slider
         color="orange"
-        defaultValue={20}
-        label={(value) => `${value} hours per week`}
-        max={40}
+        value={target}
+        onChange={onChange}
+        label={(value) => `${value} hours of meetings per week`}
+        max={WEEKLY_HOURS}
         step={0.5}
         marks={[
           { value: 10, label: "10" },
@@ -36,7 +78,22 @@ export function Target({
           track: { ":before": { backgroundColor: theme.colors.violet[7] } },
         })}
       />
-      <Box></Box>
+      <Flex mt="md">
+        <Box
+          w={`${(target / WEEKLY_HOURS) * 100}%`}
+          pr={{ base: "sm", lg: "md" }}
+        >
+          <Activities color="orange" activities={MEETING_ACTIVITIES} />
+        </Box>
+        <Box
+          w={`${((WEEKLY_HOURS - target) / WEEKLY_HOURS) * 100}%`}
+          pl={{ base: "sm", lg: "md" }}
+          ta="right"
+          sx={{ overflow: "hidden" }}
+        >
+          <Activities color="violet" activities={NON_MEETING_ACTIVITIES} />
+        </Box>
+      </Flex>
     </Stack>
   );
 }

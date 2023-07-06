@@ -1,11 +1,21 @@
+import {
+  Card,
+  ColorScheme,
+  ColorSchemeProvider,
+  Container,
+  MantineProvider,
+  Text,
+  Title,
+  createEmotionCache,
+} from "@mantine/core";
+import { useColorScheme } from "@mantine/hooks";
+import { StylesPlaceholder } from "@mantine/remix";
 import type {
-  LoaderArgs,
   LinksFunction,
+  LoaderArgs,
   V2_MetaFunction,
 } from "@remix-run/cloudflare";
 import { json } from "@remix-run/cloudflare";
-import { Sentry } from "./sentry";
-
 import { cssBundleHref } from "@remix-run/css-bundle";
 import {
   Links,
@@ -14,34 +24,22 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  isRouteErrorResponse,
+  useFetcher,
   useLoaderData,
   useRevalidator,
   useRouteError,
-  isRouteErrorResponse,
-  useFetcher,
 } from "@remix-run/react";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useOutletContext } from "@remix-run/react";
 import { User, createBrowserClient } from "@supabase/auth-helpers-remix";
-import type { Database } from "@divvy/db";
 import { SupabaseClient } from "@supabase/supabase-js";
-
-import {
-  MantineProvider,
-  ColorSchemeProvider,
-  ColorScheme,
-  createEmotionCache,
-  Title,
-  Text,
-  Container,
-  Card,
-} from "@mantine/core";
-import { useColorScheme } from "@mantine/hooks";
-import { StylesPlaceholder } from "@mantine/remix";
-
-import { APP_NAME, createServerClient, cookieOptions } from "./util";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { userPrefs } from "~/cookies";
 
-import { useOutletContext } from "@remix-run/react";
+import type { Database } from "@divvy/db";
+
+import { Sentry } from "./sentry";
+import { APP_NAME, cookieOptions, createServerClient } from "./util";
 
 export const meta: V2_MetaFunction = () => [
   { charset: "utf-8" },

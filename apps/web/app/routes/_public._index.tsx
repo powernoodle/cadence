@@ -1,20 +1,25 @@
-import { useState, useCallback } from "react";
 import {
-  createStyles,
-  Image,
-  Container,
-  Stack,
-  Paper,
-  Title,
   Button,
+  Container,
   Group,
-  Text,
+  Image,
   List,
+  Paper,
+  Stack,
+  Text,
   ThemeIcon,
+  Title,
+  createStyles,
   rem,
   useMantineColorScheme,
 } from "@mantine/core";
-import { IconRulerMeasure, IconAdjustmentsFilled } from "@tabler/icons-react";
+import {
+  IconAdjustments,
+  IconPigMoney,
+  IconTrendingUp,
+} from "@tabler/icons-react";
+import { useCallback, useState } from "react";
+
 import hero from "../assets/hero.svg";
 import { Target } from "../components/target";
 
@@ -80,19 +85,22 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
+function Highlight({ children }: { children: React.ReactNode }) {
+  return (
+    <Text
+      span
+      variant="gradient"
+      gradient={{ from: "violet.5", to: "teal", deg: 45 }}
+    >
+      {children}
+    </Text>
+  );
+}
+
 export default function Index() {
   const { colorScheme } = useMantineColorScheme();
   const { classes } = useStyles();
-  const [targets, setTargets] = useState({
-    project: 6 * 60,
-    management: 2 * 60,
-    customer: 60,
-    everything: 20 * 60,
-  });
-
-  const onTargetsChange = useCallback((target: string, value: number) => {
-    setTargets((targets) => ({ ...targets, [target]: value }));
-  }, []);
+  const [target, setTarget] = useState(16);
 
   return (
     <Stack>
@@ -100,11 +108,8 @@ export default function Index() {
         <div className={classes.inner}>
           <div className={classes.content}>
             <Title order={2} size="h1" className={classes.title} mb="xl">
-              Rule your calendar
+              Success is <Highlight>more</Highlight> than meetings
             </Title>
-            <Text mt="md" sx={{ lineHeight: 1.55 }} className={classes.copy}>
-              Reduce your meeting load, making time for what moves you forward.
-            </Text>
 
             <List
               mt={24}
@@ -116,25 +121,37 @@ export default function Index() {
               <List.Item
                 icon={
                   <ThemeIcon size={32} radius="xl">
-                    <IconRulerMeasure size={rem(18)} stroke={1.5} />
+                    <IconAdjustments size={rem(18)} stroke={1.5} />
                   </ThemeIcon>
                 }
                 sx={{ lineHeight: 1.55 }}
               >
-                <b>Understand your time</b> &#8212; Learn from your calendar
-                with a dynamic snapshot of where you're spending your time.
+                <b>Design your time</b> &#8212; Build a schedule with space to
+                get the most from important meetings <b>and</b> deliver on the
+                rest of your work.
               </List.Item>
               <List.Item
                 icon={
                   <ThemeIcon size={32} radius="xl">
-                    <IconAdjustmentsFilled size={rem(18)} stroke={1.5} />
+                    <IconPigMoney size={rem(18)} stroke={1.5} />
                   </ThemeIcon>
                 }
                 sx={{ lineHeight: 1.55 }}
               >
-                <b>Trim unnecessary meetings</b> &#8212; Set and keep goals to
-                reduce time in low-value meetings and make time for activities
-                that advance your priorities
+                <b>Set a meeting budget</b> &#8212; Reduce your meeting load,
+                making time for what moves you forward.
+              </List.Item>
+              <List.Item
+                icon={
+                  <ThemeIcon size={32} radius="xl">
+                    <IconTrendingUp size={rem(18)} stroke={1.5} />
+                  </ThemeIcon>
+                }
+                sx={{ lineHeight: 1.55 }}
+              >
+                <b>Track your progress</b> &#8212; Learn where you're spending
+                your time and which actions will align your calendar with your
+                priorities.
               </List.Item>
             </List>
 
@@ -153,13 +170,31 @@ export default function Index() {
           <Image src={hero} className={classes.image} />
         </div>
       </Container>
-      <Paper p="md" bg={colorScheme === "light" ? "gray.0" : "gray.9"}>
+      <Paper
+        p="md"
+        pt="xl"
+        pb="xl"
+        mt="xl"
+        bg={colorScheme === "light" ? "gray.0" : "gray.9"}
+      >
         <Container size="xl">
           <Stack>
-            <Title order={3} size="h2" mt="xl">
-              What is your ideal week?
+            <Title order={3} size="h1">
+              What is your <Highlight>ideal</Highlight> work week?
             </Title>
-            <Target targets={targets} onChange={onTargetsChange} />
+            <Target target={target} onChange={setTarget} />
+            <Group mt="lg">
+              <Button
+                variant="outline"
+                radius="xl"
+                size="md"
+                className={classes.control}
+                component="a"
+                href="/login"
+              >
+                Compare with your calendar
+              </Button>
+            </Group>
           </Stack>
         </Container>
       </Paper>

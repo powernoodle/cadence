@@ -12,6 +12,8 @@ function AppFooter() {
       sx={(theme) => ({
         [`@media (max-width: ${theme.breakpoints.sm})`]: {
           position: "relative",
+          height: "auto",
+          maxHeight: "unset",
         },
       })}
     >

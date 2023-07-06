@@ -104,7 +104,7 @@ export default function Index() {
 
   return (
     <Stack>
-      <Container size="xl">
+      <Container>
         <div className={classes.inner}>
           <div className={classes.content}>
             <Title order={2} size="h1" className={classes.title} mb="xl">
@@ -171,7 +171,6 @@ export default function Index() {
         </div>
       </Container>
       <Paper
-        p="md"
         pt="xl"
         pb="xl"
         mt="xl"
@@ -198,6 +197,28 @@ export default function Index() {
           </Stack>
         </Container>
       </Paper>
+      <Container pt="xl" pb="xl">
+        <Stack>
+          <Title order={3} size="h1">
+            Make your calendar match
+          </Title>
+          <Text>
+            Divvy helps your calendar to reflect your ideal work week, so you
+            can do your best work both within and outside of meetings.
+          </Text>
+          <Group mt="lg">
+            <Button
+              radius="xl"
+              size="md"
+              className={classes.control}
+              component="a"
+              href="/login"
+            >
+              Get started
+            </Button>
+          </Group>
+        </Stack>
+      </Container>
     </Stack>
   );
 }

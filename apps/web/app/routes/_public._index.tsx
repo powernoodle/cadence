@@ -16,7 +16,7 @@ import {
 } from "@mantine/core";
 import { IconRulerMeasure, IconAdjustmentsFilled } from "@tabler/icons-react";
 import hero from "../assets/hero.svg";
-import { Targets } from "../components/targets";
+import { Target } from "../components/target";
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -159,7 +159,7 @@ export default function Index() {
             <Title order={3} size="h2" mt="xl">
               What is your ideal week?
             </Title>
-            <Targets targets={targets} onChange={onTargetsChange} />
+            <Target targets={targets} onChange={onTargetsChange} />
           </Stack>
         </Container>
       </Paper>

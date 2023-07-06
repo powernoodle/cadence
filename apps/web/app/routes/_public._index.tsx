@@ -1,7 +1,10 @@
+import { useState, useCallback } from "react";
 import {
   createStyles,
   Image,
   Container,
+  Stack,
+  Paper,
   Title,
   Button,
   Group,
@@ -9,13 +12,11 @@ import {
   List,
   ThemeIcon,
   rem,
+  useMantineColorScheme,
 } from "@mantine/core";
-import {
-  IconRulerMeasure,
-  IconAdjustmentsFilled,
-  IconAd,
-} from "@tabler/icons-react";
+import { IconRulerMeasure, IconAdjustmentsFilled } from "@tabler/icons-react";
 import hero from "../assets/hero.svg";
+import { Targets } from "../components/targets";
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -80,58 +81,88 @@ const useStyles = createStyles((theme) => ({
 }));
 
 export default function Index() {
+  const { colorScheme } = useMantineColorScheme();
   const { classes } = useStyles();
+  const [targets, setTargets] = useState({
+    project: 6 * 60,
+    management: 2 * 60,
+    customer: 60,
+    everything: 20 * 60,
+  });
+
+  const onTargetsChange = useCallback((target: string, value: number) => {
+    setTargets((targets) => ({ ...targets, [target]: value }));
+  }, []);
+
   return (
-    <Container>
-      <div className={classes.inner}>
-        <div className={classes.content}>
-          <Title order={2} size="h1" className={classes.title} mb="xl">
-            Rule your calendar
-          </Title>
-          <Text mt="md" sx={{ lineHeight: 1.55 }} className={classes.copy}>
-            Reduce your meeting load, making time for what moves you forward.
-          </Text>
+    <Stack>
+      <Container size="xl">
+        <div className={classes.inner}>
+          <div className={classes.content}>
+            <Title order={2} size="h1" className={classes.title} mb="xl">
+              Rule your calendar
+            </Title>
+            <Text mt="md" sx={{ lineHeight: 1.55 }} className={classes.copy}>
+              Reduce your meeting load, making time for what moves you forward.
+            </Text>
 
-          <List mt={24} spacing="xl" size="md" center className={classes.copy}>
-            <List.Item
-              icon={
-                <ThemeIcon size={32} radius="xl">
-                  <IconRulerMeasure size={rem(18)} stroke={1.5} />
-                </ThemeIcon>
-              }
-              sx={{ lineHeight: 1.55 }}
-            >
-              <b>Understand your time</b> &#8212; Learn from your calendar with
-              a dynamic snapshot of where you're spending your time.
-            </List.Item>
-            <List.Item
-              icon={
-                <ThemeIcon size={32} radius="xl">
-                  <IconAdjustmentsFilled size={rem(18)} stroke={1.5} />
-                </ThemeIcon>
-              }
-              sx={{ lineHeight: 1.55 }}
-            >
-              <b>Trim unnecessary meetings</b> &#8212; Set and keep goals to
-              reduce time in low-value meetings and make time for activities
-              that advance your priorities
-            </List.Item>
-          </List>
-
-          <Group mt={32}>
-            <Button
-              radius="xl"
+            <List
+              mt={24}
+              spacing="xl"
               size="md"
-              className={classes.control}
-              component="a"
-              href="/login"
+              center
+              className={classes.copy}
             >
-              Get started
-            </Button>
-          </Group>
+              <List.Item
+                icon={
+                  <ThemeIcon size={32} radius="xl">
+                    <IconRulerMeasure size={rem(18)} stroke={1.5} />
+                  </ThemeIcon>
+                }
+                sx={{ lineHeight: 1.55 }}
+              >
+                <b>Understand your time</b> &#8212; Learn from your calendar
+                with a dynamic snapshot of where you're spending your time.
+              </List.Item>
+              <List.Item
+                icon={
+                  <ThemeIcon size={32} radius="xl">
+                    <IconAdjustmentsFilled size={rem(18)} stroke={1.5} />
+                  </ThemeIcon>
+                }
+                sx={{ lineHeight: 1.55 }}
+              >
+                <b>Trim unnecessary meetings</b> &#8212; Set and keep goals to
+                reduce time in low-value meetings and make time for activities
+                that advance your priorities
+              </List.Item>
+            </List>
+
+            <Group mt={32}>
+              <Button
+                radius="xl"
+                size="md"
+                className={classes.control}
+                component="a"
+                href="/login"
+              >
+                Get started
+              </Button>
+            </Group>
+          </div>
+          <Image src={hero} className={classes.image} />
         </div>
-        <Image src={hero} className={classes.image} />
-      </div>
-    </Container>
+      </Container>
+      <Paper p="md" bg={colorScheme === "light" ? "gray.0" : "gray.9"}>
+        <Container size="xl">
+          <Stack>
+            <Title order={3} size="h2" mt="xl">
+              What is your ideal week?
+            </Title>
+            <Targets targets={targets} onChange={onTargetsChange} />
+          </Stack>
+        </Container>
+      </Paper>
+    </Stack>
   );
 }

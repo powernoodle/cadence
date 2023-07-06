@@ -113,6 +113,7 @@ export function Gauge({
 }
 
 export function EditGauge({
+  title,
   averageMinutes,
   targetMinutes,
   totalMinutes,
@@ -120,7 +121,8 @@ export function EditGauge({
   maximize,
   onChange,
 }: {
-  averageMinutes: number;
+  title: string;
+  averageMinutes?: number;
   targetMinutes?: number;
   totalMinutes: number;
   color: string;
@@ -147,24 +149,31 @@ export function EditGauge({
       total={totalMinutes}
       label={
         <Stack spacing="sm" align="center">
-          <Text fw={500}>Target</Text>
+          <Text color={makeColor(color, 6, 5, colorScheme)} fw={700}>
+            {title}
+          </Text>
           <Group spacing="xs">
+            <Text fz={36} fw={700} color={makeColor("gray", 8, 2, colorScheme)}>
+              {durationFmt(target)}
+            </Text>
+          </Group>
+          <Group>
             <Button
               compact
               variant="outline"
+              color={color}
               onClick={() => {
-                onChange?.(target - 30);
+                onChange?.(Math.max(target - 30, 0));
               }}
+              disabled={target <= 0}
               title="Decrease"
             >
               <IconMinus />
             </Button>
-            <Text fz={36} fw={700} color={makeColor("gray", 8, 2, colorScheme)}>
-              {durationFmt(target)}
-            </Text>
             <Button
               compact
               variant="outline"
+              color={color}
               onClick={() => {
                 onChange?.(target + 30);
               }}
@@ -173,16 +182,6 @@ export function EditGauge({
               <IconPlus />
             </Button>
           </Group>
-          <Text fw={500} color={makeColor("gray", 8, 2, colorScheme)}>
-            {averageMinutes !== target ? (
-              <>
-                {durationFmt(Math.abs(target - averageMinutes))}{" "}
-                {target < averageMinutes ? "under average" : "over average"}
-              </>
-            ) : (
-              <>&nbsp;</>
-            )}
-          </Text>
         </Stack>
       }
     />

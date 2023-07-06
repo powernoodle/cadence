@@ -38,7 +38,7 @@ export default function Index() {
     <AppShell
       header={<Header />}
       footer={<AppFooter />}
-      styles={{ main: { minHeight: "unset" } }}
+      styles={{ main: { minHeight: "unset", paddingLeft: 0, paddingRight: 0 } }}
     >
       <Outlet context={ctx} />
     </AppShell>

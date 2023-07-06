@@ -207,6 +207,7 @@ function StatCard({
         )}
         {edit && (
           <EditGauge
+            title={title}
             averageMinutes={previousData?.attended?.minutes || 0}
             targetMinutes={targetMinutes}
             totalMinutes={40 * 60}

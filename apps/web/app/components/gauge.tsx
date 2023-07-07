@@ -1,9 +1,9 @@
 import {
-  ActionIcon,
   AspectRatio,
   Box,
   Button,
   Center,
+  Flex,
   Group,
   Paper,
   Stack,
@@ -68,8 +68,8 @@ export function Gauge({
         : []
     );
   return (
-    <Box p={15} miw="20rem" maw="20rem">
-      <AspectRatio ratio={1} w="100%">
+    <Flex p={15} w="100%" justify="center">
+      <AspectRatio ratio={1} w="100%" maw="20rem">
         <Box>
           <Center sx={{ zIndex: 102 }}>{label}</Center>
         </Box>
@@ -96,7 +96,7 @@ export function Gauge({
           />
         </Box>
       </AspectRatio>
-    </Box>
+    </Flex>
   );
 }
 
@@ -225,7 +225,6 @@ export function TargetGauge({
               <Button
                 compact
                 variant="outline"
-                color={color}
                 onClick={() => {
                   onChange?.(Math.max(target - 30, 0));
                 }}
@@ -242,7 +241,6 @@ export function TargetGauge({
               <Button
                 compact
                 variant="outline"
-                color={color}
                 onClick={() => {
                   onChange?.(target + 30);
                 }}

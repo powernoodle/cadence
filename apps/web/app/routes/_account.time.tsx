@@ -229,7 +229,7 @@ export default function MeetingLoad() {
   };
 
   return (
-    <Group>
+    <SimpleGrid cols={1} breakpoints={[{ minWidth: "94rem", cols: 2 }]}>
       <Target
         title={"Meeting Load"}
         data={data.meeting || {}}
@@ -248,6 +248,6 @@ export default function MeetingLoad() {
         maximize={true}
         color="violet"
       />
-    </Group>
+    </SimpleGrid>
   );
 }

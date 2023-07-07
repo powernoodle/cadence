@@ -1,32 +1,37 @@
-import { useState, useEffect } from "react";
+import {
+  AppShell,
+  Burger,
+  MediaQuery,
+  NavLink,
+  Navbar,
+  Select,
+  Title,
+  UnstyledButton,
+  useMantineColorScheme,
+  useMantineTheme,
+} from "@mantine/core";
 import type { LoaderArgs } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
-
+import { json } from "@remix-run/cloudflare";
 import {
+  Link,
+  Outlet,
   useLoaderData,
   useLocation,
   useOutletContext,
   useSearchParams,
-  Outlet,
-  Link,
 } from "@remix-run/react";
-import { json } from "@remix-run/cloudflare";
 import {
-  AppShell,
-  Burger,
-  Title,
-  UnstyledButton,
-  MediaQuery,
-  Navbar,
-  NavLink,
-  Select,
-  useMantineTheme,
-  useMantineColorScheme,
-} from "@mantine/core";
+  IconCrystalBall,
+  IconGauge,
+  IconHistory,
+  IconRepeat,
+} from "@tabler/icons-react";
+import { useEffect, useState } from "react";
 
+import Header from "../components/header";
 import { SupabaseOutletContext } from "../root";
 import { createServerClient, getAccountId, safeQuery } from "../util";
-import Header from "../components/header";
 import { APP_NAME } from "../util";
 
 export const loader = async ({ context, request }: LoaderArgs) => {
@@ -131,18 +136,36 @@ function AppNavbar({ opened }: { opened: boolean }) {
       </MediaQuery>
       <Navbar.Section grow>
         <NavLink
-          label="Time Balance"
+          label="Dashboard"
+          icon={<IconGauge />}
           component={Link}
           to={`/time${location.search}`}
           active={location.pathname === "/time"}
         />
         {isAdmin && (
-          <NavLink
-            label="Schedule"
-            component={Link}
-            to={`/schedule${location.search}`}
-            active={location.pathname === "/schedule"}
-          />
+          <>
+            <NavLink
+              label="Prepare"
+              icon={<IconCrystalBall />}
+              component={Link}
+              to={`/schedule${location.search}`}
+              active={location.pathname === "/schedule"}
+            />
+            <NavLink
+              label="Review"
+              icon={<IconHistory />}
+              component={Link}
+              to={`/schedule${location.search}`}
+              active={location.pathname === "/schedule"}
+            />
+            <NavLink
+              label="Recurring"
+              icon={<IconRepeat />}
+              component={Link}
+              to={`/schedule${location.search}`}
+              active={location.pathname === "/schedule"}
+            />
+          </>
         )}
       </Navbar.Section>
       <Navbar.Section>

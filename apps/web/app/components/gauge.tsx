@@ -234,7 +234,16 @@ export function TargetGauge({
                 <IconMinus />
               </Button>
             )}
-            <Text fz={36} fw={700} color={makeColor("gray", 8, 2, colorScheme)}>
+            <Text
+              fz={36}
+              fw={700}
+              color={makeColor("gray", 8, 2, colorScheme)}
+              title={`${Math.floor(
+                (edit ? target : actualMinutes) / 60
+              )} hours, ${
+                (edit ? target : actualMinutes) % 60
+              } minutes per week`}
+            >
               {durationFmt(edit ? target : actualMinutes)}
             </Text>
             {edit && (
@@ -265,7 +274,7 @@ export function TargetGauge({
                   targetMinutes && !!maximize === actualMinutes > targetMinutes
                     ? "teal"
                     : "red",
-                  5,
+                  6,
                   3,
                   colorScheme
                 )}
@@ -291,10 +300,10 @@ export function TargetGauge({
           )}
           <Text
             fz="sm"
-            fw={500}
+            fw={600}
             color={makeColor(
               !!maximize === trend > 0 ? "teal" : "red",
-              5,
+              6,
               3,
               colorScheme
             )}

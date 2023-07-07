@@ -11,6 +11,7 @@ import {
   useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { patternLinesDef } from "@nivo/core";
 import { ResponsivePie } from "@nivo/pie";
 import {
@@ -43,6 +44,7 @@ export function Gauge({
 }) {
   const { colorScheme } = useMantineColorScheme();
   const theme = useMantineTheme();
+  const isSm = useMediaQuery("(max-width: 768px)");
   const sectionsTotal = sections.reduce((acc, { value }) => acc + value, 0);
   if (sectionsTotal === 0) total = 1;
   const graphSections = sections
@@ -67,16 +69,17 @@ export function Gauge({
           ]
         : []
     );
+
   return (
     <Flex p={15} w="100%" justify="center">
       <AspectRatio ratio={1} w="100%" maw="20rem">
         <Box>
-          <Center sx={{ zIndex: 102 }}>{label}</Center>
+          <Center sx={{ zIndex: isSm ? 1 : 102 }}>{label}</Center>
         </Box>
         <Box
           sx={{
             overflow: "visible !important",
-            zIndex: 101,
+            zIndex: isSm ? 0 : 101,
           }}
         >
           <ResponsivePie

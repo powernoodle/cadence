@@ -1,36 +1,33 @@
-/** @jsxfrag */
-import type { LoaderArgs, ActionArgs } from "@remix-run/cloudflare";
-
-import { useLoaderData, useFetcher } from "@remix-run/react";
-import { json } from "@remix-run/cloudflare";
 import {
-  SimpleGrid,
-  Card,
-  Title,
   Button,
+  Flex,
   Group,
+  SimpleGrid,
+  Title,
   useMantineColorScheme,
 } from "@mantine/core";
+
+/** @jsxfrag */
+import type { ActionArgs, LoaderArgs } from "@remix-run/cloudflare";
+import { json } from "@remix-run/cloudflare";
+import { useFetcher, useLoaderData } from "@remix-run/react";
+import { SupabaseClient } from "@supabase/supabase-js";
 import {
   IconCalendarCheck,
-  IconCalendarX,
   IconCalendarQuestion,
+  IconCalendarX,
 } from "@tabler/icons-react";
+import { useState } from "react";
 
-import { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@divvy/db";
 
-import {
-  getDateRange,
-  isPast,
-  DateRangeSelect,
-} from "../components/date-range";
-import { createServerClient, getAccountId, safeQuery } from "../util";
-import { ProjectionGuage, TargetGuage } from "../components/guage";
 import { makeColor } from "../color";
+import { DateRangeSelect, getDateRange } from "../components/date-range";
+import { TargetGauge } from "../components/gauge";
 import { USER_TZ } from "../config";
+import { createServerClient, getAccountId, safeQuery } from "../util";
 
-type EventType = Database["public"]["Enums"]["event_type"];
+type EventType = Database["public"]["Enums"]["event_type"] | "meeting";
 type EventStatus = Database["public"]["Enums"]["event_status"];
 
 type TypeStats = {
@@ -63,6 +60,15 @@ async function getStats(
           count: total_count,
         },
       };
+      if (type !== "personal" && type !== "focus") {
+        acc["meeting"] = {
+          ...acc["meeting"],
+          [status]: {
+            minutes: (acc["meeting"]?.[status]?.minutes || 0) + weekly_minutes,
+            count: (acc["meeting"]?.[status]?.count || 0) + total_count,
+          },
+        };
+      }
       return acc;
     },
     {} as EventStats
@@ -71,7 +77,7 @@ async function getStats(
 }
 
 export async function action({ context, request }: ActionArgs) {
-  const { response, supabase } = createServerClient(context, request);
+  const { supabase } = createServerClient(context, request);
   const accountId = await getAccountId(request, supabase);
   const bodyParams = await request.formData();
   if (typeof bodyParams.get("targets") === "string") {
@@ -115,20 +121,60 @@ export const loader = async ({ context, request }: LoaderArgs) => {
       previousData,
       targets,
       accountId,
-      isPast: isPast(current.end, USER_TZ),
     },
     { headers: response.headers }
   );
 };
 
-function StatCard({
+function trend(data: TypeStats, previousData: TypeStats) {
+  return (
+    (((data?.attended?.minutes || 0) +
+      (data?.scheduled?.minutes || 0) +
+      (data?.pending?.minutes || 0)) /
+      ((previousData?.attended?.minutes || 0) +
+        (previousData?.scheduled?.minutes || 0) +
+        (previousData?.pending?.minutes || 0))) *
+      100 -
+    100
+  );
+}
+
+// {
+//   icon: <IconCalendarCheck />,
+//   color: makeColor("gray", 8, 1, colorScheme),
+//   label: `${data.scheduled?.count || 0} scheduled`,
+// },
+// ...(data.pending
+//   ? [
+//       {
+//         icon: <IconCalendarQuestion />,
+//         color: makeColor("yellow", 9, 2, colorScheme),
+//         label: `${data.pending.count || 0} pending`,
+//       },
+//     ]
+//   : []),
+// ...(data.declined
+//   ? [
+//       {
+//         icon: <IconCalendarX />,
+//         color: makeColor("gray", 6, 5, colorScheme),
+//         label: `${data.declined.count || 0} declined`,
+//       },
+//     ]
+//   : []),
+// {
+//   icon: <IconCalendarCheck />,
+//   color: makeColor("gray", 6, 5, colorScheme),
+//   label: `${data.attended?.count || 0} attended`,
+// },
+
+function Target({
   title,
   data,
   previousData,
   targetMinutes,
   color,
   maximize,
-  isPast,
   onTargetChange,
 }: {
   title: string;
@@ -137,93 +183,21 @@ function StatCard({
   targetMinutes?: number;
   color: string;
   maximize?: boolean;
-  isPast: boolean;
   onTargetChange?: (minutes: number) => void;
 }) {
-  const { colorScheme } = useMantineColorScheme();
-
-  const links = [
-    // {
-    //   icon: <IconCalendarCheck />,
-    //   color: makeColor("gray", 8, 1, colorScheme),
-    //   label: `${data.scheduled?.count || 0} scheduled`,
-    // },
-    // ...(data.pending
-    //   ? [
-    //       {
-    //         icon: <IconCalendarQuestion />,
-    //         color: makeColor("yellow", 9, 2, colorScheme),
-    //         label: `${data.pending.count || 0} pending`,
-    //       },
-    //     ]
-    //   : []),
-    // ...(data.declined
-    //   ? [
-    //       {
-    //         icon: <IconCalendarX />,
-    //         color: makeColor("gray", 6, 5, colorScheme),
-    //         label: `${data.declined.count || 0} declined`,
-    //       },
-    //     ]
-    //   : []),
-    // {
-    //   icon: <IconCalendarCheck />,
-    //   color: makeColor("gray", 6, 5, colorScheme),
-    //   label: `${data.attended?.count || 0} attended`,
-    // },
-  ];
-  const projectedMinutes =
-    (data?.attended?.minutes || 0) +
-    (data?.scheduled?.minutes || 0) +
-    (data?.pending?.minutes || 0);
-  const trend =
-    (projectedMinutes /
-      ((previousData?.attended?.minutes || 0) +
-        (previousData?.scheduled?.minutes || 0) +
-        (previousData?.pending?.minutes || 0))) *
-      100 -
-    100;
-
   return (
-    <Card sx={{ overflow: "visible !important" }}>
-      <Title
-        order={2}
-        size="h4"
-        fw={700}
-        color={makeColor(color, 6, 4, colorScheme)}
-      >
-        {title}
-      </Title>
-      <SimpleGrid cols={1} breakpoints={[{ minWidth: "48rem", cols: 2 }]}>
-        <ProjectionGuage
-          label={isPast ? "Attended" : "Projected"}
-          pastMinutes={data?.attended?.minutes || 0}
-          scheduledMinutes={data?.scheduled?.minutes || 0}
-          pendingMinutes={data?.pending?.minutes || 0}
-          color={color}
-          trend={trend}
-          maximize={maximize}
-        />
-        <TargetGuage
-          projectedMinutes={projectedMinutes}
-          targetMinutes={targetMinutes}
-          maximize={maximize}
-          onChange={onTargetChange}
-        />
-      </SimpleGrid>
-      <Group position="apart">
-        {links.map((link: any, i: number) => (
-          <Button
-            key={i.toString()}
-            color={link.color}
-            variant="subtle"
-            leftIcon={link.icon}
-          >
-            {link.label}
-          </Button>
-        ))}
-      </Group>
-    </Card>
+    <TargetGauge
+      title={title}
+      pastMinutes={data?.attended?.minutes || 0}
+      scheduledMinutes={data?.scheduled?.minutes || 0}
+      pendingMinutes={data?.pending?.minutes || 0}
+      targetMinutes={targetMinutes}
+      onChange={onTargetChange}
+      totalMinutes={40 * 60}
+      color={color}
+      trend={trend(data, previousData)}
+      maximize={maximize}
+    />
   );
 }
 
@@ -232,13 +206,18 @@ export const handle = {
 };
 
 export default function MeetingLoad() {
-  const { data, previousData, targets, isPast } =
-    useLoaderData<typeof loader>();
+  const {
+    data,
+    previousData,
+    targets: loaderTargets,
+  } = useLoaderData<typeof loader>();
+  const [targets, setTargets] = useState(loaderTargets);
   const fetcher = useFetcher();
 
   if (!data || !previousData) return null;
 
   const updateTarget = (type: EventType, target: number) => {
+    setTargets({ ...targets, [type]: target });
     fetcher.submit(
       {
         targets: JSON.stringify({
@@ -250,58 +229,25 @@ export default function MeetingLoad() {
   };
 
   return (
-    <>
-      <Title order={2} size="h2" mb="lg">
-        Weekly working hours
-      </Title>
-      <SimpleGrid
-        cols={1}
-        breakpoints={[
-          { minWidth: "94rem", cols: 2 },
-          { minWidth: "138rem", cols: 3 },
-          { minWidth: "184rem", cols: 4 },
-        ]}
-      >
-        <StatCard
-          title={"Work Meetings"}
-          data={data.internal || {}}
-          previousData={previousData.internal || {}}
-          targetMinutes={targets?.internal}
-          onTargetChange={(target) => updateTarget("internal", target)}
-          color="orange"
-          isPast={isPast}
-        />
-        <StatCard
-          title={"Customer Meetings"}
-          data={data.external || {}}
-          previousData={previousData.external || {}}
-          targetMinutes={targets?.external}
-          onTargetChange={(target) => updateTarget("external", target)}
-          maximize={true}
-          color="yellow"
-          isPast={isPast}
-        />
-        <StatCard
-          title={"Deep Work Blocks"}
-          data={data.focus || {}}
-          previousData={previousData.focus || {}}
-          targetMinutes={targets?.focus}
-          onTargetChange={(target) => updateTarget("focus", target)}
-          maximize={true}
-          color="blue"
-          isPast={isPast}
-        />
-        <StatCard
-          title={"Health, Growth & Giving Activities"}
-          data={data.growth || {}}
-          previousData={previousData.growth || {}}
-          targetMinutes={targets?.growth}
-          onTargetChange={(target) => updateTarget("growth", target)}
-          maximize={true}
-          color="cyan"
-          isPast={isPast}
-        />
-      </SimpleGrid>
-    </>
+    <SimpleGrid cols={1} breakpoints={[{ minWidth: "94rem", cols: 2 }]}>
+      <Target
+        title={"Meeting Load"}
+        data={data.meeting || {}}
+        previousData={previousData.meeting || {}}
+        targetMinutes={targets?.meeting}
+        onTargetChange={(target) => updateTarget("meeting", target)}
+        color="orange"
+      />
+
+      <Target
+        title={"Focus Blocks"}
+        data={data.focus || {}}
+        previousData={previousData.focus || {}}
+        targetMinutes={targets?.focus}
+        onTargetChange={(target) => updateTarget("focus", target)}
+        maximize={true}
+        color="violet"
+      />
+    </SimpleGrid>
   );
 }

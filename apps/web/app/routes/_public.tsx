@@ -1,5 +1,6 @@
-import { AppShell, Flex, Footer, Group, Text, MediaQuery } from "@mantine/core";
-import { useOutletContext, Outlet, Link } from "@remix-run/react";
+import { Anchor, AppShell, Flex, Footer, Group, Text } from "@mantine/core";
+import { Link, Outlet, useOutletContext } from "@remix-run/react";
+
 import Header from "../components/header";
 import { SupabaseOutletContext } from "../root";
 
@@ -11,6 +12,8 @@ function AppFooter() {
       sx={(theme) => ({
         [`@media (max-width: ${theme.breakpoints.sm})`]: {
           position: "relative",
+          height: "auto",
+          maxHeight: "unset",
         },
       })}
     >
@@ -20,12 +23,16 @@ function AppFooter() {
         direction={{ base: "column", sm: "row" }}
       >
         <Group>
-          <Link to={`/terms`}>Terms of Service</Link>
-          <Link to={`/privacy`}>Privacy Policy</Link>
+          <Anchor component={Link} to={`/terms`}>
+            Terms of Service
+          </Anchor>
+          <Anchor component={Link} to={`/privacy`}>
+            Privacy Policy
+          </Anchor>
         </Group>
         <Group>
           <Text>Collide Solutions Inc.</Text>
-          <a href="mailto:team@divvy.day">Contact Us</a>
+          <Anchor href="mailto:team@divvy.day">Contact Us</Anchor>
         </Group>
       </Flex>
     </Footer>
@@ -38,7 +45,14 @@ export default function Index() {
     <AppShell
       header={<Header />}
       footer={<AppFooter />}
-      styles={{ main: { minHeight: "unset" } }}
+      styles={{
+        main: {
+          minHeight: "unset",
+          paddingLeft: 0,
+          paddingRight: 0,
+          paddingBottom: 60,
+        },
+      }}
     >
       <Outlet context={ctx} />
     </AppShell>

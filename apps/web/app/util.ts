@@ -1,11 +1,13 @@
-import { SupabaseClient } from "@supabase/supabase-js";
 import type { AppLoadContext } from "@remix-run/cloudflare";
 import { redirect } from "@remix-run/cloudflare";
 import { createServerClient as createSupabaseClient } from "@supabase/auth-helpers-remix";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 import type { Database } from "@divvy/db";
-export { safeQuery } from "@divvy/db";
+
 import { safeQuery } from "./util";
+
+export { safeQuery } from "@divvy/db";
 
 export const APP_NAME = "Divvy";
 
@@ -14,6 +16,9 @@ export const makeTitle = (pageTitle: string) => `${pageTitle} | ${APP_NAME}`;
 export const cookieOptions = {
   name: "dda",
   lifetime: 60 * 60 * 8,
+  maxAge: 60 * 60 * 8,
+  sameSite: false,
+  secure: false,
   domain: "",
   path: "/",
 };

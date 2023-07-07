@@ -1,21 +1,27 @@
 import {
-  createStyles,
-  Image,
-  Container,
-  Title,
   Button,
+  Container,
   Group,
-  Text,
+  Image,
   List,
+  Paper,
+  Stack,
+  Text,
   ThemeIcon,
+  Title,
+  createStyles,
   rem,
+  useMantineColorScheme,
 } from "@mantine/core";
 import {
-  IconRulerMeasure,
-  IconAdjustmentsFilled,
-  IconAd,
+  IconAdjustments,
+  IconPigMoney,
+  IconTrendingUp,
 } from "@tabler/icons-react";
+import { useCallback, useState } from "react";
+
 import hero from "../assets/hero.svg";
+import { Target } from "../components/target";
 
 const useStyles = createStyles((theme) => ({
   inner: {
@@ -79,46 +85,128 @@ const useStyles = createStyles((theme) => ({
   },
 }));
 
-export default function Index() {
-  const { classes } = useStyles();
+function Highlight({ children }: { children: React.ReactNode }) {
   return (
-    <Container>
-      <div className={classes.inner}>
-        <div className={classes.content}>
-          <Title order={2} size="h1" className={classes.title} mb="xl">
-            Rule your calendar
+    <Text
+      span
+      variant="gradient"
+      gradient={{ from: "violet.5", to: "teal", deg: 45 }}
+    >
+      {children}
+    </Text>
+  );
+}
+
+export default function Index() {
+  const { colorScheme } = useMantineColorScheme();
+  const { classes } = useStyles();
+  const [target, setTarget] = useState(16);
+
+  return (
+    <Stack>
+      <Container>
+        <div className={classes.inner}>
+          <div className={classes.content}>
+            <Title order={2} size="h1" className={classes.title} mb="xl">
+              Success is <Highlight>more</Highlight> than meetings
+            </Title>
+
+            <List
+              mt={24}
+              spacing="xl"
+              size="md"
+              center
+              className={classes.copy}
+            >
+              <List.Item
+                icon={
+                  <ThemeIcon size={32} radius="xl">
+                    <IconAdjustments size={rem(18)} stroke={1.5} />
+                  </ThemeIcon>
+                }
+                sx={{ lineHeight: 1.55 }}
+              >
+                <b>Design your time</b> &#8212; Build a schedule with space to
+                get the most from important meetings <b>and</b> deliver on the
+                rest of your work.
+              </List.Item>
+              <List.Item
+                icon={
+                  <ThemeIcon size={32} radius="xl">
+                    <IconPigMoney size={rem(18)} stroke={1.5} />
+                  </ThemeIcon>
+                }
+                sx={{ lineHeight: 1.55 }}
+              >
+                <b>Set a meeting budget</b> &#8212; Reduce your meeting load,
+                making time for what moves you forward.
+              </List.Item>
+              <List.Item
+                icon={
+                  <ThemeIcon size={32} radius="xl">
+                    <IconTrendingUp size={rem(18)} stroke={1.5} />
+                  </ThemeIcon>
+                }
+                sx={{ lineHeight: 1.55 }}
+              >
+                <b>Track your progress</b> &#8212; Learn where you're spending
+                your time and which actions will align your calendar with your
+                priorities.
+              </List.Item>
+            </List>
+
+            <Group mt={32}>
+              <Button
+                radius="xl"
+                size="md"
+                className={classes.control}
+                component="a"
+                href="/login"
+              >
+                Get started
+              </Button>
+            </Group>
+          </div>
+          <Image src={hero} className={classes.image} />
+        </div>
+      </Container>
+      <Paper
+        pt="xl"
+        pb="xl"
+        mt="xl"
+        bg={colorScheme === "light" ? "gray.0" : "gray.9"}
+      >
+        <Container size="xl">
+          <Stack>
+            <Title order={3} size="h1">
+              What is your <Highlight>ideal</Highlight> work week?
+            </Title>
+            <Target target={target} onChange={setTarget} />
+            <Group mt="lg">
+              <Button
+                variant="outline"
+                radius="xl"
+                size="md"
+                className={classes.control}
+                component="a"
+                href="/login"
+              >
+                Compare with your calendar
+              </Button>
+            </Group>
+          </Stack>
+        </Container>
+      </Paper>
+      <Container pt="xl" pb="xl">
+        <Stack>
+          <Title order={3} size="h1">
+            Make your calendar match
           </Title>
-          <Text mt="md" sx={{ lineHeight: 1.55 }} className={classes.copy}>
-            Reduce your meeting load, making time for what moves you forward.
+          <Text>
+            Divvy helps your calendar to reflect your ideal work week, so you
+            can do your best work both within and outside of meetings.
           </Text>
-
-          <List mt={24} spacing="xl" size="md" center className={classes.copy}>
-            <List.Item
-              icon={
-                <ThemeIcon size={32} radius="xl">
-                  <IconRulerMeasure size={rem(18)} stroke={1.5} />
-                </ThemeIcon>
-              }
-              sx={{ lineHeight: 1.55 }}
-            >
-              <b>Understand your time</b> &#8212; Learn from your calendar with
-              a dynamic snapshot of where you're spending your time.
-            </List.Item>
-            <List.Item
-              icon={
-                <ThemeIcon size={32} radius="xl">
-                  <IconAdjustmentsFilled size={rem(18)} stroke={1.5} />
-                </ThemeIcon>
-              }
-              sx={{ lineHeight: 1.55 }}
-            >
-              <b>Trim unnecessary meetings</b> &#8212; Set and keep goals to
-              reduce time in low-value meetings and make time for activities
-              that advance your priorities
-            </List.Item>
-          </List>
-
-          <Group mt={32}>
+          <Group mt="lg">
             <Button
               radius="xl"
               size="md"
@@ -129,9 +217,8 @@ export default function Index() {
               Get started
             </Button>
           </Group>
-        </div>
-        <Image src={hero} className={classes.image} />
-      </div>
-    </Container>
+        </Stack>
+      </Container>
+    </Stack>
   );
 }

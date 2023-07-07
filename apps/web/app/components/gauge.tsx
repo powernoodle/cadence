@@ -264,7 +264,7 @@ export function TargetGauge({
               <Text
                 span
                 color={makeColor(
-                  !!maximize && targetMinutes && actualMinutes > targetMinutes
+                  targetMinutes && !!maximize === actualMinutes > targetMinutes
                     ? "teal"
                     : "red",
                   5,
